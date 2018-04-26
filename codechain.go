@@ -208,11 +208,11 @@ func (c codeChain) save(w io.Writer) error {
 
 func (c *codeChain) appendLink(l link) error {
 	hashfile := filepath.Join(codechainDir, hashchainFile)
-	l, err := lock.Create(hashfile)
+	lock, err := lockfile.Create(hashfile)
 	if err != nil {
 		return err
 	}
-	defer l.Release()
+	defer lock.Release()
 	*c = append(*c, l)
 	f, err := os.OpenFile(hashfile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {

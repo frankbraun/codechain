@@ -18,7 +18,7 @@ const EmptyHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b
 // files and directories in the file tree rooted at root, except for the paths
 // in excludePaths. This serves as the basis for a hash of a directory tree.
 //
-// The tree rooted at root can only contain directories or regular files.
+// The directory tree can only contain directories or regular files.
 func List(root string, excludePaths []string) ([]byte, error) {
 	var b bytes.Buffer
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -71,8 +71,9 @@ func List(root string, excludePaths []string) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-// Hash returns a deterministic hash of all files and directories in the file tree rooted at root, except for the paths
-// in excludePaths (using the List function).
+// Hash returns a SHA256 hash of all files and directories in the file tree
+// rooted at root, except for the paths in excludePaths. The result of the
+// List function serves as a deterministic input if the hash function.
 func Hash(root string, excludePaths []string) ([]byte, error) {
 	l, err := List(root, excludePaths)
 	if err != nil {

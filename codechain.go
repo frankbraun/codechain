@@ -191,10 +191,7 @@ func (c *codeChain) addKey(pubkey, signature, comment string) error {
 		linkType:   addkeyType,
 		typeFields: key,
 	}
-	if err := c.appendLink(l); err != nil {
-		return err
-	}
-	return nil
+	return c.appendLink(l)
 }
 
 func (c codeChain) save(w io.Writer) error {
@@ -540,10 +537,7 @@ func initChain() error {
 		return err
 	}
 	defer f.Close()
-	if err := chain.save(f); err != nil {
-		return err
-	}
-	return nil
+	return chain.save(f)
 }
 
 func addKey() error {
@@ -582,10 +576,7 @@ func addKey() error {
 	if err := c.verify(); err != nil {
 		return err
 	}
-	if err := c.addKey(pubkey, signature, comment); err != nil {
-		return err
-	}
-	return nil
+	return c.addKey(pubkey, signature, comment)
 }
 
 func verifyChain() error {
@@ -593,10 +584,7 @@ func verifyChain() error {
 	if err != nil {
 		return err
 	}
-	if err := c.verify(); err != nil {
-		return err
-	}
-	return nil
+	return c.verify()
 }
 
 func fatal(err error) {

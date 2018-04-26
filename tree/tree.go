@@ -16,7 +16,9 @@ const EmptyHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b
 
 // List returns a list in lexical order of newline separated hashes of all
 // files and directories in the file tree rooted at root, except for the paths
-// in excludePaths. This serves as the basis for a hash of a directory tree.
+// in excludePaths. The list includes Unix permission bits (read, write,
+// execute) in octal notation. The deterministic list serves as the basis for
+// a hash of a directory tree.
 //
 // The directory tree can only contain directories or regular files.
 //

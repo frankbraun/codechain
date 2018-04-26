@@ -14,15 +14,14 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/frankbraun/codechain/util/bzero"
+	"github.com/frankbraun/codechain/util/home"
 	"github.com/frankbraun/codechain/util/lockfile"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/ed25519"
@@ -229,24 +228,6 @@ func (c codeChain) verify() error {
 	return nil
 }
 
-func appDataDir() (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	var homeDir string
-	switch runtime.GOOS {
-	case "darwin":
-		homeDir = filepath.Join(usr.HomeDir, "Library", "Application Support", "Codechain")
-	default:
-		homeDir = filepath.Join(usr.HomeDir, ".config", "codechain")
-	}
-	if err := os.MkdirAll(homeDir, 0700); err != nil {
-		return "", err
-	}
-	return homeDir, nil
-}
-
 func treeList() ([]byte, error) {
 	var b bytes.Buffer
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
@@ -415,10 +396,7 @@ func readSecfile(filename string, pass []byte) ([]byte, []byte, []byte, error) {
 }
 
 func genKey() error {
-	var (
-		homeDir string
-		err     error
-	)
+	var homeDir string
 	app := os.Args[1]
 	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ExitOnError)
 	seckey := fs.String("s", "", "Secret key file")
@@ -428,10 +406,7 @@ func genKey() error {
 			return fmt.Errorf("%s: file '%s' exists already", app, *seckey)
 		}
 	} else {
-		homeDir, err = appDataDir()
-		if err != nil {
-			return err
-		}
+		homeDir = home.AppDataDir("codechain", false)
 		homeDir = filepath.Join(homeDir, secretsDir)
 		if err := os.MkdirAll(homeDir, 0700); err != nil {
 			return err

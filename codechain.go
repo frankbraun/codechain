@@ -20,6 +20,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/home"
 	"github.com/frankbraun/codechain/util/lockfile"
@@ -30,15 +31,14 @@ import (
 )
 
 const (
-	codechainDir    = ".codechain"
-	hashchainFile   = "hashchain"
-	secretsDir      = "secrets"
-	emptyTreeString = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-	sigctlType      = "sigctl"
-	sourceType      = "source"
-	signatureType   = "signtr"
-	addkeyType      = "addkey"
-	remkeyType      = "remkey"
+	codechainDir  = ".codechain"
+	hashchainFile = "hashchain"
+	secretsDir    = "secrets"
+	sigctlType    = "sigctl"
+	sourceType    = "source"
+	signatureType = "signtr"
+	addkeyType    = "addkey"
+	remkeyType    = "remkey"
 )
 
 var (
@@ -52,7 +52,7 @@ var (
 
 func init() {
 	var err error
-	emptyTree, err = hex.DecodeString(emptyTreeString)
+	emptyTree, err = hex.DecodeString(tree.EmptyHash)
 	if err != nil {
 		panic(err)
 	}
@@ -226,52 +226,6 @@ func (c *codeChain) appendLink(l link) error {
 func (c codeChain) verify() error {
 	// TODO
 	return nil
-}
-
-func treeList() ([]byte, error) {
-	var b bytes.Buffer
-	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() && !info.Mode().IsRegular() {
-			return fmt.Errorf("%s: neither directory nor normal file", path)
-		}
-		if path == "." {
-			return nil
-		}
-		if excludePaths != nil {
-			for _, excludePath := range excludePaths {
-				if excludePath == path {
-					if info.IsDir() {
-						return filepath.SkipDir
-					}
-					return nil
-				}
-			}
-		}
-		perm := info.Mode().Perm() & os.ModePerm
-		if !info.IsDir() {
-			f, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			h := sha256.New()
-			if _, err := io.Copy(h, f); err != nil {
-				return err
-			}
-			fmt.Fprintf(&b, "f %3o %x", perm, h.Sum(nil))
-		} else {
-			fmt.Fprintf(&b, "d %3o", perm)
-		}
-		fmt.Fprintf(&b, " %s\n", filepath.ToSlash(path))
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return b.Bytes(), nil
 }
 
 func readPassphrase(confirm bool) ([]byte, error) {
@@ -581,13 +535,13 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "treehash":
-		list, err := treeList()
+		hash, err := tree.Hash(".", excludePaths)
 		if err != nil {
 			fatal(err)
 		}
-		fmt.Printf("%x\n", sha256.Sum256(list))
+		fmt.Printf("%x\n", hash[:])
 	case "treelist":
-		list, err := treeList()
+		list, err := tree.List(".", excludePaths)
 		if err != nil {
 			fatal(err)
 		}

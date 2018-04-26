@@ -22,6 +22,7 @@ import (
 
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/bzero"
+	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/home"
 	"github.com/frankbraun/codechain/util/lockfile"
 	"golang.org/x/crypto/argon2"
@@ -356,7 +357,11 @@ func genKey() error {
 	seckey := fs.String("s", "", "Secret key file")
 	fs.Parse(os.Args[2:])
 	if *seckey != "" {
-		if _, err := os.Stat(*seckey); err == nil {
+		exists, err := file.Exists(*seckey)
+		if err != nil {
+			return err
+		}
+		if exists {
 			return fmt.Errorf("%s: file '%s' exists already", app, *seckey)
 		}
 	} else {
@@ -412,7 +417,11 @@ func pubKey() error {
 	if *seckey == "" {
 		return fmt.Errorf("%s: option -s is mandatory", app)
 	}
-	if _, err := os.Stat(*seckey); err != nil {
+	exists, err := file.Exists(*seckey)
+	if err != nil {
+		return err
+	}
+	if !exists {
 		return fmt.Errorf("%s: file '%s' does not exist", app, *seckey)
 	}
 	pass, err := readPassphrase(false)
@@ -450,7 +459,11 @@ func initChain() error {
 		return err
 	}
 	hashchain := filepath.Join(codechainDir, hashchainFile)
-	if _, err := os.Stat(hashchain); err == nil {
+	exists, err := file.Exists(hashchain)
+	if err != nil {
+		return err
+	}
+	if exists {
 		return fmt.Errorf("%s: file '%s' exists already", app, hashchain)
 	}
 	chain := newCodeChain(*m)

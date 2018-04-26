@@ -21,6 +21,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/lockfile"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/ed25519"
@@ -291,12 +292,6 @@ func treeList() ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func bzero(b []byte) {
-	for i := 0; i < len(b); i++ {
-		b[i] = 0
-	}
-}
-
 func readPassphrase(confirm bool) ([]byte, error) {
 	var (
 		pass   []byte
@@ -334,7 +329,7 @@ func readPassphrase(confirm bool) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer bzero(pass2)
+		defer bzero.Bytes(pass2)
 		pass2 = bytes.TrimRight(pass2, "\n")
 		if !bytes.Equal(pass, pass2) {
 			return nil, errors.New("passphrases don't match")
@@ -445,7 +440,7 @@ func genKey() error {
 	if err != nil {
 		return err
 	}
-	defer bzero(pass)
+	defer bzero.Bytes(pass)
 	fmt.Println("comment (e.g., name; can be empty):")
 	comment, err := readComment()
 	if err != nil {
@@ -494,7 +489,7 @@ func pubKey() error {
 	if err != nil {
 		return err
 	}
-	defer bzero(pass)
+	defer bzero.Bytes(pass)
 	sec, sig, comment, err := readSecfile(*seckey, pass)
 	if err != nil {
 		return err

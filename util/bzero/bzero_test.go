@@ -1,4 +1,4 @@
-package main
+package bzero
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestBzero(t *testing.T) {
+func TestBytes(t *testing.T) {
 	zero := make([]byte, 1024)
 	buf := make([]byte, 1024)
 	// compare new buffer
@@ -19,7 +19,7 @@ func TestBzero(t *testing.T) {
 		t.Fatal(err)
 	}
 	// zero
-	bzero(buf)
+	Bytes(buf)
 	// compare reset buffer
 	if !bytes.Equal(buf, zero) {
 		t.Error("buffers differ")

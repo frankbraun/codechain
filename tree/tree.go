@@ -19,6 +19,11 @@ const EmptyHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b
 // in excludePaths. This serves as the basis for a hash of a directory tree.
 //
 // The directory tree can only contain directories or regular files.
+//
+// Example list:
+//	d 755 bar
+//	f 644 7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730 bar/baz.txt
+//	f 644 b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c foo.txt
 func List(root string, excludePaths []string) ([]byte, error) {
 	var b bytes.Buffer
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {

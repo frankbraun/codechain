@@ -16,14 +16,14 @@ func TestEmpty(t *testing.T) {
 	defer os.RemoveAll(tmpdir)
 	l, err := List(tmpdir, nil)
 	if err != nil {
-		t.Errorf("List() should not fail: %v", err)
+		t.Fatalf("List() should not fail: %v", err)
 	}
 	if !bytes.Equal(l, []byte{}) {
 		t.Errorf("List() should return an empty list")
 	}
 	h, err := Hash(tmpdir, nil)
 	if err != nil {
-		t.Errorf("Hash() should not fail: %v", err)
+		t.Fatalf("Hash() should not fail: %v", err)
 	}
 	if hex.EncodeToString(h) != EmptyHash {
 		t.Errorf("Hash() should return the EmptyHash")
@@ -63,14 +63,14 @@ func TestTestdataExclude(t *testing.T) {
 	excludePaths := []string{"foo.txt"}
 	l, err := List("testdata", excludePaths)
 	if err != nil {
-		t.Errorf("List() should not fail: %v", err)
+		t.Fatalf("List() should not fail: %v", err)
 	}
 	if !bytes.Equal(l, []byte(testdataListExclude)) {
 		t.Errorf("List() should return testdataListExclude")
 	}
 	h, err := Hash("testdata", excludePaths)
 	if err != nil {
-		t.Errorf("Hash() should not fail: %v", err)
+		t.Fatalf("Hash() should not fail: %v", err)
 	}
 	if hex.EncodeToString(h) != testdataHashExclude {
 		t.Errorf("Hash() should return the testdataHashExclude")
@@ -79,18 +79,18 @@ func TestTestdataExclude(t *testing.T) {
 
 func TestTestdataChdir(t *testing.T) {
 	if err := os.Chdir("testdata"); err != nil {
-		t.Errorf("os.Chdir() should not fail: %v", err)
+		t.Fatalf("os.Chdir() should not fail: %v", err)
 	}
 	l, err := List(".", nil)
 	if err != nil {
-		t.Errorf("List() should not fail: %v", err)
+		t.Fatalf("List() should not fail: %v", err)
 	}
 	if !bytes.Equal(l, []byte(testdataList)) {
 		t.Errorf("List() should return testdataList")
 	}
 	h, err := Hash(".", nil)
 	if err != nil {
-		t.Errorf("Hash() should not fail: %v", err)
+		t.Fatalf("Hash() should not fail: %v", err)
 	}
 	if hex.EncodeToString(h) != testdataHash {
 		t.Errorf("Hash() should return the testdataHash")

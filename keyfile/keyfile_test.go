@@ -29,7 +29,11 @@ func TestCreateRead(t *testing.T) {
 	if !ed25519.Verify(ed25519.PublicKey(sec[32:]), msg, sig) {
 		t.Error("signature does not verify")
 	}
-	err = Create(filename, pass, sec, sig, comment)
+	var secKey [64]byte
+	copy(secKey[:], sec)
+	var signature [64]byte
+	copy(signature[:], sig)
+	err = Create(filename, pass, secKey, signature, comment)
 	if err != nil {
 		t.Fatalf("Create() failed: %v", err)
 	}
@@ -37,19 +41,19 @@ func TestCreateRead(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Read() failed: %v", err)
 	}
-	if !bytes.Equal(readSec, sec) {
+	if !bytes.Equal(readSec[:], sec) {
 		t.Error("readSec != sec")
 	}
-	if !bytes.Equal(readSig, sig) {
+	if !bytes.Equal(readSig[:], sig) {
 		t.Error("readSig != sig")
 	}
-	if !bytes.Equal(readComment, comment) {
+	if !bytes.Equal(readComment[:], comment) {
 		t.Error("readComment != comment")
 	}
 	readMsg := make([]byte, len(readSec[32:])+len(readComment))
 	n := copy(readMsg, readSec[32:])
 	copy(readMsg[n:], readComment)
-	if !ed25519.Verify(readSec[32:], readMsg, readSig) {
+	if !ed25519.Verify(readSec[32:], readMsg, readSig[:]) {
 		t.Error("read signature does not verify")
 	}
 }

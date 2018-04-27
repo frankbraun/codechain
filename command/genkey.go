@@ -34,8 +34,8 @@ func GenKey(argv0 string, args ...string) error {
 	)
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "Usage: %s [-s seckey.bin]\n", argv0)
-		fmt.Fprintf(fs.Output(), "Generate new encrypted secret key file and show pubkey, signature, and comment.\n")
+		fmt.Fprintf(os.Stderr, "Usage: %s [-s seckey.bin]\n", argv0)
+		fmt.Fprintf(os.Stderr, "Generate new encrypted secret key file and show pubkey, signature, and comment.\n")
 		fs.PrintDefaults()
 	}
 	seckey := fs.String("s", "", "Secret key file")

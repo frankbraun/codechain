@@ -13,8 +13,8 @@ import (
 func InitChain(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "Usage: %s [-m]\n", argv0)
-		fmt.Fprintf(fs.Output(), "Start new .codechain/hashchain in current directory.\n")
+		fmt.Fprintf(os.Stderr, "Usage: %s [-m]\n", argv0)
+		fmt.Fprintf(os.Stderr, "Start new .codechain/hashchain in current directory.\n")
 		fs.PrintDefaults()
 	}
 	if fs.NArg() != 0 {

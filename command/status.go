@@ -3,6 +3,7 @@ package command
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
 )
@@ -11,8 +12,8 @@ import (
 func Status(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "Usage: %s\n", argv0)
-		fmt.Fprintf(fs.Output(), "Show status of hashchain and tree.\n")
+		fmt.Fprintf(os.Stderr, "Usage: %s\n", argv0)
+		fmt.Fprintf(os.Stderr, "Show status of hashchain and tree.\n")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {

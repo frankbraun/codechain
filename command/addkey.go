@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
 	"golang.org/x/crypto/ed25519"
@@ -13,8 +14,8 @@ import (
 func AddKey(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "Usage: %s [-w] pubkey signature [comment]\n", argv0)
-		fmt.Fprintf(fs.Output(), "Add new signer to hashchain.\n")
+		fmt.Fprintf(os.Stderr, "Usage: %s [-w] pubkey signature [comment]\n", argv0)
+		fmt.Fprintf(os.Stderr, "Add new signer to hashchain.\n")
 		fs.PrintDefaults()
 	}
 	w := fs.Int("w", 1, "Signature weight W")

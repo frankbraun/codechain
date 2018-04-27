@@ -130,6 +130,9 @@ func Read(filename string) (HashChain, error) {
 	if err := s.Err(); err != nil {
 		return nil, err
 	}
+	if err := c.verify(); err != nil {
+		return nil, err
+	}
 	return c, nil
 }
 
@@ -185,8 +188,8 @@ func (c *HashChain) appendLink(filename string, l link) error {
 	return nil
 }
 
-// Verify hash chain.
-func (c HashChain) Verify() error {
-	// TODO
+// verify hash chain.
+func (c HashChain) verify() error {
+	// TODO: implement and merge into Read
 	return nil
 }

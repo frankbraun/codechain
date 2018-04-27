@@ -23,9 +23,9 @@ func Status(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	c, err := hashchain.Read(hashchainFile)
+	_, err := hashchain.Read(hashchainFile)
 	if err != nil {
 		return err
 	}
-	return c.Verify()
+	return nil
 }

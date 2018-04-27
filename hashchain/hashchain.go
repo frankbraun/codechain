@@ -1,3 +1,4 @@
+// Package hashchain implements a hash chain of signatures over a code changes.
 package hashchain
 
 import (

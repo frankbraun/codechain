@@ -292,6 +292,13 @@ func createSecfile(filename string, pass, sec, sig, comment []byte) error {
 		nonce [24]byte
 		key   [32]byte
 	)
+	exists, err := file.Exists(filename)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("file '%s' exists already", filename)
+	}
 	if _, err := io.ReadFull(rand.Reader, salt[:]); err != nil {
 		return err
 	}
@@ -356,15 +363,7 @@ func genKey() error {
 	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ExitOnError)
 	seckey := fs.String("s", "", "Secret key file")
 	fs.Parse(os.Args[2:])
-	if *seckey != "" {
-		exists, err := file.Exists(*seckey)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return fmt.Errorf("%s: file '%s' exists already", app, *seckey)
-		}
-	} else {
+	if *seckey == "" {
 		homeDir = home.AppDataDir("codechain", false)
 		homeDir = filepath.Join(homeDir, secretsDir)
 		if err := os.MkdirAll(homeDir, 0700); err != nil {

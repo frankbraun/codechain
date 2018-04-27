@@ -12,9 +12,11 @@ import (
 // InitChain implements the 'init' command.
 func InitChain() error {
 	app := os.Args[1]
-	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ExitOnError)
+	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ContinueOnError)
 	m := fs.Int("m", 1, "Signature threshold M")
-	fs.Parse(os.Args[2:])
+	if err := fs.Parse(os.Args[2:]); err != nil {
+		return err
+	}
 	if *m < 1 {
 		return fmt.Errorf("%s: option -m must be >= 1", app)
 	}

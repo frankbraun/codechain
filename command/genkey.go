@@ -22,9 +22,11 @@ const secretsDir = "secrets"
 func GenKey() error {
 	var homeDir string
 	app := os.Args[1]
-	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ExitOnError)
+	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ContinueOnError)
 	seckey := fs.String("s", "", "Secret key file")
-	fs.Parse(os.Args[2:])
+	if err := fs.Parse(os.Args[2:]); err != nil {
+		return err
+	}
 	if *seckey == "" {
 		homeDir = home.AppDataDir("codechain", false)
 		homeDir = filepath.Join(homeDir, secretsDir)

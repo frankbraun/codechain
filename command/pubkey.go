@@ -17,9 +17,11 @@ import (
 // PubKey implements the 'pubkey' command.
 func PubKey() error {
 	app := os.Args[1]
-	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ExitOnError)
+	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ContinueOnError)
 	seckey := fs.String("s", "", "Secret key file")
-	fs.Parse(os.Args[2:])
+	if err := fs.Parse(os.Args[2:]); err != nil {
+		return err
+	}
 	if *seckey == "" {
 		return fmt.Errorf("%s: option -s is mandatory", app)
 	}

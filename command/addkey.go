@@ -13,9 +13,11 @@ import (
 // AddKey implements the 'addkey' command.
 func AddKey() error {
 	app := os.Args[1]
-	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ExitOnError)
+	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ContinueOnError)
 	w := fs.Int("w", 1, "Signature weight W")
-	fs.Parse(os.Args[2:])
+	if err := fs.Parse(os.Args[2:]); err != nil {
+		return err
+	}
 	if *w < 1 {
 		return fmt.Errorf("%s: option -w must be >= 1", app)
 	}

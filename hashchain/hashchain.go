@@ -1,4 +1,4 @@
-// Package hashchain implements a hash chain of signatures over a code changes.
+// Package hashchain implements a hash chain of signatures over a chain of code changes.
 package hashchain
 
 import (
@@ -32,20 +32,6 @@ type pubkey-add w pubkey comment sig-of-pubkey-and-comment-with-pubkey
 type signature pubkey1 sig1 pubkey2 sig2 ...
 
 
-init [done]
-addkey
-remkey
-sign
-verify [done]
-checkout
-sigctl
-pull
-commit
-signers
-
-TODO:
-- sign pubkey and comment and display that
-
 init (sigctl)  \
 addkey         |
 addkey         |-> init phase
@@ -67,14 +53,6 @@ state:
 - last accepted commit
 - last accepted signature control threshold
 - last accepted signer list
-
-
-
-	sigctlType    = "sigctl"
-	sourceType    = "source"
-	signatureType = "signtr"
-	addkeyType    = "addkey"
-	remkeyType    = "remkey"
 */
 
 const (

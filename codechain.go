@@ -11,13 +11,18 @@ import (
 
 func usage() {
 	cmd := os.Args[0]
-	fmt.Fprintf(os.Stderr, "Usage: %s treehash\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s treelist\n", cmd)
+	fmt.Fprintf(os.Stderr, "Usage: %s treehash [-l]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s genkey [-s seckey.bin]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s pubkey -s seckey.bin\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s pubkey -s seckey.bin [-c]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s init [-m]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s sigctl -m\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s addkey [-w] pubkey signature [comment]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s verify\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s remkey pubkey\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s publish [-s seckey.bin]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s review [-s seckey.bin]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s apply\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s status\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s cleanslate\n", cmd)
 	os.Exit(2)
 }
 
@@ -31,18 +36,28 @@ func main() {
 	switch os.Args[1] {
 	case "treehash":
 		err = command.TreeHash(argv0, args...)
-	case "treelist":
-		err = command.TreeList(argv0, args...)
 	case "genkey":
 		err = command.GenKey(argv0, args...)
 	case "pubkey":
 		err = command.PubKey(argv0, args...)
 	case "init":
 		err = command.InitChain(argv0, args...)
+	case "sigctl":
+		err = command.SigCtl(argv0, args...)
 	case "addkey":
 		err = command.AddKey(argv0, args...)
-	case "verify":
-		err = command.Verify(argv0, args...)
+	case "remkey":
+		err = command.RemKey(argv0, args...)
+	case "publish":
+		err = command.Publish(argv0, args...)
+	case "review":
+		err = command.Review(argv0, args...)
+	case "apply":
+		err = command.Apply(argv0, args...)
+	case "status":
+		err = command.Status(argv0, args...)
+	case "cleanslate":
+		err = command.CleanSlate(argv0, args...)
 	default:
 		usage()
 	}

@@ -33,10 +33,10 @@ func TestKey(t *testing.T) {
 	if err != nil {
 		t.Errorf("TreeHash() failed: %v", err)
 	}
-	// codechain treelist
-	err = TreeList("treelist")
+	// codechain treehash -l
+	err = TreeHash("treelist", "-l")
 	if err != nil {
-		t.Errorf("TreeList() failed: %v", err)
+		t.Errorf("TreeList() -l failed: %v", err)
 	}
 	testPass = "passphrase"
 	testComment = "John Doe"
@@ -67,9 +67,9 @@ func TestKey(t *testing.T) {
 	if err != nil {
 		t.Errorf("AddKey() failed: %v ", err)
 	}
-	// codechain verify
-	err = Verify("verify")
+	// codechain status
+	err = Status("status")
 	if err != nil {
-		t.Errorf("Verify() failed: %v ", err)
+		t.Errorf("Status() failed: %v ", err)
 	}
 }

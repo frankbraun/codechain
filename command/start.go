@@ -17,16 +17,16 @@ func Start(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Initialized new .codechain/hashchain in current directory.\n")
 		fs.PrintDefaults()
 	}
-	if fs.NArg() != 0 {
-		fs.Usage()
-		return flag.ErrHelp
-	}
 	m := fs.Int("m", 1, "Signature threshold M")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *m < 1 {
 		return fmt.Errorf("%s: option -m must be >= 1", argv0)
+	}
+	if fs.NArg() != 0 {
+		fs.Usage()
+		return flag.ErrHelp
 	}
 	if err := os.MkdirAll(codechainDir, 0700); err != nil {
 		return err
@@ -38,7 +38,10 @@ func Start(argv0 string, args ...string) error {
 	if exists {
 		return fmt.Errorf("%s: file '%s' exists already", argv0, hashchainFile)
 	}
-	chain := hashchain.New(*m)
+	chain, err := hashchain.New(*m)
+	if err != nil {
+		return err
+	}
 	if err := chain.Save(os.Stdout); err != nil {
 		return err
 	}

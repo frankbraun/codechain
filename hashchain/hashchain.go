@@ -92,7 +92,10 @@ func (l *link) String() string {
 }
 
 // New returns a new hash chain with signature control list m.
-func New(m int) HashChain {
+func New(m int) (HashChain, error) {
+	if m <= 0 {
+		return nil, ErrSignatureThresholdNonPositive
+	}
 	var c HashChain
 	l := link{
 		previous:   emptyTree,
@@ -101,7 +104,26 @@ func New(m int) HashChain {
 		typeFields: []string{strconv.Itoa(m)},
 	}
 	c = append(c, l)
-	return c
+	return c, nil
+}
+
+// SigCtl adds a signature control entry to the hash chain.
+func (c *HashChain) SigCtl(filename string, m int) (string, error) {
+	// TODO: check that we have enough keys to reach m.
+	if m <= 0 {
+		return "", ErrSignatureThresholdNonPositive
+	}
+	l := link{
+		previous:   c.prevHash(),
+		datum:      time.Now().UTC().Unix(),
+		linkType:   sigctlType,
+		typeFields: []string{strconv.Itoa(m)},
+	}
+	err := c.appendLink(filename, l)
+	if err != nil {
+		return "", err
+	}
+	return l.String(), nil
 }
 
 // Read hash chain from filename.
@@ -163,6 +185,7 @@ func (c *HashChain) AddKey(filename, pubkey, signature, comment string) (string,
 // RemKey adds pubkey remove entry to hash chain.
 func (c *HashChain) RemKey(filename, pubkey string) (string, error) {
 	// TODO: check that pubkey is actually active in chain
+	// TODO: check that still enough public keys remain to reach M
 	l := link{
 		previous:   c.prevHash(),
 		datum:      time.Now().UTC().Unix(),

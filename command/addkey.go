@@ -14,6 +14,7 @@ func AddKey(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "Usage: %s [-w] pubkey signature [comment]\n", argv0)
+		fmt.Fprintf(fs.Output(), "Add new signer to hashchain.\n")
 		fs.PrintDefaults()
 	}
 	w := fs.Int("w", 1, "Signature weight W")

@@ -13,6 +13,7 @@ func TreeHash(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "Usage: %s\n", argv0)
+		fmt.Fprintf(fs.Output(), "Show tree hash or tree list of current directory.\n")
 		fs.PrintDefaults()
 	}
 	list := fs.Bool("l", false, "Print tree list instead of hash")

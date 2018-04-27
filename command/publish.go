@@ -10,7 +10,8 @@ import (
 func Publish(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "Usage: %s\n", argv0)
+		fmt.Fprintf(fs.Output(), "Usage: %s [-s seckey.bin]\n", argv0)
+		fmt.Fprintf(fs.Output(), "Add signed changes in tree to .codechain ready for publication.\n")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {

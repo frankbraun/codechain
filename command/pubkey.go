@@ -18,6 +18,7 @@ func PubKey(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "Usage: %s -s seckey.bin\n", argv0)
+		fmt.Fprintf(fs.Output(), "Show pubkey, signature, and comment for encrypted secret key file.\n")
 		fs.PrintDefaults()
 	}
 	change := fs.Bool("c", false, "Change passphrase")

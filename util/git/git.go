@@ -11,12 +11,14 @@ import (
 	"syscall"
 )
 
-// Diff calls `git diff --no-index` on the two directory trees rooted at a and
-// be and returns the resulting patch.
-func Diff(a, b string) (string, error) {
+func diff(a, b string, capture bool) (string, error) {
 	var buf bytes.Buffer
 	cmd := exec.Command("git", "diff", "--no-index", a, b)
-	cmd.Stdout = &buf
+	if capture {
+		cmd.Stdout = &buf
+	} else {
+		cmd.Stdout = os.Stdout
+	}
 	if err := cmd.Run(); err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
@@ -29,6 +31,19 @@ func Diff(a, b string) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+// Diff calls `git diff --no-index` on the two directory trees rooted at a and
+// b and returns the resulting patch.
+func Diff(a, b string) (string, error) {
+	return diff(a, b, true)
+}
+
+// DiffPager calls `git diff no-index` on the two directory trees rooted at a
+// and b and shows the result on stdout, possibly using a pager.
+func DiffPager(a, b string) error {
+	_, err := diff(a, b, false)
+	return err
 }
 
 // Apply calls `git apply` with the given patch in directory dir.

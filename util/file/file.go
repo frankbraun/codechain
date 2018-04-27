@@ -67,7 +67,7 @@ func Copy(src, dst string) error {
 	return nil
 }
 
-// CopyDir recursivly copies the source directory src to destination directory
+// CopyDir recursively copies the source directory src to destination directory
 // dst. The source directory must exist already and only contain regular files
 // and directories. The destination directory must not exist already.
 func CopyDir(src, dst string) error {

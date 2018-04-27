@@ -59,13 +59,13 @@ func PubKey(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
-	if !ed25519.Verify(sec[32:], append(sec[32:], comment...), sig) {
+	if !ed25519.Verify(sec[32:], append(sec[32:], comment...), sig[:]) {
 		return fmt.Errorf("signature does not verify")
 	}
 	fmt.Println("public key with signature and optional comment")
 	fmt.Printf("%s %s",
 		base64.URLEncoding.EncodeToString(sec[32:]),
-		base64.URLEncoding.EncodeToString(sig))
+		base64.URLEncoding.EncodeToString(sig[:]))
 	if len(comment) > 0 {
 		fmt.Printf(" '%s'", string(comment))
 	}

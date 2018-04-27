@@ -85,13 +85,19 @@ func GenKey(argv0 string, args ...string) error {
 	}
 	sig := ed25519.Sign(sec, append(pub, comment...))
 	pubEnc := base64.URLEncoding.EncodeToString(pub[:])
+	var secKey [64]byte
+	copy(secKey[:], sec)
+	var signature [64]byte
+	copy(signature[:], sig)
 	if *seckey != "" {
-		if err := keyfile.Create(*seckey, pass, sec, sig, comment); err != nil {
+		err := keyfile.Create(*seckey, pass, secKey, signature, comment)
+		if err != nil {
 			return err
 		}
 	} else {
 		filename := filepath.Join(homeDir, pubEnc)
-		if err := keyfile.Create(filename, pass, sec, sig, comment); err != nil {
+		err := keyfile.Create(filename, pass, secKey, signature, comment)
+		if err != nil {
 			return err
 		}
 		fmt.Println("secret key file created:")

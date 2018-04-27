@@ -7,15 +7,15 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"strconv"
 
 	"github.com/frankbraun/codechain/util/file"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/nacl/secretbox"
 )
 
-// Create keyfile.
-func Create(filename string, pass, sec, sig, comment []byte) error {
+// Create keyfile (encrypted with passphrase) and store secretKey, signature,
+// and optional comment it.
+func Create(filename string, passphrase []byte, secretKey, signature [64]byte, comment []byte) error {
 	var (
 		salt  [32]byte
 		nonce [24]byte
@@ -28,26 +28,20 @@ func Create(filename string, pass, sec, sig, comment []byte) error {
 	if exists {
 		return fmt.Errorf("file '%s' exists already", filename)
 	}
-	if l := len(sec); l != 64 {
-		return fmt.Errorf("keyfile: bad sec length: " + strconv.Itoa(l))
-	}
-	if l := len(sig); l != 64 {
-		return fmt.Errorf("keyfile: bad sig length: " + strconv.Itoa(l))
-	}
 	if _, err := io.ReadFull(rand.Reader, salt[:]); err != nil {
 		return err
 	}
 	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
 		return err
 	}
-	derivedKey := argon2.IDKey(pass, salt[:], 1, 64*1024, 4, 32)
+	derivedKey := argon2.IDKey(passphrase, salt[:], 1, 64*1024, 4, 32)
 	copy(key[:], derivedKey)
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	msg := append(sec, sig...)
+	msg := append(secretKey[:], signature[:]...)
 	msg = append(msg, comment...)
 	enc := secretbox.Seal(nil, msg, &nonce, &key)
 	if _, err := f.Write(salt[:]); err != nil {
@@ -62,8 +56,9 @@ func Create(filename string, pass, sec, sig, comment []byte) error {
 	return nil
 }
 
-// Read keyfile.
-func Read(filename string, pass []byte) ([]byte, []byte, []byte, error) {
+// Read keyfile (encrypted with passphrase) and return secretKey, signature,
+// and optional comment.
+func Read(filename string, passphrase []byte) (*[64]byte, *[64]byte, []byte, error) {
 	var (
 		salt  [32]byte
 		nonce [24]byte
@@ -80,7 +75,7 @@ func Read(filename string, pass []byte) ([]byte, []byte, []byte, error) {
 	if _, err := f.Read(nonce[:]); err != nil {
 		return nil, nil, nil, err
 	}
-	derivedKey := argon2.IDKey(pass, salt[:], 1, 64*1024, 4, 32)
+	derivedKey := argon2.IDKey(passphrase, salt[:], 1, 64*1024, 4, 32)
 	copy(key[:], derivedKey)
 	enc, err := ioutil.ReadAll(f)
 	if err != nil {
@@ -94,5 +89,5 @@ func Read(filename string, pass []byte) ([]byte, []byte, []byte, error) {
 	var sig [64]byte
 	copy(sec[:], msg[:64])
 	copy(sig[:], msg[64:128])
-	return sec[:], sig[:], msg[128:], nil
+	return &sec, &sig, msg[128:], nil
 }

@@ -27,5 +27,6 @@ func Status(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
+	// TODO: implement
 	return nil
 }

@@ -5,9 +5,12 @@ import (
 	"path/filepath"
 )
 
-const (
-	// CodechainDir is the default directory used to store Codechain data.
-	CodechainDir = ".codechain"
-)
+const codechainDir = ".codechain"
 
-var hashchainFile = filepath.Join(CodechainDir, "hashchain")
+var hashchainFile = filepath.Join(codechainDir, "hashchain")
+
+var excludePaths = []string{
+	codechainDir,
+	".git",
+	".gitignore",
+}

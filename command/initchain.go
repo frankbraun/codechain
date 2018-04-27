@@ -18,7 +18,7 @@ func InitChain() error {
 	if *m < 1 {
 		return fmt.Errorf("%s: option -m must be >= 1", app)
 	}
-	if err := os.MkdirAll(CodechainDir, 0700); err != nil {
+	if err := os.MkdirAll(codechainDir, 0700); err != nil {
 		return err
 	}
 	exists, err := file.Exists(hashchainFile)

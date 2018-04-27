@@ -2,23 +2,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
 	"github.com/frankbraun/codechain/command"
-	"github.com/frankbraun/codechain/tree"
 )
-
-var excludePaths = []string{
-	command.CodechainDir,
-	".git",
-	".gitignore",
-}
-
-func fatal(err error) {
-	fmt.Fprintf(os.Stderr, "%s: error: %s\n", os.Args[0], err)
-	os.Exit(1)
-}
 
 func usage() {
 	cmd := os.Args[0]
@@ -36,40 +25,27 @@ func main() {
 	if len(os.Args) < 2 {
 		usage()
 	}
+	var err error
 	switch os.Args[1] {
 	case "treehash":
-		hash, err := tree.Hash(".", excludePaths)
-		if err != nil {
-			fatal(err)
-		}
-		fmt.Printf("%x\n", hash[:])
+		err = command.TreeHash()
 	case "treelist":
-		list, err := tree.List(".", excludePaths)
-		if err != nil {
-			fatal(err)
-		}
-		os.Stdout.Write(list)
+		err = command.TreeList()
 	case "genkey":
-		if err := command.GenKey(); err != nil {
-			fatal(err)
-		}
+		err = command.GenKey()
 	case "pubkey":
-		if err := command.PubKey(); err != nil {
-			fatal(err)
-		}
+		err = command.PubKey()
 	case "init":
-		if err := command.InitChain(); err != nil {
-			fatal(err)
-		}
+		err = command.InitChain()
 	case "addkey":
-		if err := command.AddKey(); err != nil {
-			fatal(err)
-		}
+		err = command.AddKey()
 	case "verify":
-		if err := command.Verify(); err != nil {
-			fatal(err)
-		}
+		err = command.Verify()
 	default:
 		usage()
+	}
+	if err != nil && err != flag.ErrHelp {
+		fmt.Fprintf(os.Stderr, "%s: error: %s\n", os.Args[0], err)
+		os.Exit(1)
 	}
 }

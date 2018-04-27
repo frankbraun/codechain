@@ -2,228 +2,36 @@
 package main
 
 import (
-	"bufio"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"syscall"
-	"time"
 
+	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/home"
-	"github.com/frankbraun/codechain/util/lockfile"
 	"github.com/frankbraun/codechain/util/terminal"
 	"golang.org/x/crypto/ed25519"
 )
 
 const (
-	codechainDir  = ".codechain"
-	hashchainFile = "hashchain"
-	secretsDir    = "secrets"
-	sigctlType    = "sigctl"
-	sourceType    = "source"
-	signatureType = "signtr"
-	addkeyType    = "addkey"
-	remkeyType    = "remkey"
+	codechainDir = ".codechain"
+	secretsDir   = "secrets"
 )
 
-var (
-	excludePaths = []string{
-		codechainDir,
-		".git",
-		".gitignore",
-	}
-	emptyTree []byte
-)
-
-func init() {
-	var err error
-	emptyTree, err = hex.DecodeString(tree.EmptyHash)
-	if err != nil {
-		panic(err)
-	}
+var excludePaths = []string{
+	codechainDir,
+	".git",
+	".gitignore",
 }
 
-/*
-hash-of-previous current-time type type-fields
-type signature-control-list m
-type source-hash hash-root-of-source sig-of-hash-root-of-source-by-pubkey [comment]
-type signature pubkey1 sig1 pubkey2 sig2 ...
-type signature hash-of-chain-entry pubkey2 sig2 ...
-type pubkey-add w pubkey sig-of-pubkey-and-comment-with-pubkey [comment]
-type pubkey-remove pubkey
-
-type signature-control-list m
-type pubkey-add w pubkey comment sig-of-pubkey-and-comment-with-pubkey
-type pubkey-add w pubkey comment sig-of-pubkey-and-comment-with-pubkey
-type pubkey-add w pubkey comment sig-of-pubkey-and-comment-with-pubkey
-type signature pubkey1 sig1 pubkey2 sig2 ...
-
-
-init [done]
-addkey
-remkey
-sign
-verify [done]
-checkout
-sigctl
-pull
-commit
-signers
-
-TODO:
-- sign pubkey and comment and display that
-
-init (sigctl)  \
-addkey         |
-addkey         |-> init phase
-addkey         |
-init (commit)  /
-sign           \
-sign           |
-sign           |-> setup phase, reach threshold
-sign           |
-sign           /
-normal operation:
-
-source
-source
-signtr
-signtr
-
-state:
-- last accepted commit
-- last accepted signature control threshold
-- last accepted signer list
-
-
-
-	sigctlType    = "sigctl"
-	sourceType    = "source"
-	signatureType = "signtr"
-	addkeyType    = "addkey"
-	remkeyType    = "remkey"
-*/
-
-type codeChain []link
-
-type link struct {
-	previous   []byte
-	datum      int64
-	linkType   string
-	typeFields []string
-}
-
-func (l *link) String() string {
-	return fmt.Sprintf("%x %s %s %s",
-		l.previous,
-		time.Unix(l.datum, 0).UTC().Format(time.RFC3339),
-		l.linkType,
-		strings.Join(l.typeFields, ""))
-}
-
-func newCodeChain(m int) codeChain {
-	var c codeChain
-	l := link{
-		previous:   emptyTree,
-		datum:      time.Now().UTC().Unix(),
-		linkType:   sigctlType,
-		typeFields: []string{strconv.Itoa(m)},
-	}
-	c = append(c, l)
-	return c
-}
-
-func readCodeChain() (codeChain, error) {
-	var c codeChain
-	f, err := os.Open(filepath.Join(codechainDir, hashchainFile))
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		line := strings.SplitN(s.Text(), " ", 4)
-		t, err := time.Parse(time.RFC3339, line[1])
-		if err != nil {
-			return nil, err
-		}
-		l := link{
-			previous:   []byte(line[0]),
-			datum:      t.UTC().Unix(),
-			linkType:   line[2],
-			typeFields: strings.SplitN(line[3], " ", -1),
-		}
-		c = append(c, l)
-	}
-	if err := s.Err(); err != nil {
-		return nil, err
-	}
-	return c, nil
-}
-
-func (c codeChain) prevHash() []byte {
-	h := sha256.Sum256([]byte(c[len(c)-1].String()))
-	return h[:]
-}
-
-func (c *codeChain) addKey(pubkey, signature, comment string) error {
-	key := []string{pubkey, signature}
-	if comment != "" {
-		key = append(key, " "+comment)
-	}
-	l := link{
-		previous:   c.prevHash(),
-		datum:      time.Now().UTC().Unix(),
-		linkType:   addkeyType,
-		typeFields: key,
-	}
-	return c.appendLink(l)
-}
-
-func (c codeChain) save(w io.Writer) error {
-	for _, link := range c {
-		if _, err := fmt.Fprintln(w, link.String()); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (c *codeChain) appendLink(l link) error {
-	hashfile := filepath.Join(codechainDir, hashchainFile)
-	lock, err := lockfile.Create(hashfile)
-	if err != nil {
-		return err
-	}
-	defer lock.Release()
-	*c = append(*c, l)
-	f, err := os.OpenFile(hashfile, os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	if _, err := fmt.Fprintln(f, l.String()); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c codeChain) verify() error {
-	// TODO
-	return nil
-}
+var hashchainFile = filepath.Join(codechainDir, "hashchain")
 
 func genKey() error {
 	var homeDir string
@@ -325,24 +133,23 @@ func initChain() error {
 	if err := os.MkdirAll(codechainDir, 0700); err != nil {
 		return err
 	}
-	hashchain := filepath.Join(codechainDir, hashchainFile)
-	exists, err := file.Exists(hashchain)
+	exists, err := file.Exists(hashchainFile)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return fmt.Errorf("%s: file '%s' exists already", app, hashchain)
+		return fmt.Errorf("%s: file '%s' exists already", app, hashchainFile)
 	}
-	chain := newCodeChain(*m)
-	if err := chain.save(os.Stdout); err != nil {
+	chain := hashchain.New(*m)
+	if err := chain.Save(os.Stdout); err != nil {
 		return err
 	}
-	f, err := os.Create(hashchain)
+	f, err := os.Create(hashchainFile)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	return chain.save(f)
+	return chain.Save(f)
 }
 
 func addKey() error {
@@ -374,22 +181,22 @@ func addKey() error {
 	if !ed25519.Verify(pub, append(pub, []byte(comment)...), sig) {
 		return fmt.Errorf("signature does not verify")
 	}
-	c, err := readCodeChain()
+	c, err := hashchain.Read(hashchainFile)
 	if err != nil {
 		return err
 	}
-	if err := c.verify(); err != nil {
+	if err := c.Verify(); err != nil {
 		return err
 	}
-	return c.addKey(pubkey, signature, comment)
+	return c.AddKey(hashchainFile, pubkey, signature, comment)
 }
 
 func verifyChain() error {
-	c, err := readCodeChain()
+	c, err := hashchain.Read(hashchainFile)
 	if err != nil {
 		return err
 	}
-	return c.verify()
+	return c.Verify()
 }
 
 func fatal(err error) {

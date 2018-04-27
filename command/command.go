@@ -15,5 +15,6 @@ var (
 		codechainDir,
 		".git",
 		".gitignore",
+		".travis.yml",
 	}
 )

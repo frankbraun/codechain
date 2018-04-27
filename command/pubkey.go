@@ -20,9 +20,14 @@ func PubKey(argv0 string, args ...string) error {
 		fmt.Fprintf(fs.Output(), "Usage: %s -s seckey.bin\n", argv0)
 		fs.PrintDefaults()
 	}
+	change := fs.Bool("c", false, "Change passphrase")
 	seckey := fs.String("s", "", "Secret key file")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *change {
+		// TODO
+		return fmt.Errorf("%s: option -c not implemented yet", argv0)
 	}
 	if *seckey == "" {
 		return fmt.Errorf("%s: option -s is mandatory", argv0)

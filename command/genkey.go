@@ -101,7 +101,7 @@ func GenKey(argv0 string, args ...string) error {
 	fmt.Printf("%s %s", pubEnc,
 		base64.URLEncoding.EncodeToString(sig))
 	if len(comment) > 0 {
-		fmt.Printf(" %s", string(comment))
+		fmt.Printf(" '%s'", string(comment))
 	}
 	fmt.Println("")
 	return nil

@@ -67,7 +67,7 @@ func PubKey(argv0 string, args ...string) error {
 		base64.URLEncoding.EncodeToString(sec[32:]),
 		base64.URLEncoding.EncodeToString(sig))
 	if len(comment) > 0 {
-		fmt.Printf(" %s", string(comment))
+		fmt.Printf(" '%s'", string(comment))
 	}
 	fmt.Println("")
 	return nil

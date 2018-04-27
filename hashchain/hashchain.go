@@ -139,7 +139,7 @@ func (c HashChain) prevHash() []byte {
 }
 
 // AddKey to hash chain.
-func (c *HashChain) AddKey(filename, pubkey, signature, comment string) error {
+func (c *HashChain) AddKey(filename, pubkey, signature, comment string) (string, error) {
 	key := []string{pubkey, signature}
 	if comment != "" {
 		key = append(key, " "+comment)
@@ -150,7 +150,11 @@ func (c *HashChain) AddKey(filename, pubkey, signature, comment string) error {
 		linkType:   addkeyType,
 		typeFields: key,
 	}
-	return c.appendLink(filename, l)
+	err := c.appendLink(filename, l)
+	if err != nil {
+		return "", err
+	}
+	return l.String(), nil
 }
 
 // Save hash chain.

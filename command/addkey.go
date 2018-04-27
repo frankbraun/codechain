@@ -54,5 +54,10 @@ func AddKey(argv0 string, args ...string) error {
 	if err := c.Verify(); err != nil {
 		return err
 	}
-	return c.AddKey(hashchainFile, pubkey, signature, comment)
+	line, err := c.AddKey(hashchainFile, pubkey, signature, comment)
+	if err != nil {
+		return err
+	}
+	fmt.Println(line)
+	return nil
 }

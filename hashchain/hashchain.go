@@ -88,7 +88,7 @@ func (l *link) String() string {
 		l.previous,
 		time.Unix(l.datum, 0).UTC().Format(time.RFC3339),
 		l.linkType,
-		strings.Join(l.typeFields, ""))
+		strings.Join(l.typeFields, " "))
 }
 
 // New returns a new hash chain with signature control list m.
@@ -141,17 +141,33 @@ func (c HashChain) prevHash() []byte {
 	return h[:]
 }
 
-// AddKey to hash chain.
+// AddKey adds pubkey with signature and optional comment to hash chain.
 func (c *HashChain) AddKey(filename, pubkey, signature, comment string) (string, error) {
 	key := []string{pubkey, signature}
 	if comment != "" {
-		key = append(key, " "+comment)
+		key = append(key, comment)
 	}
 	l := link{
 		previous:   c.prevHash(),
 		datum:      time.Now().UTC().Unix(),
 		linkType:   addkeyType,
 		typeFields: key,
+	}
+	err := c.appendLink(filename, l)
+	if err != nil {
+		return "", err
+	}
+	return l.String(), nil
+}
+
+// RemKey adds pubkey remove entry to hash chain.
+func (c *HashChain) RemKey(filename, pubkey string) (string, error) {
+	// TODO: check that pubkey is actually active in chain
+	l := link{
+		previous:   c.prevHash(),
+		datum:      time.Now().UTC().Unix(),
+		linkType:   remkeyType,
+		typeFields: []string{pubkey},
 	}
 	err := c.appendLink(filename, l)
 	if err != nil {

@@ -1,10 +1,12 @@
 package command
 
 import (
-	"errors"
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/frankbraun/codechain/hashchain"
 )
 
 // RemKey implements the 'remkey' command.
@@ -22,6 +24,19 @@ func RemKey(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	// TODO
-	return errors.New("not implemented")
+	pubkey := fs.Arg(0)
+	_, err := base64.URLEncoding.DecodeString(pubkey)
+	if err != nil {
+		return fmt.Errorf("cannot decode pubkey: %s", err)
+	}
+	c, err := hashchain.Read(hashchainFile)
+	if err != nil {
+		return err
+	}
+	line, err := c.RemKey(hashchainFile, pubkey)
+	if err != nil {
+		return err
+	}
+	fmt.Println(line)
+	return nil
 }

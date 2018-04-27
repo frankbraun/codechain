@@ -52,11 +52,7 @@ func PubKey(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
-	pub := sec[32:]
-	msg := make([]byte, len(pub)+len(comment))
-	n := copy(msg, pub)
-	copy(msg[n:], comment)
-	if !ed25519.Verify(pub, msg, sig) {
+	if !ed25519.Verify(sec[32:], append(sec[32:], comment...), sig) {
 		return fmt.Errorf("signature does not verify")
 	}
 	fmt.Println("public key with signature and optional comment")

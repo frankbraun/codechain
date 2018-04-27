@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	"github.com/frankbraun/codechain/util/file"
 	"golang.org/x/crypto/argon2"
@@ -26,6 +27,12 @@ func Create(filename string, pass, sec, sig, comment []byte) error {
 	}
 	if exists {
 		return fmt.Errorf("file '%s' exists already", filename)
+	}
+	if l := len(sec); l != 64 {
+		return fmt.Errorf("keyfile: bad sec length: " + strconv.Itoa(l))
+	}
+	if l := len(sig); l != 64 {
+		return fmt.Errorf("keyfile: bad sig length: " + strconv.Itoa(l))
 	}
 	if _, err := io.ReadFull(rand.Reader, salt[:]); err != nil {
 		return err
@@ -83,5 +90,9 @@ func Read(filename string, pass []byte) ([]byte, []byte, []byte, error) {
 	if !verify {
 		return nil, nil, nil, fmt.Errorf("cannot decrypt '%s'", filename)
 	}
-	return msg[:64], msg[64:128], msg[128:], nil
+	var sec [64]byte
+	var sig [64]byte
+	copy(sec[:], msg[:64])
+	copy(sig[:], msg[64:128])
+	return sec[:], sig[:], msg[128:], nil
 }

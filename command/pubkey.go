@@ -38,16 +38,25 @@ func PubKey(argv0 string, args ...string) error {
 	if !exists {
 		return fmt.Errorf("%s: file '%s' does not exist", argv0, *seckey)
 	}
-	pass, err := terminal.ReadPassphrase(syscall.Stdin, false)
-	if err != nil {
-		return err
+	var pass []byte
+	if testPass == "" {
+		pass, err = terminal.ReadPassphrase(syscall.Stdin, false)
+		if err != nil {
+			return err
+		}
+		defer bzero.Bytes(pass)
+	} else {
+		pass = []byte(testPass)
 	}
-	defer bzero.Bytes(pass)
 	sec, sig, comment, err := keyfile.Read(*seckey, pass)
 	if err != nil {
 		return err
 	}
-	if !ed25519.Verify(sec[32:], append(sec[32:], comment...), sig) {
+	pub := sec[32:]
+	msg := make([]byte, len(pub)+len(comment))
+	n := copy(msg, pub)
+	copy(msg[n:], comment)
+	if !ed25519.Verify(pub, msg, sig) {
 		return fmt.Errorf("signature does not verify")
 	}
 	fmt.Println("public key with signature and optional comment")

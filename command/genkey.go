@@ -11,6 +11,7 @@ import (
 
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
+	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/home"
 	"github.com/frankbraun/codechain/util/terminal"
 	"golang.org/x/crypto/ed25519"
@@ -18,9 +19,19 @@ import (
 
 const secretsDir = "secrets"
 
+var (
+	testPass    string
+	testComment string
+)
+
 // GenKey implements the 'genkey' command.
 func GenKey(argv0 string, args ...string) error {
-	var homeDir string
+	var (
+		homeDir string
+		pass    []byte
+		comment []byte
+		err     error
+	)
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "Usage: %s [-s seckey.bin]\n", argv0)
@@ -34,22 +45,38 @@ func GenKey(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	if *seckey == "" {
+	if *seckey != "" {
+		exists, err := file.Exists(*seckey)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return fmt.Errorf("file '%s' exists already", *seckey)
+		}
+	} else {
 		homeDir = home.AppDataDir("codechain", false)
 		homeDir = filepath.Join(homeDir, secretsDir)
 		if err := os.MkdirAll(homeDir, 0700); err != nil {
 			return err
 		}
 	}
-	pass, err := terminal.ReadPassphrase(syscall.Stdin, true)
-	if err != nil {
-		return err
+	if testPass == "" {
+		pass, err = terminal.ReadPassphrase(syscall.Stdin, true)
+		if err != nil {
+			return err
+		}
+		defer bzero.Bytes(pass)
+	} else {
+		pass = []byte(testPass)
 	}
-	defer bzero.Bytes(pass)
-	fmt.Println("comment (e.g., name; can be empty):")
-	comment, err := terminal.ReadLine(os.Stdin)
-	if err != nil {
-		return err
+	if testComment == "" {
+		fmt.Println("comment (e.g., name; can be empty):")
+		comment, err = terminal.ReadLine(os.Stdin)
+		if err != nil {
+			return err
+		}
+	} else {
+		comment = []byte(testComment)
 	}
 	pub, sec, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {

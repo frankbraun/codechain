@@ -25,27 +25,32 @@ func main() {
 	if len(os.Args) < 2 {
 		usage()
 	}
+	argv0 := os.Args[0] + " " + os.Args[1]
+	args := os.Args[2:]
 	var err error
 	switch os.Args[1] {
 	case "treehash":
-		err = command.TreeHash()
+		err = command.TreeHash(argv0, args...)
 	case "treelist":
-		err = command.TreeList()
+		err = command.TreeList(argv0, args...)
 	case "genkey":
-		err = command.GenKey()
+		err = command.GenKey(argv0, args...)
 	case "pubkey":
-		err = command.PubKey()
+		err = command.PubKey(argv0, args...)
 	case "init":
-		err = command.InitChain()
+		err = command.InitChain(argv0, args...)
 	case "addkey":
-		err = command.AddKey()
+		err = command.AddKey(argv0, args...)
 	case "verify":
-		err = command.Verify()
+		err = command.Verify(argv0, args...)
 	default:
 		usage()
 	}
-	if err != nil && err != flag.ErrHelp {
-		fmt.Fprintf(os.Stderr, "%s: error: %s\n", os.Args[0], err)
-		os.Exit(1)
+	if err != nil {
+		if err != flag.ErrHelp {
+			fmt.Fprintf(os.Stderr, "%s: error: %s\n", os.Args[0], err)
+			os.Exit(1)
+		}
+		os.Exit(2)
 	}
 }

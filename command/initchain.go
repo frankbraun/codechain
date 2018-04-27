@@ -10,15 +10,22 @@ import (
 )
 
 // InitChain implements the 'init' command.
-func InitChain() error {
-	app := os.Args[1]
-	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ContinueOnError)
+func InitChain(argv0 string, args ...string) error {
+	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
+	fs.Usage = func() {
+		fmt.Fprintf(fs.Output(), "Usage: %s [-m]\n", argv0)
+		fs.PrintDefaults()
+	}
+	if fs.NArg() != 0 {
+		fs.Usage()
+		return flag.ErrHelp
+	}
 	m := fs.Int("m", 1, "Signature threshold M")
-	if err := fs.Parse(os.Args[2:]); err != nil {
+	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *m < 1 {
-		return fmt.Errorf("%s: option -m must be >= 1", app)
+		return fmt.Errorf("%s: option -m must be >= 1", argv0)
 	}
 	if err := os.MkdirAll(codechainDir, 0700); err != nil {
 		return err
@@ -28,7 +35,7 @@ func InitChain() error {
 		return err
 	}
 	if exists {
-		return fmt.Errorf("%s: file '%s' exists already", app, hashchainFile)
+		return fmt.Errorf("%s: file '%s' exists already", argv0, hashchainFile)
 	}
 	chain := hashchain.New(*m)
 	if err := chain.Save(os.Stdout); err != nil {

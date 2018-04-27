@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
-	"os"
 	"syscall"
 
 	"github.com/frankbraun/codechain/keyfile"
@@ -15,22 +14,29 @@ import (
 )
 
 // PubKey implements the 'pubkey' command.
-func PubKey() error {
-	app := os.Args[1]
-	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ContinueOnError)
+func PubKey(argv0 string, args ...string) error {
+	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
+	fs.Usage = func() {
+		fmt.Fprintf(fs.Output(), "Usage: %s -s seckey.bin\n", argv0)
+		fs.PrintDefaults()
+	}
 	seckey := fs.String("s", "", "Secret key file")
-	if err := fs.Parse(os.Args[2:]); err != nil {
+	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *seckey == "" {
-		return fmt.Errorf("%s: option -s is mandatory", app)
+		return fmt.Errorf("%s: option -s is mandatory", argv0)
+	}
+	if fs.NArg() != 0 {
+		fs.Usage()
+		return flag.ErrHelp
 	}
 	exists, err := file.Exists(*seckey)
 	if err != nil {
 		return err
 	}
 	if !exists {
-		return fmt.Errorf("%s: file '%s' does not exist", app, *seckey)
+		return fmt.Errorf("%s: file '%s' does not exist", argv0, *seckey)
 	}
 	pass, err := terminal.ReadPassphrase(syscall.Stdin, false)
 	if err != nil {

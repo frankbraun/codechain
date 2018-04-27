@@ -19,13 +19,20 @@ import (
 const secretsDir = "secrets"
 
 // GenKey implements the 'genkey' command.
-func GenKey() error {
+func GenKey(argv0 string, args ...string) error {
 	var homeDir string
-	app := os.Args[1]
-	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ContinueOnError)
+	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
+	fs.Usage = func() {
+		fmt.Fprintf(fs.Output(), "Usage: %s [-s seckey.bin]\n", argv0)
+		fs.PrintDefaults()
+	}
 	seckey := fs.String("s", "", "Secret key file")
-	if err := fs.Parse(os.Args[2:]); err != nil {
+	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if fs.NArg() != 0 {
+		fs.Usage()
+		return flag.ErrHelp
 	}
 	if *seckey == "" {
 		homeDir = home.AppDataDir("codechain", false)

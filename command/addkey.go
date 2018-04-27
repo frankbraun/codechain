@@ -4,26 +4,29 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
 	"golang.org/x/crypto/ed25519"
 )
 
 // AddKey implements the 'addkey' command.
-func AddKey() error {
-	app := os.Args[1]
-	fs := flag.NewFlagSet(os.Args[0]+" "+app, flag.ContinueOnError)
+func AddKey(argv0 string, args ...string) error {
+	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
+	fs.Usage = func() {
+		fmt.Fprintf(fs.Output(), "Usage: %s [-w] pubkey signature [comment]\n", argv0)
+		fs.PrintDefaults()
+	}
 	w := fs.Int("w", 1, "Signature weight W")
-	if err := fs.Parse(os.Args[2:]); err != nil {
+	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *w < 1 {
-		return fmt.Errorf("%s: option -w must be >= 1", app)
+		return fmt.Errorf("%s: option -w must be >= 1", argv0)
 	}
 	nArg := fs.NArg()
 	if nArg != 2 && nArg != 3 {
-		return fmt.Errorf("%s: expecting args: pubkey signature [comment]", app)
+		fs.Usage()
+		return flag.ErrHelp
 	}
 	pubkey := fs.Arg(0)
 	pub, err := base64.URLEncoding.DecodeString(pubkey)

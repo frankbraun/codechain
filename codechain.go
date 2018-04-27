@@ -12,7 +12,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -20,14 +19,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/home"
 	"github.com/frankbraun/codechain/util/lockfile"
-	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/ed25519"
-	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -286,77 +284,6 @@ func readComment() ([]byte, error) {
 	return bytes.TrimSpace(str), nil
 }
 
-func createSecfile(filename string, pass, sec, sig, comment []byte) error {
-	var (
-		salt  [32]byte
-		nonce [24]byte
-		key   [32]byte
-	)
-	exists, err := file.Exists(filename)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return fmt.Errorf("file '%s' exists already", filename)
-	}
-	if _, err := io.ReadFull(rand.Reader, salt[:]); err != nil {
-		return err
-	}
-	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
-		return err
-	}
-	derivedKey := argon2.IDKey(pass, salt[:], 1, 64*1024, 4, 32)
-	copy(key[:], derivedKey)
-	f, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	msg := append(sec, sig...)
-	msg = append(msg, comment...)
-	enc := secretbox.Seal(nil, msg, &nonce, &key)
-	if _, err := f.Write(salt[:]); err != nil {
-		return err
-	}
-	if _, err := f.Write(nonce[:]); err != nil {
-		return err
-	}
-	if _, err := f.Write(enc); err != nil {
-		return err
-	}
-	return nil
-}
-
-func readSecfile(filename string, pass []byte) ([]byte, []byte, []byte, error) {
-	var (
-		salt  [32]byte
-		nonce [24]byte
-		key   [32]byte
-	)
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	defer f.Close()
-	if _, err := f.Read(salt[:]); err != nil {
-		return nil, nil, nil, err
-	}
-	if _, err := f.Read(nonce[:]); err != nil {
-		return nil, nil, nil, err
-	}
-	derivedKey := argon2.IDKey(pass, salt[:], 1, 64*1024, 4, 32)
-	copy(key[:], derivedKey)
-	enc, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	msg, verify := secretbox.Open(nil, enc, &nonce, &key)
-	if !verify {
-		return nil, nil, nil, fmt.Errorf("cannot decrypt '%s'", filename)
-	}
-	return msg[:64], msg[64:128], msg[128:], nil
-}
-
 func genKey() error {
 	var homeDir string
 	app := os.Args[1]
@@ -387,12 +314,12 @@ func genKey() error {
 	sig := ed25519.Sign(sec, append(pub, comment...))
 	pubEnc := base64.URLEncoding.EncodeToString(pub[:])
 	if *seckey != "" {
-		if err := createSecfile(*seckey, pass, sec, sig, comment); err != nil {
+		if err := keyfile.Create(*seckey, pass, sec, sig, comment); err != nil {
 			return err
 		}
 	} else {
 		filename := filepath.Join(homeDir, pubEnc)
-		if err := createSecfile(filename, pass, sec, sig, comment); err != nil {
+		if err := keyfile.Create(filename, pass, sec, sig, comment); err != nil {
 			return err
 		}
 		fmt.Println("secret key file created:")
@@ -428,7 +355,7 @@ func pubKey() error {
 		return err
 	}
 	defer bzero.Bytes(pass)
-	sec, sig, comment, err := readSecfile(*seckey, pass)
+	sec, sig, comment, err := keyfile.Read(*seckey, pass)
 	if err != nil {
 		return err
 	}

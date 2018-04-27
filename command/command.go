@@ -5,12 +5,15 @@ import (
 	"path/filepath"
 )
 
-const codechainDir = ".codechain"
+const (
+	codechainDir = ".codechain"
+)
 
-var hashchainFile = filepath.Join(codechainDir, "hashchain")
-
-var excludePaths = []string{
-	codechainDir,
-	".git",
-	".gitignore",
-}
+var (
+	hashchainFile = filepath.Join(codechainDir, "hashchain")
+	excludePaths  = []string{
+		codechainDir,
+		".git",
+		".gitignore",
+	}
+)

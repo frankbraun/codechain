@@ -3,12 +3,10 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -25,8 +23,8 @@ import (
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/home"
 	"github.com/frankbraun/codechain/util/lockfile"
+	"github.com/frankbraun/codechain/util/terminal"
 	"golang.org/x/crypto/ed25519"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -227,63 +225,6 @@ func (c codeChain) verify() error {
 	return nil
 }
 
-func readPassphrase(confirm bool) ([]byte, error) {
-	var (
-		pass   []byte
-		pass2  []byte
-		reader *bufio.Reader
-		err    error
-	)
-	isTerminal := terminal.IsTerminal(syscall.Stdin)
-	fmt.Printf("passphrase: ")
-	if isTerminal {
-		pass, err = terminal.ReadPassword(syscall.Stdin)
-		fmt.Println("")
-	} else {
-		reader = bufio.NewReader(os.Stdin)
-		pass, err = reader.ReadBytes('\n')
-	}
-	if err != nil {
-		if err == io.EOF {
-			return nil, errors.New("unable to read passphrase")
-		}
-		return nil, err
-	}
-	if len(pass) == 0 {
-		return nil, errors.New("please provide a passphrase")
-	}
-	pass = bytes.TrimRight(pass, "\n")
-	if confirm {
-		fmt.Printf("confirm passphrase: ")
-		if isTerminal {
-			pass2, err = terminal.ReadPassword(syscall.Stdin)
-			fmt.Println("")
-		} else {
-			pass2, err = reader.ReadBytes('\n')
-		}
-		if err != nil {
-			return nil, err
-		}
-		defer bzero.Bytes(pass2)
-		pass2 = bytes.TrimRight(pass2, "\n")
-		if !bytes.Equal(pass, pass2) {
-			return nil, errors.New("passphrases don't match")
-		}
-	}
-	return pass, nil
-}
-
-func readComment() ([]byte, error) {
-	str, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
-	if err != nil {
-		if err == io.EOF {
-			return nil, errors.New("unable to read line")
-		}
-		return nil, err
-	}
-	return bytes.TrimSpace(str), nil
-}
-
 func genKey() error {
 	var homeDir string
 	app := os.Args[1]
@@ -297,13 +238,13 @@ func genKey() error {
 			return err
 		}
 	}
-	pass, err := readPassphrase(true)
+	pass, err := terminal.ReadPassphrase(syscall.Stdin, true)
 	if err != nil {
 		return err
 	}
 	defer bzero.Bytes(pass)
 	fmt.Println("comment (e.g., name; can be empty):")
-	comment, err := readComment()
+	comment, err := terminal.ReadLine(os.Stdin)
 	if err != nil {
 		return err
 	}
@@ -350,7 +291,7 @@ func pubKey() error {
 	if !exists {
 		return fmt.Errorf("%s: file '%s' does not exist", app, *seckey)
 	}
-	pass, err := readPassphrase(false)
+	pass, err := terminal.ReadPassphrase(syscall.Stdin, false)
 	if err != nil {
 		return err
 	}

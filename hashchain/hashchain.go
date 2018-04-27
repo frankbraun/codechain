@@ -56,11 +56,12 @@ state:
 */
 
 const (
-	sigctlType    = "sigctl"
-	sourceType    = "source"
-	signatureType = "signtr"
-	addkeyType    = "addkey"
-	remkeyType    = "remkey"
+	chainStartType       = "cstart"
+	signatureControlType = "sigctl"
+	sourceType           = "source"
+	signatureType        = "signtr"
+	addKeyType           = "addkey"
+	removeKeyType        = "remkey"
 )
 
 var emptyTree []byte
@@ -100,7 +101,7 @@ func New(m int) (HashChain, error) {
 	l := link{
 		previous:   emptyTree,
 		datum:      time.Now().UTC().Unix(),
-		linkType:   sigctlType,
+		linkType:   chainStartType,
 		typeFields: []string{strconv.Itoa(m)},
 	}
 	c = append(c, l)
@@ -116,7 +117,7 @@ func (c *HashChain) SigCtl(filename string, m int) (string, error) {
 	l := link{
 		previous:   c.prevHash(),
 		datum:      time.Now().UTC().Unix(),
-		linkType:   sigctlType,
+		linkType:   signatureControlTypeg,
 		typeFields: []string{strconv.Itoa(m)},
 	}
 	err := c.appendLink(filename, l)
@@ -172,7 +173,7 @@ func (c *HashChain) AddKey(filename, pubkey, signature, comment string) (string,
 	l := link{
 		previous:   c.prevHash(),
 		datum:      time.Now().UTC().Unix(),
-		linkType:   addkeyType,
+		linkType:   addKeyType,
 		typeFields: key,
 	}
 	err := c.appendLink(filename, l)
@@ -189,7 +190,7 @@ func (c *HashChain) RemKey(filename, pubkey string) (string, error) {
 	l := link{
 		previous:   c.prevHash(),
 		datum:      time.Now().UTC().Unix(),
-		linkType:   remkeyType,
+		linkType:   remKeyType,
 		typeFields: []string{pubkey},
 	}
 	err := c.appendLink(filename, l)

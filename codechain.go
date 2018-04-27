@@ -14,7 +14,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s treehash [-l]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s genkey [-s seckey.bin]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s pubkey -s seckey.bin [-c]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s init [-m]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s start [-m]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s sigctl -m\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s addkey [-w] pubkey signature [comment]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s remkey pubkey\n", cmd)
@@ -40,8 +40,8 @@ func main() {
 		err = command.GenKey(argv0, args...)
 	case "pubkey":
 		err = command.PubKey(argv0, args...)
-	case "init":
-		err = command.InitChain(argv0, args...)
+	case "start":
+		err = command.Start(argv0, args...)
 	case "sigctl":
 		err = command.SigCtl(argv0, args...)
 	case "addkey":

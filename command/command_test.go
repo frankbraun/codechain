@@ -50,10 +50,10 @@ func TestKey(t *testing.T) {
 	if err != nil {
 		t.Errorf("PubKey() failed: %v ", err)
 	}
-	// codechain init -m 3
-	err = InitChain("init", "-m", "3")
+	// codechain start -m 3
+	err = Start("start", "-m", "3")
 	if err != nil {
-		t.Errorf("Init() failed: %v ", err)
+		t.Errorf("Start() failed: %v ", err)
 	}
 	exists, err := file.Exists(hashchainFile)
 	if err != nil {

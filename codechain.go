@@ -1,4 +1,4 @@
-// codechain establishes code trust with a hashchain of threshold signatures.
+// codechain establishes code trust through hash chains.
 package main
 
 import (

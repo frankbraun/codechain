@@ -19,7 +19,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "       %s addkey [-w] pubkey signature [comment]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s remkey pubkey\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s publish [-s seckey.bin]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s review [-s seckey.bin]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s review [-s seckey.bin] [treehash]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s apply\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s status\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s cleanslate\n", cmd)

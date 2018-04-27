@@ -117,7 +117,7 @@ func (c *HashChain) SigCtl(filename string, m int) (string, error) {
 	l := link{
 		previous:   c.prevHash(),
 		datum:      time.Now().UTC().Unix(),
-		linkType:   signatureControlTypeg,
+		linkType:   signatureControlType,
 		typeFields: []string{strconv.Itoa(m)},
 	}
 	err := c.appendLink(filename, l)
@@ -183,14 +183,14 @@ func (c *HashChain) AddKey(filename, pubkey, signature, comment string) (string,
 	return l.String(), nil
 }
 
-// RemKey adds pubkey remove entry to hash chain.
-func (c *HashChain) RemKey(filename, pubkey string) (string, error) {
+// RemoveKey adds a pubkey remove entry to hash chain.
+func (c *HashChain) RemoveKey(filename, pubkey string) (string, error) {
 	// TODO: check that pubkey is actually active in chain
 	// TODO: check that still enough public keys remain to reach M
 	l := link{
 		previous:   c.prevHash(),
 		datum:      time.Now().UTC().Unix(),
-		linkType:   remKeyType,
+		linkType:   removeKeyType,
 		typeFields: []string{pubkey},
 	}
 	err := c.appendLink(filename, l)
@@ -200,9 +200,9 @@ func (c *HashChain) RemKey(filename, pubkey string) (string, error) {
 	return l.String(), nil
 }
 
-// Save hash chain.
-func (c HashChain) Save(w io.Writer) error {
-	for _, link := range c {
+// Save hash chain to w.
+func (c *HashChain) Save(w io.Writer) error {
+	for _, link := range *c {
 		if _, err := fmt.Fprintln(w, link.String()); err != nil {
 			return err
 		}

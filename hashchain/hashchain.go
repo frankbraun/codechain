@@ -1,4 +1,3 @@
-// Package hashchain implements a hash chain of signatures over a chain of code changes.
 package hashchain
 
 import (
@@ -16,52 +15,13 @@ import (
 	"github.com/frankbraun/codechain/util/lockfile"
 )
 
-/*
-hash-of-previous current-time type type-fields
-type signature-control-list m
-type source-hash hash-root-of-source sig-of-hash-root-of-source-by-pubkey [comment]
-type signature pubkey1 sig1 pubkey2 sig2 ...
-type signature hash-of-chain-entry pubkey2 sig2 ...
-type pubkey-add w pubkey sig-of-pubkey-and-comment-with-pubkey [comment]
-type pubkey-remove pubkey
-
-type signature-control-list m
-type pubkey-add w pubkey comment sig-of-pubkey-and-comment-with-pubkey
-type pubkey-add w pubkey comment sig-of-pubkey-and-comment-with-pubkey
-type pubkey-add w pubkey comment sig-of-pubkey-and-comment-with-pubkey
-type signature pubkey1 sig1 pubkey2 sig2 ...
-
-
-init (sigctl)  \
-addkey         |
-addkey         |-> init phase
-addkey         |
-init (commit)  /
-sign           \
-sign           |
-sign           |-> setup phase, reach threshold
-sign           |
-sign           /
-normal operation:
-
-source
-source
-signtr
-signtr
-
-state:
-- last accepted commit
-- last accepted signature control threshold
-- last accepted signer list
-*/
-
 const (
 	chainStartType       = "cstart"
-	signatureControlType = "sigctl"
 	sourceType           = "source"
 	signatureType        = "signtr"
 	addKeyType           = "addkey"
 	removeKeyType        = "remkey"
+	signatureControlType = "sigctl"
 )
 
 var emptyTree []byte

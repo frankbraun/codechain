@@ -14,7 +14,7 @@ import (
 
 // Read hash chain from filename.
 func Read(filename string) (*HashChain, error) {
-	var c HashChain
+	// check arguments
 	exists, err := file.Exists(filename)
 	if err != nil {
 		return nil, err
@@ -22,6 +22,9 @@ func Read(filename string) (*HashChain, error) {
 	if !exists {
 		return nil, fmt.Errorf("hashchain: file '%s' doesn't exist", filename)
 	}
+
+	// init
+	var c HashChain
 	c.lock, err = lockfile.Create(filename)
 	if err != nil {
 		return nil, err
@@ -31,6 +34,7 @@ func Read(filename string) (*HashChain, error) {
 		return nil, err
 	}
 
+	// read hash chain
 	s := bufio.NewScanner(c.fp)
 	for s.Scan() {
 		line := strings.SplitN(s.Text(), " ", 4)
@@ -53,7 +57,8 @@ func Read(filename string) (*HashChain, error) {
 	if err := s.Err(); err != nil {
 		return nil, err
 	}
-	c.m = 1
+
+	// verify
 	if err := c.verify(); err != nil {
 		return nil, err
 	}

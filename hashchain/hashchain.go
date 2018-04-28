@@ -13,6 +13,7 @@ type HashChain struct {
 	fp    *os.File
 	chain []*link
 	m     int // signature threshold
+	n     int // total weight of signers
 }
 
 // LastEntryHash returns the hash of the last entry.

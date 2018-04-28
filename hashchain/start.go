@@ -15,7 +15,7 @@ import (
 
 // Start returns a new hash chain with signature control list m.
 func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string, error) {
-	var c HashChain
+	// check arguments
 	exists, err := file.Exists(filename)
 	if err != nil {
 		return nil, "", err
@@ -23,6 +23,9 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 	if exists {
 		return nil, "", fmt.Errorf("hashchain: file '%s' exists already", filename)
 	}
+
+	// init
+	var c HashChain
 	c.lock, err = lockfile.Create(filename)
 	if err != nil {
 		return nil, "", err
@@ -32,7 +35,7 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 		return nil, "", err
 	}
 
-	// hash-of-previous current-time cstart pubkey nonce signature [comment]
+	// create signature
 	var nonce [24]byte
 	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
 		return nil, "", err
@@ -43,6 +46,8 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 		msg = append(msg, comment...)
 	}
 	sig := ed25519.Sign(secKey[:], msg)
+
+	// create entry
 	typeFields := []string{
 		base64.Encode(pub),
 		base64.Encode(nonce[:]),
@@ -58,10 +63,13 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 		typeFields: typeFields,
 	}
 	c.chain = append(c.chain, l)
-	c.m = 1
+
+	// verify
 	if err := c.verify(); err != nil {
 		return nil, "", err
 	}
+
+	// save
 	entry := l.String()
 	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
 		return nil, "", err

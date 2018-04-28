@@ -58,7 +58,7 @@ func AddKey(argv0 string, args ...string) error {
 	var pubKey [32]byte
 	copy(pubKey[:], pub)
 	var signtr [64]byte
-	copy(pubKey[:], sig)
+	copy(signtr[:], sig)
 	line, err := c.AddKey(pubKey, signtr, comment)
 	if err != nil {
 		return err

@@ -25,16 +25,21 @@ func RemKey(argv0 string, args ...string) error {
 		return flag.ErrHelp
 	}
 	pubkey := fs.Arg(0)
-	_, err := base64.Decode(pubkey)
+	pub, err := base64.Decode(pubkey)
 	if err != nil {
 		return fmt.Errorf("cannot decode pubkey: %s", err)
+	}
+	if len(pub) != 32 {
+		return fmt.Errorf("pubkey has wrong length: %d (must be 32)", len(pub))
 	}
 	c, err := hashchain.Read(hashchainFile)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
-	line, err := c.RemoveKey(pubkey)
+	var pubKey [32]byte
+	copy(pubKey[:], pub)
+	line, err := c.RemoveKey(pubKey)
 	if err != nil {
 		return err
 	}

@@ -212,14 +212,14 @@ func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment string) 
 }
 
 // RemoveKey adds a pubkey remove entry to hash chain.
-func (c *HashChain) RemoveKey(pubkey string) (string, error) {
+func (c *HashChain) RemoveKey(pubKey [32]byte) (string, error) {
 	// TODO: check that pubkey is actually active in chain
-	// TODO: check that still enough public keys remain to reach M
+	// TODO: check that still enough public keys remain to reach m
 	l := &link{
 		previous:   c.prevHash(),
 		datum:      time.Now(),
 		linkType:   removeKeyType,
-		typeFields: []string{pubkey},
+		typeFields: []string{base64.Encode(pubKey[:])},
 	}
 	c.chain = append(c.chain, l)
 	entry := l.String()

@@ -198,7 +198,7 @@ func (c *HashChain) Source(treeHash [32]byte, secKey [64]byte, comment []byte) (
 		typeFields = append(typeFields, string(comment))
 	}
 	l := &link{
-		previous:   c.prevHash(),
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   sourceType,
 		typeFields: typeFields,
@@ -224,7 +224,7 @@ func (c *HashChain) Signature(entryHash [32]byte, secKey [64]byte) (string, erro
 		base64.Encode(sig),
 	}
 	l := &link{
-		previous:   c.prevHash(),
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   signatureType,
 		typeFields: typeFields,
@@ -237,7 +237,8 @@ func (c *HashChain) Signature(entryHash [32]byte, secKey [64]byte) (string, erro
 	return entry, nil
 }
 
-func (c *HashChain) prevHash() []byte {
+// LastEntryHash returns the hash of the last entry.
+func (c *HashChain) LastEntryHash() []byte {
 	h := sha256.Sum256([]byte(c.chain[len(c.chain)-1].String()))
 	return h[:]
 }
@@ -255,7 +256,7 @@ func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment []byte) 
 		typeFields = append(typeFields, string(comment))
 	}
 	l := &link{
-		previous:   c.prevHash(),
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   addKeyType,
 		typeFields: typeFields,
@@ -273,7 +274,7 @@ func (c *HashChain) RemoveKey(pubKey [32]byte) (string, error) {
 	// TODO: check that pubkey is actually active in chain
 	// TODO: check that still enough public keys remain to reach m
 	l := &link{
-		previous:   c.prevHash(),
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   removeKeyType,
 		typeFields: []string{base64.Encode(pubKey[:])},
@@ -293,7 +294,7 @@ func (c *HashChain) SignatureControl(m int) (string, error) {
 		return "", ErrSignatureThresholdNonPositive
 	}
 	l := &link{
-		previous:   c.prevHash(),
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   signatureControlType,
 		typeFields: []string{strconv.Itoa(m)},

@@ -197,8 +197,9 @@ func (c *HashChain) Source(treeHash [32]byte, secKey [64]byte, comment []byte) (
 	if len(comment) > 0 {
 		typeFields = append(typeFields, string(comment))
 	}
+	prev := c.LastEntryHash()
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   prev[:],
 		datum:      time.Now(),
 		linkType:   sourceType,
 		typeFields: typeFields,
@@ -223,8 +224,9 @@ func (c *HashChain) Signature(entryHash [32]byte, secKey [64]byte) (string, erro
 		base64.Encode(pub),
 		base64.Encode(sig),
 	}
+	prev := c.LastEntryHash()
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   prev[:],
 		datum:      time.Now(),
 		linkType:   signatureType,
 		typeFields: typeFields,
@@ -238,9 +240,15 @@ func (c *HashChain) Signature(entryHash [32]byte, secKey [64]byte) (string, erro
 }
 
 // LastEntryHash returns the hash of the last entry.
-func (c *HashChain) LastEntryHash() []byte {
-	h := sha256.Sum256([]byte(c.chain[len(c.chain)-1].String()))
-	return h[:]
+func (c *HashChain) LastEntryHash() [32]byte {
+	return sha256.Sum256([]byte(c.chain[len(c.chain)-1].String()))
+}
+
+// EntryHash returns the entry hash for the given treeHash.
+func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
+	var h [32]byte
+	// TODO: implement
+	return h
 }
 
 // AddKey adds pubkey with signature and optional comment to hash chain.
@@ -255,8 +263,9 @@ func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment []byte) 
 	if len(comment) > 0 {
 		typeFields = append(typeFields, string(comment))
 	}
+	prev := c.LastEntryHash()
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   prev[:],
 		datum:      time.Now(),
 		linkType:   addKeyType,
 		typeFields: typeFields,
@@ -273,8 +282,9 @@ func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment []byte) 
 func (c *HashChain) RemoveKey(pubKey [32]byte) (string, error) {
 	// TODO: check that pubkey is actually active in chain
 	// TODO: check that still enough public keys remain to reach m
+	prev := c.LastEntryHash()
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   prev[:],
 		datum:      time.Now(),
 		linkType:   removeKeyType,
 		typeFields: []string{base64.Encode(pubKey[:])},
@@ -293,8 +303,9 @@ func (c *HashChain) SignatureControl(m int) (string, error) {
 	if m <= 0 {
 		return "", ErrSignatureThresholdNonPositive
 	}
+	prev := c.LastEntryHash()
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   prev[:],
 		datum:      time.Now(),
 		linkType:   signatureControlType,
 		typeFields: []string{strconv.Itoa(m)},

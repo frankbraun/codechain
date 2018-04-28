@@ -15,11 +15,11 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "       %s genkey [-s seckey.bin]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s pubkey -s seckey.bin [-c]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s start [-m]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s sigctl -m\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s addkey [-w] pubkey signature [comment]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s remkey pubkey\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s publish [-s seckey.bin]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s review [-s seckey.bin] [treehash]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s addkey [-w] pubkey signature [comment]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s remkey pubkey\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s sigctl -m\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s apply\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s status\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s cleanslate\n", cmd)
@@ -42,16 +42,16 @@ func main() {
 		err = command.PubKey(argv0, args...)
 	case "start":
 		err = command.Start(argv0, args...)
-	case "sigctl":
-		err = command.SigCtl(argv0, args...)
-	case "addkey":
-		err = command.AddKey(argv0, args...)
-	case "remkey":
-		err = command.RemKey(argv0, args...)
 	case "publish":
 		err = command.Publish(argv0, args...)
 	case "review":
 		err = command.Review(argv0, args...)
+	case "addkey":
+		err = command.AddKey(argv0, args...)
+	case "remkey":
+		err = command.RemKey(argv0, args...)
+	case "sigctl":
+		err = command.SigCtl(argv0, args...)
 	case "apply":
 		err = command.Apply(argv0, args...)
 	case "status":

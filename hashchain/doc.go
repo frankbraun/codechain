@@ -63,9 +63,9 @@ changes and changes to the set of signature keys and m up to that point.
 
   hash-of-previous current-time signtr hash-of-chain-entry pubkey signature
 
-It does not (necessarily) sign the previous line and can therefore be done in
-a detached fashion by a reviewer and added later by the developer responsible
-for maintaining the hash chain. This avoids merge conflicts.
+It does not sign the previous line and can therefore be done in a detached
+fashion by a reviewer and added later by the developer responsible for
+maintaining the hash chain. This avoids merge conflicts.
 
 
 Type addkey

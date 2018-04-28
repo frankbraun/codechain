@@ -211,6 +211,32 @@ func (c *HashChain) Source(treeHash [32]byte, secKey [64]byte, comment []byte) (
 	return entry, nil
 }
 
+// Signature adds a signature entry for entryHash signed by secKey to the hash chain.
+func (c *HashChain) Signature(entryHash [32]byte, secKey [64]byte) (string, error) {
+	// TODO: check that entryHash is valid
+	// TODO: make sure secKey is a valid signer
+	// TODO: make sure entryHash is a valid position to sign
+	pub := secKey[32:]
+	sig := ed25519.Sign(secKey[:], entryHash[:])
+	typeFields := []string{
+		base64.Encode(entryHash[:]),
+		base64.Encode(pub),
+		base64.Encode(sig),
+	}
+	l := &link{
+		previous:   c.prevHash(),
+		datum:      time.Now(),
+		linkType:   signatureType,
+		typeFields: typeFields,
+	}
+	c.chain = append(c.chain, l)
+	entry := l.String()
+	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+		return "", err
+	}
+	return entry, nil
+}
+
 func (c *HashChain) prevHash() []byte {
 	h := sha256.Sum256([]byte(c.chain[len(c.chain)-1].String()))
 	return h[:]

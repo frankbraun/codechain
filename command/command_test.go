@@ -51,7 +51,7 @@ func TestKey(t *testing.T) {
 		t.Errorf("PubKey() failed: %v ", err)
 	}
 	// codechain start -m 3
-	err = Start("start", "-m", "3")
+	err = Start("start", "-s", "seckey.bin")
 	if err != nil {
 		t.Errorf("Start() failed: %v ", err)
 	}

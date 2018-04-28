@@ -51,6 +51,7 @@ func AddKey(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
+	defer c.Close()
 	line, err := c.AddKey(hashchainFile, pubkey, signature, comment)
 	if err != nil {
 		return err

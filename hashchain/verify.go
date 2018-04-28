@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 )
 
+// hash-of-previous current-time cstart pubkey nonce signature [comment]
 func (c *HashChain) verifyChainStartType(i int, fields []string) error {
 	if i != 0 {
 		return ErrIllegalCStart
@@ -12,6 +13,7 @@ func (c *HashChain) verifyChainStartType(i int, fields []string) error {
 	return nil
 }
 
+// hash-of-previous current-time source source-hash pubkey signature [comment]
 func (c *HashChain) verifySourceType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
@@ -20,6 +22,7 @@ func (c *HashChain) verifySourceType(i int, fields []string) error {
 	return nil
 }
 
+// hash-of-previous current-time signtr hash-of-chain-entry pubkey signature
 func (c *HashChain) verifySignatureType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
@@ -28,6 +31,7 @@ func (c *HashChain) verifySignatureType(i int, fields []string) error {
 	return nil
 }
 
+// hash-of-previous current-time addkey pubkey-add w pubkey signature [comment]
 func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
@@ -36,6 +40,7 @@ func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
 	return nil
 }
 
+// hash-of-previous current-time remkey pubkey
 func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
@@ -44,6 +49,7 @@ func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
 	return nil
 }
 
+// hash-of-previous current-time sigctl m
 func (c *HashChain) verifySignatureControlType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart

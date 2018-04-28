@@ -29,3 +29,6 @@ var ErrIllegalCStart = errors.New("hashchain: cstart is only allowed on start")
 // ErrMustStartWithCStart is returned when the hash chain doess not start with
 // a cstart entry.
 var ErrMustStartWithCStart = errors.New("hashchain: must start with cstart")
+
+// ErrWrongTypeFields is returned when a hash chain entry has the wrong number of type fields.
+var ErrWrongTypeFields = errors.New("hashchain: entry has wrong number of type fields")

@@ -10,6 +10,9 @@ func (c *HashChain) verifyChainStartType(i int, fields []string) error {
 	if i != 0 {
 		return ErrIllegalCStart
 	}
+	if len(fields) != 3 && len(fields) != 4 {
+		return ErrWrongTypeFields
+	}
 	return nil
 }
 
@@ -17,6 +20,9 @@ func (c *HashChain) verifyChainStartType(i int, fields []string) error {
 func (c *HashChain) verifySourceType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
+	}
+	if len(fields) != 3 && len(fields) != 4 {
+		return ErrWrongTypeFields
 	}
 	// TODO
 	return nil
@@ -27,6 +33,9 @@ func (c *HashChain) verifySignatureType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
 	}
+	if len(fields) != 3 {
+		return ErrWrongTypeFields
+	}
 	// TODO
 	return nil
 }
@@ -35,6 +44,9 @@ func (c *HashChain) verifySignatureType(i int, fields []string) error {
 func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
+	}
+	if len(fields) != 3 && len(fields) != 4 {
+		return ErrWrongTypeFields
 	}
 	// TODO
 	return nil
@@ -45,6 +57,9 @@ func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
 	}
+	if len(fields) != 2 {
+		return ErrWrongTypeFields
+	}
 	// TODO
 	return nil
 }
@@ -53,6 +68,9 @@ func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
 func (c *HashChain) verifySignatureControlType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
+	}
+	if len(fields) != 2 {
+		return ErrWrongTypeFields
 	}
 	// TODO
 	return nil

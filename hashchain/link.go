@@ -1,10 +1,10 @@
 package hashchain
 
 import (
-	"encoding/hex"
 	"fmt"
 	"strings"
 
+	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/time"
 )
@@ -21,12 +21,9 @@ const (
 var emptyTree [32]byte
 
 func init() {
-	hash, err := hex.DecodeString(tree.EmptyHash)
+	hash, err := hex.Decode(tree.EmptyHash, 32)
 	if err != nil {
 		panic(err)
-	}
-	if len(hash) != 32 {
-		panic("len(hash) != 32")
 	}
 	copy(emptyTree[:], hash)
 }

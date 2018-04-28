@@ -2,11 +2,11 @@ package hashchain
 
 import (
 	"bufio"
-	"encoding/hex"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/lockfile"
 	"github.com/frankbraun/codechain/util/time"
@@ -39,12 +39,9 @@ func Read(filename string) (*HashChain, error) {
 	for s.Scan() {
 		// the parsing is very basic, the actual verification is done in c.verify()
 		line := strings.SplitN(s.Text(), " ", 4)
-		previous, err := hex.DecodeString(line[0])
+		previous, err := hex.Decode(line[0], 32)
 		if err != nil {
-			return nil, fmt.Errorf("hashchain: cannot decode hash '%s': %s", line[0], err)
-		}
-		if len(previous) != 32 {
-			return nil, fmt.Errorf("hashchain: decoded hash has wrong length '%s': %s", line[0], err)
+			return nil, err
 		}
 		var prev [32]byte
 		copy(prev[:], previous)
@@ -56,7 +53,7 @@ func Read(filename string) (*HashChain, error) {
 			previous:   prev,
 			datum:      t,
 			linkType:   line[2],
-			typeFields: strings.SplitN(line[3], " ", -1),
+			typeFields: strings.SplitN(line[3], " ", 4),
 		}
 		c.chain = append(c.chain, l)
 	}

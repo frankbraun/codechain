@@ -37,6 +37,7 @@ func Read(filename string) (*HashChain, error) {
 	// read hash chain
 	s := bufio.NewScanner(c.fp)
 	for s.Scan() {
+		// the parsing is very basic, the actual verification is done in c.verify()
 		line := strings.SplitN(s.Text(), " ", 4)
 		previous, err := hex.DecodeString(line[0])
 		if err != nil {

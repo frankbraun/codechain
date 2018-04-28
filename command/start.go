@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	//"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/util/file"
 )
 
@@ -17,7 +17,7 @@ func Start(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Initialized new .codechain/hashchain in current directory.\n")
 		fs.PrintDefaults()
 	}
-	//seckey := fs.String("s", "", "Secret key file")
+	seckey := fs.String("s", "", "Secret key file")
 	if fs.NArg() != 0 {
 		fs.Usage()
 		return flag.ErrHelp
@@ -32,15 +32,15 @@ func Start(argv0 string, args ...string) error {
 	if exists {
 		return fmt.Errorf("%s: file '%s' exists already", argv0, hashchainFile)
 	}
-
-	/* TODO:
-
-	c, entry, err := hashchain.Start(hashchainFile)
+	sec, _, comment, err := seckeyRead(*seckey)
+	if err != nil {
+		return err
+	}
+	c, entry, err := hashchain.Start(hashchainFile, *sec, comment)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	fmt.Println(entry)
-	*/
 	return nil
 }

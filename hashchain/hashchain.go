@@ -9,11 +9,13 @@ import (
 
 // HashChain of threshold signatures over a chain of code changes.
 type HashChain struct {
-	lock  lockfile.Lock
-	fp    *os.File
-	chain []*link
-	m     int // signature threshold
-	n     int // total weight of signers
+	lock           lockfile.Lock
+	fp             *os.File
+	chain          []*link
+	m              int               // signature threshold
+	n              int               // total weight of signers
+	signerWeights  map[string]int    // map signer pubkeys (in base64) to their weights
+	signerComments map[string]string // map signer pubkeys (in base64) to their comments
 }
 
 // LastEntryHash returns the hash of the last entry.

@@ -30,21 +30,14 @@ func AddKey(argv0 string, args ...string) error {
 		return flag.ErrHelp
 	}
 	pubkey := fs.Arg(0)
-	pub, err := base64.Decode(pubkey)
+	pub, err := base64.Decode(pubkey, 32)
 	if err != nil {
 		return fmt.Errorf("cannot decode pubkey: %s", err)
 	}
-	if len(pub) != 32 {
-		return fmt.Errorf("pubkey has wrong length: %d (must be 32)", len(pub))
-	}
 	signature := fs.Arg(1)
-	sig, err := base64.Decode(signature)
+	sig, err := base64.Decode(signature, 64)
 	if err != nil {
 		return fmt.Errorf("cannot decode signature: %s", err)
-	}
-	if len(sig) != 64 {
-		return fmt.Errorf("decoded signature has wrong length: %d (must be 64)",
-			len(sig))
 	}
 	var comment []byte
 	if nArg == 3 {

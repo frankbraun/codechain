@@ -32,3 +32,6 @@ var ErrMustStartWithCStart = errors.New("hashchain: must start with cstart")
 
 // ErrWrongTypeFields is returned when a hash chain entry has the wrong number of type fields.
 var ErrWrongTypeFields = errors.New("hashchain: entry has wrong number of type fields")
+
+// ErrWrongSigCStart is returned when the signature of a cstart entry doesn't validate.
+var ErrWrongSigCStart = errors.New("hashchain: cstart signature doesn't validate")

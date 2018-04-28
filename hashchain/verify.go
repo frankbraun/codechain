@@ -3,75 +3,125 @@ package hashchain
 import (
 	"bytes"
 	"crypto/sha256"
+
+	"github.com/frankbraun/codechain/internal/base64"
+	"golang.org/x/crypto/ed25519"
 )
 
 // hash-of-previous current-time cstart pubkey nonce signature [comment]
 func (c *HashChain) verifyChainStartType(i int, fields []string) error {
+	// check arguments
 	if i != 0 {
 		return ErrIllegalCStart
 	}
 	if len(fields) != 3 && len(fields) != 4 {
 		return ErrWrongTypeFields
 	}
+
+	// parse type fields
+	pub := fields[0]
+	pubKey, err := base64.Decode(pub, 32)
+	if err != nil {
+		return err
+	}
+	nonce, err := base64.Decode(fields[1], 24)
+	if err != nil {
+		return err
+	}
+	sig, err := base64.Decode(fields[2], 64)
+	if err != nil {
+		return err
+	}
+	var comment string
+	if len(fields) == 4 {
+		comment = fields[3]
+	}
+
+	// validate fields
+	msg := append(pubKey, nonce...)
+	msg = append(msg, comment...)
+	if !ed25519.Verify(pubKey, msg, sig) {
+		return ErrWrongSigCStart
+	}
+
+	// update state
+	c.signerWeights[pub] = 1 // default weight for first signer
+	c.signerComments[pub] = comment
+	c.signerComments[pub] = ""
 	return nil
 }
 
 // hash-of-previous current-time source source-hash pubkey signature [comment]
 func (c *HashChain) verifySourceType(i int, fields []string) error {
+	// check arguments
 	if i == 0 {
 		return ErrMustStartWithCStart
 	}
 	if len(fields) != 3 && len(fields) != 4 {
 		return ErrWrongTypeFields
 	}
+
+	// parse type fields
 	// TODO
 	return nil
 }
 
 // hash-of-previous current-time signtr hash-of-chain-entry pubkey signature
 func (c *HashChain) verifySignatureType(i int, fields []string) error {
+	// check arguments
 	if i == 0 {
 		return ErrMustStartWithCStart
 	}
 	if len(fields) != 3 {
 		return ErrWrongTypeFields
 	}
+
+	// parse type fields
 	// TODO
 	return nil
 }
 
 // hash-of-previous current-time addkey pubkey-add w pubkey signature [comment]
 func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
+	// check arguments
 	if i == 0 {
 		return ErrMustStartWithCStart
 	}
 	if len(fields) != 3 && len(fields) != 4 {
 		return ErrWrongTypeFields
 	}
+
+	// parse type fields
 	// TODO
 	return nil
 }
 
 // hash-of-previous current-time remkey pubkey
 func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
+	// check arguments
 	if i == 0 {
 		return ErrMustStartWithCStart
 	}
 	if len(fields) != 2 {
 		return ErrWrongTypeFields
 	}
+
+	// parse type fields
 	// TODO
 	return nil
 }
 
 // hash-of-previous current-time sigctl m
 func (c *HashChain) verifySignatureControlType(i int, fields []string) error {
+	// check arguments
 	if i == 0 {
 		return ErrMustStartWithCStart
 	}
 	if len(fields) != 2 {
 		return ErrWrongTypeFields
 	}
+
+	// parse type fields
 	// TODO
 	return nil
 }
@@ -86,6 +136,8 @@ func (c *HashChain) verify() error {
 	// set start values
 	c.m = 1
 	c.n = 1
+	c.signerWeights = make(map[string]int)
+	c.signerComments = make(map[string]string)
 	prevHash := emptyTree
 	var prevDatum int64
 

@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+// Encode returns the hexadecimal encoding of src.
+func Encode(src []byte) string {
+	return hex.EncodeToString(src)
+}
+
 // Decode returns the bytes represented by the hexadecimal string s.
 // Decode expects that src contain only hexadecimal characters and that the
 // resulting byte slice has length l.

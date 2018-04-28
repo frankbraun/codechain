@@ -34,7 +34,8 @@ func SigCtl(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
-	line, err := c.SigCtl(hashchainFile, *m)
+	defer c.Close()
+	line, err := c.SigCtl(*m)
 	if err != nil {
 		return err
 	}

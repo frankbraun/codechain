@@ -2,6 +2,7 @@ package hashchain
 
 import (
 	"bufio"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -9,10 +10,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/frankbraun/codechain/tree"
+	"github.com/frankbraun/codechain/util/base64"
+	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/lockfile"
+	"github.com/frankbraun/codechain/util/time"
+	"golang.org/x/crypto/ed25519"
 )
 
 const (
@@ -34,81 +38,119 @@ func init() {
 	}
 }
 
-// HashChain of threshold signatures over a chain of code changes.
-type HashChain []link
-
 type link struct {
-	previous   []byte
-	datum      int64
-	linkType   string
-	typeFields []string
+	previous   []byte   // hash-of-previous
+	datum      int64    // current-time
+	linkType   string   // type
+	typeFields []string // type-fields ...
 }
 
 func (l *link) String() string {
 	return fmt.Sprintf("%x %s %s %s",
 		l.previous,
-		time.Unix(l.datum, 0).UTC().Format(time.RFC3339),
+		time.Format(l.datum),
 		l.linkType,
 		strings.Join(l.typeFields, " "))
 }
 
-// New returns a new hash chain with signature control list m.
-func New(m int) (HashChain, error) {
-	if m <= 0 {
-		return nil, ErrSignatureThresholdNonPositive
-	}
-	var c HashChain
-	l := link{
-		previous:   emptyTree,
-		datum:      time.Now().UTC().Unix(),
-		linkType:   chainStartType,
-		typeFields: []string{strconv.Itoa(m)},
-	}
-	c = append(c, l)
-	return c, nil
+// HashChain of threshold signatures over a chain of code changes.
+type HashChain struct {
+	lock  lockfile.Lock
+	fp    *os.File
+	chain []*link
+	m     int // signature threshold
 }
 
-// SigCtl adds a signature control entry to the hash chain.
-func (c *HashChain) SigCtl(filename string, m int) (string, error) {
-	// TODO: check that we have enough keys to reach m.
-	if m <= 0 {
-		return "", ErrSignatureThresholdNonPositive
-	}
-	l := link{
-		previous:   c.prevHash(),
-		datum:      time.Now().UTC().Unix(),
-		linkType:   signatureControlType,
-		typeFields: []string{strconv.Itoa(m)},
-	}
-	err := c.appendLink(filename, l)
+// Start returns a new hash chain with signature control list m.
+func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string, error) {
+	var c HashChain
+	exists, err := file.Exists(filename)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
-	return l.String(), nil
+	if exists {
+		return nil, "", fmt.Errorf("hashchain: file '%s' exists already", filename)
+	}
+	c.lock, err = lockfile.Create(filename)
+	if err != nil {
+		return nil, "", err
+	}
+	c.fp, err = os.Create(filename)
+	if err != nil {
+		return nil, "", err
+	}
+
+	// hash-of-previous current-time cstart pubkey nonce signature [comment]
+	var nonce [24]byte
+	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
+		return nil, "", err
+	}
+	pub := secKey[32:]
+	msg := append(pub, nonce[:]...)
+	if len(comment) > 0 {
+		msg = append(msg, comment...)
+	}
+	sig := ed25519.Sign(secKey[:], msg)
+	typeFields := []string{
+		base64.Encode(pub),
+		base64.Encode(nonce[:]),
+		base64.Encode(sig[:]),
+	}
+	if len(comment) > 0 {
+		typeFields = append(typeFields, base64.Encode(comment))
+	}
+	l := &link{
+		previous:   emptyTree,
+		datum:      time.Now(),
+		linkType:   chainStartType,
+		typeFields: typeFields,
+	}
+	c.chain = append(c.chain, l)
+	c.m = 1
+	entry := l.String()
+	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+		return nil, "", err
+	}
+	return &c, entry, nil
 }
 
 // Read hash chain from filename.
-func Read(filename string) (HashChain, error) {
+func Read(filename string) (*HashChain, error) {
 	var c HashChain
-	f, err := os.Open(filename)
+	exists, err := file.Exists(filename)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	s := bufio.NewScanner(f)
+	if !exists {
+		return nil, fmt.Errorf("hashchain: file '%s' doesn't exist", filename)
+	}
+	c.lock, err = lockfile.Create(filename)
+	if err != nil {
+		return nil, err
+	}
+	c.fp, err = os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	s := bufio.NewScanner(c.fp)
 	for s.Scan() {
 		line := strings.SplitN(s.Text(), " ", 4)
-		t, err := time.Parse(time.RFC3339, line[1])
+		previous, err := hex.DecodeString(line[0])
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("hashchain: cannot decode hash '%s': %s", line[0], err)
 		}
-		l := link{
-			previous:   []byte(line[0]),
-			datum:      t.UTC().Unix(),
+		t, err := time.Parse(line[1])
+		if err != nil {
+			return nil, fmt.Errorf("hashchain: cannot parse time '%s': %s", line[1], err)
+		}
+		l := &link{
+			previous:   previous,
+			datum:      t,
 			linkType:   line[2],
 			typeFields: strings.SplitN(line[3], " ", -1),
 		}
-		c = append(c, l)
+		c.chain = append(c.chain, l)
 	}
 	if err := s.Err(); err != nil {
 		return nil, err
@@ -116,80 +158,87 @@ func Read(filename string) (HashChain, error) {
 	if err := c.verify(); err != nil {
 		return nil, err
 	}
-	return c, nil
+	c.m = 1
+	return &c, nil
 }
 
-func (c HashChain) prevHash() []byte {
-	h := sha256.Sum256([]byte(c[len(c)-1].String()))
+func (c *HashChain) Close() error {
+	err := c.fp.Close()
+	if err != nil {
+		c.lock.Release()
+		return err
+	}
+	return c.lock.Release()
+}
+
+func (c *HashChain) prevHash() []byte {
+	h := sha256.Sum256([]byte(c.chain[len(c.chain)-1].String()))
 	return h[:]
+}
+
+// SigCtl adds a signature control entry to the hash chain.
+func (c *HashChain) SigCtl(m int) (string, error) {
+	// TODO: check that we have enough keys to reach m.
+	if m <= 0 {
+		return "", ErrSignatureThresholdNonPositive
+	}
+	l := &link{
+		previous:   c.prevHash(),
+		datum:      time.Now(),
+		linkType:   signatureControlType,
+		typeFields: []string{strconv.Itoa(m)},
+	}
+	c.chain = append(c.chain, l)
+	entry := l.String()
+	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+		return "", err
+	}
+	return entry, nil
 }
 
 // AddKey adds pubkey with signature and optional comment to hash chain.
 func (c *HashChain) AddKey(filename, pubkey, signature, comment string) (string, error) {
+	// TODO: verify
 	key := []string{pubkey, signature}
 	if comment != "" {
 		key = append(key, comment)
 	}
-	l := link{
+	l := &link{
 		previous:   c.prevHash(),
-		datum:      time.Now().UTC().Unix(),
+		datum:      time.Now(),
 		linkType:   addKeyType,
 		typeFields: key,
 	}
-	err := c.appendLink(filename, l)
-	if err != nil {
+	c.chain = append(c.chain, l)
+	entry := l.String()
+	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
 		return "", err
 	}
-	return l.String(), nil
+	return entry, nil
 }
 
 // RemoveKey adds a pubkey remove entry to hash chain.
 func (c *HashChain) RemoveKey(filename, pubkey string) (string, error) {
 	// TODO: check that pubkey is actually active in chain
 	// TODO: check that still enough public keys remain to reach M
-	l := link{
+	l := &link{
 		previous:   c.prevHash(),
-		datum:      time.Now().UTC().Unix(),
+		datum:      time.Now(),
 		linkType:   removeKeyType,
 		typeFields: []string{pubkey},
 	}
-	err := c.appendLink(filename, l)
-	if err != nil {
+	c.chain = append(c.chain, l)
+	entry := l.String()
+	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
 		return "", err
 	}
-	return l.String(), nil
-}
-
-// Save hash chain to w.
-func (c *HashChain) Save(w io.Writer) error {
-	for _, link := range *c {
-		if _, err := fmt.Fprintln(w, link.String()); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (c *HashChain) appendLink(filename string, l link) error {
-	lock, err := lockfile.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer lock.Release()
-	*c = append(*c, l)
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	if _, err := fmt.Fprintln(f, l.String()); err != nil {
-		return err
-	}
-	return nil
+	return entry, nil
 }
 
 // verify hash chain.
 func (c HashChain) verify() error {
-	// TODO: implement and merge into Read
+	// TODO: make sure m is set correctly!
+	// TODO: make sure the link types are all valid
+	// TODO: check for empty hash chain
 	return nil
 }

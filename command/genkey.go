@@ -2,7 +2,6 @@ package command
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"flag"
 	"fmt"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/frankbraun/codechain/keyfile"
+	"github.com/frankbraun/codechain/util/base64"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/home"
@@ -84,7 +84,7 @@ func GenKey(argv0 string, args ...string) error {
 		return err
 	}
 	sig := ed25519.Sign(sec, append(pub, comment...))
-	pubEnc := base64.RawURLEncoding.EncodeToString(pub[:])
+	pubEnc := base64.Encode(pub[:])
 	var secKey [64]byte
 	copy(secKey[:], sec)
 	var signature [64]byte
@@ -104,8 +104,7 @@ func GenKey(argv0 string, args ...string) error {
 		fmt.Println(filename)
 	}
 	fmt.Println("public key with signature and optional comment")
-	fmt.Printf("%s %s", pubEnc,
-		base64.RawURLEncoding.EncodeToString(sig))
+	fmt.Printf("%s %s", pubEnc, base64.Encode(sig))
 	if len(comment) > 0 {
 		fmt.Printf(" '%s'", string(comment))
 	}

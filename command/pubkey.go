@@ -1,13 +1,13 @@
 package command
 
 import (
-	"encoding/base64"
 	"flag"
 	"fmt"
 	"os"
 	"syscall"
 
 	"github.com/frankbraun/codechain/keyfile"
+	"github.com/frankbraun/codechain/util/base64"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/terminal"
@@ -63,9 +63,7 @@ func PubKey(argv0 string, args ...string) error {
 		return fmt.Errorf("signature does not verify")
 	}
 	fmt.Println("public key with signature and optional comment")
-	fmt.Printf("%s %s",
-		base64.RawURLEncoding.EncodeToString(sec[32:]),
-		base64.RawURLEncoding.EncodeToString(sig[:]))
+	fmt.Printf("%s %s", base64.Encode(sec[32:]), base64.Encode(sig[:]))
 	if len(comment) > 0 {
 		fmt.Printf(" '%s'", string(comment))
 	}

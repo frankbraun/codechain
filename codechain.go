@@ -14,7 +14,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s treehash [-l]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s genkey [-s seckey.bin]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s pubkey -s seckey.bin [-c]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s start [-m]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s start -s seckey.bin\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s publish [-s seckey.bin]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s review [-s seckey.bin] [treehash]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s addkey [-w] pubkey signature [comment]\n", cmd)

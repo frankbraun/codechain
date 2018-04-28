@@ -6,31 +6,48 @@ import (
 )
 
 func (c *HashChain) verifyChainStartType(i int, fields []string) error {
+	if i != 0 {
+		return ErrIllegalCStart
+	}
+	return nil
+}
+
+func (c *HashChain) verifySourceType(i int, fields []string) error {
+	if i == 0 {
+		return ErrMustStartWithCStart
+	}
 	// TODO
 	return nil
 }
 
-func (c *HashChain) verifySourceType(fields []string) error {
+func (c *HashChain) verifySignatureType(i int, fields []string) error {
+	if i == 0 {
+		return ErrMustStartWithCStart
+	}
 	// TODO
 	return nil
 }
 
-func (c *HashChain) verifySignatureType(fields []string) error {
+func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
+	if i == 0 {
+		return ErrMustStartWithCStart
+	}
 	// TODO
 	return nil
 }
 
-func (c *HashChain) verifyAddKeyType(fields []string) error {
+func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
+	if i == 0 {
+		return ErrMustStartWithCStart
+	}
 	// TODO
 	return nil
 }
 
-func (c *HashChain) verifyRemoveKeyType(fields []string) error {
-	// TODO
-	return nil
-}
-
-func (c *HashChain) verifySignatureControlType(fields []string) error {
+func (c *HashChain) verifySignatureControlType(i int, fields []string) error {
+	if i == 0 {
+		return ErrMustStartWithCStart
+	}
 	// TODO
 	return nil
 }
@@ -65,15 +82,15 @@ func (c *HashChain) verify() error {
 		case chainStartType:
 			err = c.verifyChainStartType(i, l.typeFields)
 		case sourceType:
-			err = c.verifySourceType(l.typeFields)
+			err = c.verifySourceType(i, l.typeFields)
 		case signatureType:
-			err = c.verifySignatureType(l.typeFields)
+			err = c.verifySignatureType(i, l.typeFields)
 		case addKeyType:
-			err = c.verifyAddKeyType(l.typeFields)
+			err = c.verifyAddKeyType(i, l.typeFields)
 		case removeKeyType:
-			err = c.verifyRemoveKeyType(l.typeFields)
+			err = c.verifyRemoveKeyType(i, l.typeFields)
 		case signatureControlType:
-			err = c.verifySignatureControlType(l.typeFields)
+			err = c.verifySignatureControlType(i, l.typeFields)
 		default:
 			err = ErrUnknownLinkType
 		}

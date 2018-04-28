@@ -21,3 +21,11 @@ var ErrDescendingTime = errors.New("hashchain: time is going backwards")
 
 // ErrUnknownLinkType is returned when the link type is unknown.
 var ErrUnknownLinkType = errors.New("hashchain: unknown link type")
+
+// ErrIllegalCStart is returned when a cstart entry appears in a different row
+// than row 1.
+var ErrIllegalCStart = errors.New("hashchain: cstart is only allowed on start")
+
+// ErrMustStartWithCStart is returned when the hash chain doess not start with
+// a cstart entry.
+var ErrMustStartWithCStart = errors.New("hashchain: must start with cstart")

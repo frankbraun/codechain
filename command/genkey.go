@@ -84,7 +84,7 @@ func GenKey(argv0 string, args ...string) error {
 		return err
 	}
 	sig := ed25519.Sign(sec, append(pub, comment...))
-	pubEnc := base64.URLEncoding.EncodeToString(pub[:])
+	pubEnc := base64.RawURLEncoding.EncodeToString(pub[:])
 	var secKey [64]byte
 	copy(secKey[:], sec)
 	var signature [64]byte
@@ -105,7 +105,7 @@ func GenKey(argv0 string, args ...string) error {
 	}
 	fmt.Println("public key with signature and optional comment")
 	fmt.Printf("%s %s", pubEnc,
-		base64.URLEncoding.EncodeToString(sig))
+		base64.RawURLEncoding.EncodeToString(sig))
 	if len(comment) > 0 {
 		fmt.Printf(" '%s'", string(comment))
 	}

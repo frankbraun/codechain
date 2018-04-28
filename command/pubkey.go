@@ -64,8 +64,8 @@ func PubKey(argv0 string, args ...string) error {
 	}
 	fmt.Println("public key with signature and optional comment")
 	fmt.Printf("%s %s",
-		base64.URLEncoding.EncodeToString(sec[32:]),
-		base64.URLEncoding.EncodeToString(sig[:]))
+		base64.RawURLEncoding.EncodeToString(sec[32:]),
+		base64.RawURLEncoding.EncodeToString(sig[:]))
 	if len(comment) > 0 {
 		fmt.Printf(" '%s'", string(comment))
 	}

@@ -25,7 +25,7 @@ func RemKey(argv0 string, args ...string) error {
 		return flag.ErrHelp
 	}
 	pubkey := fs.Arg(0)
-	_, err := base64.URLEncoding.DecodeString(pubkey)
+	_, err := base64.RawURLEncoding.DecodeString(pubkey)
 	if err != nil {
 		return fmt.Errorf("cannot decode pubkey: %s", err)
 	}

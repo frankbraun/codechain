@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	testPubkey = "xI-WeBW7mU6Y_l_KSmbJA953t9VAK_pMhdKvMv9SCKE="
-	testSig    = "Ea73Y3AXt1myOtnjplhV8Gu9pvQ9a74ZnFBawIBn8cDgp70nfwL0tt9VBkPblt526QpIxdpuqOU9DVamEiHyCg=="
+	testPubkey = "0CLTw2MXB6kybhvlfTg6kkFxLkB-w7DM1SeNMWhUu2g"
+	testSig    = "amHTVxtXCgXO0j8s7MujvbGdOej3OsrxkPlsAVDH1cfNyy4dY16u4fyrZK5KTMAsNvuWsQwiKAsr6R7Jo9IUDg"
 )
 
 func TestKey(t *testing.T) {

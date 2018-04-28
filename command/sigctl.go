@@ -35,7 +35,7 @@ func SigCtl(argv0 string, args ...string) error {
 		return err
 	}
 	defer c.Close()
-	line, err := c.SigCtl(*m)
+	line, err := c.SignatureControl(*m)
 	if err != nil {
 		return err
 	}

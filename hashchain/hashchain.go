@@ -177,8 +177,8 @@ func (c *HashChain) prevHash() []byte {
 	return h[:]
 }
 
-// SigCtl adds a signature control entry to the hash chain.
-func (c *HashChain) SigCtl(m int) (string, error) {
+// SignatureControl adds a signature control entry to the hash chain.
+func (c *HashChain) SignatureControl(m int) (string, error) {
 	// TODO: check that we have enough keys to reach m.
 	if m <= 0 {
 		return "", ErrSignatureThresholdNonPositive

@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
-	"github.com/frankbraun/codechain/util/base64"
+	"github.com/frankbraun/codechain/internal/base64"
 )
 
 // RemKey implements the 'remkey' command.

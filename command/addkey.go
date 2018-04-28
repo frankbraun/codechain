@@ -1,12 +1,12 @@
 package command
 
 import (
-	"encoding/base64"
 	"flag"
 	"fmt"
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/internal/base64"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -31,12 +31,12 @@ func AddKey(argv0 string, args ...string) error {
 		return flag.ErrHelp
 	}
 	pubkey := fs.Arg(0)
-	pub, err := base64.RawURLEncoding.DecodeString(pubkey)
+	pub, err := base64.Decode(pubkey)
 	if err != nil {
 		return fmt.Errorf("cannot decode pubkey: %s", err)
 	}
 	signature := fs.Arg(1)
-	sig, err := base64.RawURLEncoding.DecodeString(signature)
+	sig, err := base64.Decode(signature)
 	if err != nil {
 		return fmt.Errorf("cannot decode signature: %s", err)
 	}

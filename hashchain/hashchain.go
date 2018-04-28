@@ -105,7 +105,7 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 		base64.Encode(sig[:]),
 	}
 	if len(comment) > 0 {
-		typeFields = append(typeFields, base64.Encode(comment))
+		typeFields = append(typeFields, string(comment))
 	}
 	l := &link{
 		previous:   emptyTree,
@@ -178,6 +178,37 @@ func (c *HashChain) Close() error {
 		return err
 	}
 	return c.lock.Release()
+}
+
+// Source adds a source entry for treeHash and optional comment signed by
+// secKey to the hash chain.
+func (c *HashChain) Source(treeHash [32]byte, secKey [64]byte, comment []byte) (string, error) {
+	pub := secKey[32:]
+	msg := treeHash[:]
+	if len(comment) > 0 {
+		msg = append(msg, comment...)
+	}
+	sig := ed25519.Sign(secKey[:], msg)
+	typeFields := []string{
+		base64.Encode(treeHash[:]),
+		base64.Encode(pub),
+		base64.Encode(sig),
+	}
+	if len(comment) > 0 {
+		typeFields = append(typeFields, string(comment))
+	}
+	l := &link{
+		previous:   c.prevHash(),
+		datum:      time.Now(),
+		linkType:   sourceType,
+		typeFields: typeFields,
+	}
+	c.chain = append(c.chain, l)
+	entry := l.String()
+	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+		return "", err
+	}
+	return entry, nil
 }
 
 func (c *HashChain) prevHash() []byte {

@@ -3,8 +3,11 @@ package hashchain
 import (
 	"bytes"
 	"crypto/sha256"
+	"fmt"
 
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/tree"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -62,7 +65,37 @@ func (c *HashChain) verifySourceType(i int, fields []string) error {
 	}
 
 	// parse type fields
-	// TODO
+	tree := fields[0]
+	treeHash, err := hex.Decode(tree, 32)
+	if err != nil {
+		return err
+	}
+	pub := fields[1]
+	pubKey, err := base64.Decode(pub, 32)
+	if err != nil {
+		return err
+	}
+	sig, err := base64.Decode(fields[2], 64)
+	if err != nil {
+		return err
+	}
+	var comment string
+	if len(fields) == 4 {
+		comment = fields[3]
+	}
+
+	// validate fields
+	msg := append(treeHash, comment...)
+	if !ed25519.Verify(pubKey, msg, sig) {
+		return ErrWrongSigCStart
+	}
+	// make sure pubkey it is a valid signer
+	if c.signerWeights[pub] <= 0 {
+		return fmt.Errorf("hashchain: %s is not a valid signer", pub)
+	}
+
+	// update state
+	c.treeHashes = append(c.treeHashes, tree)
 	return nil
 }
 
@@ -133,16 +166,22 @@ func (c *HashChain) verify() error {
 		return ErrEmpty
 	}
 
-	// set start values
+	// set start state
 	c.m = 1
 	c.n = 1
 	c.signerWeights = make(map[string]int)
 	c.signerComments = make(map[string]string)
-	prevHash := emptyTree
-	var prevDatum int64
+	c.entryHashes = make(map[string]int)
+	c.treeHashes = []string{tree.EmptyHash}
 
 	// iterate over all links
+	prevHash := emptyTree
+	var prevDatum int64
 	for i, l := range c.chain {
+		// store entry hash
+		h := l.Hash()
+		c.entryHashes[hex.Encode(h[:])] = i
+
 		// make sure we actually have a hash chain
 		if !bytes.Equal(prevHash[:], l.previous[:]) {
 			return ErrLinkBroken

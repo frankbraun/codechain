@@ -1,6 +1,7 @@
 package hashchain
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"strings"
 
@@ -41,4 +42,8 @@ func (l *link) String() string {
 		time.Format(l.datum),
 		l.linkType,
 		strings.Join(l.typeFields, " "))
+}
+
+func (l *link) Hash() [32]byte {
+	return sha256.Sum256([]byte(l.String()))
 }

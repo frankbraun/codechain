@@ -38,7 +38,8 @@ func Read(filename string) (*HashChain, error) {
 	s := bufio.NewScanner(c.fp)
 	for s.Scan() {
 		// the parsing is very basic, the actual verification is done in c.verify()
-		line := strings.SplitN(s.Text(), " ", 4)
+		text := s.Text()
+		line := strings.SplitN(text, " ", 4)
 		previous, err := hex.Decode(line[0], 32)
 		if err != nil {
 			return nil, err
@@ -54,6 +55,9 @@ func Read(filename string) (*HashChain, error) {
 			datum:      t,
 			linkType:   line[2],
 			typeFields: strings.SplitN(line[3], " ", 4),
+		}
+		if l.String() != text {
+			return nil, fmt.Errorf("hashchain: cannot reproduce line:\n%s", text)
 		}
 		c.chain = append(c.chain, l)
 	}

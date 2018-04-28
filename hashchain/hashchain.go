@@ -186,16 +186,16 @@ func (c *HashChain) prevHash() []byte {
 }
 
 // AddKey adds pubkey with signature and optional comment to hash chain.
-func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment string) (string, error) {
-	if !ed25519.Verify(pubKey[:], append(pubKey[:], []byte(comment)...), signature[:]) {
+func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment []byte) (string, error) {
+	if !ed25519.Verify(pubKey[:], append(pubKey[:], comment...), signature[:]) {
 		return "", fmt.Errorf("signature does not verify")
 	}
 	typeFields := []string{
 		base64.Encode(pubKey[:]),
 		base64.Encode(signature[:]),
 	}
-	if comment != "" {
-		typeFields = append(typeFields, comment)
+	if len(comment) > 0 {
+		typeFields = append(typeFields, string(comment))
 	}
 	l := &link{
 		previous:   c.prevHash(),

@@ -46,9 +46,9 @@ func AddKey(argv0 string, args ...string) error {
 		return fmt.Errorf("decoded signature has wrong length: %d (must be 64)",
 			len(sig))
 	}
-	var comment string
+	var comment []byte
 	if nArg == 3 {
-		comment = fs.Arg(2)
+		comment = []byte(fs.Arg(2))
 	}
 	c, err := hashchain.Read(hashchainFile)
 	if err != nil {

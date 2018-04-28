@@ -186,17 +186,22 @@ func (c *HashChain) prevHash() []byte {
 }
 
 // AddKey adds pubkey with signature and optional comment to hash chain.
-func (c *HashChain) AddKey(filename, pubkey, signature, comment string) (string, error) {
-	// TODO: verify
-	key := []string{pubkey, signature}
+func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment string) (string, error) {
+	if !ed25519.Verify(pubKey[:], append(pubKey[:], []byte(comment)...), signature[:]) {
+		return "", fmt.Errorf("signature does not verify")
+	}
+	typeFields := []string{
+		base64.Encode(pubKey[:]),
+		base64.Encode(signature[:]),
+	}
 	if comment != "" {
-		key = append(key, comment)
+		typeFields = append(typeFields, comment)
 	}
 	l := &link{
 		previous:   c.prevHash(),
 		datum:      time.Now(),
 		linkType:   addKeyType,
-		typeFields: key,
+		typeFields: typeFields,
 	}
 	c.chain = append(c.chain, l)
 	entry := l.String()
@@ -207,7 +212,7 @@ func (c *HashChain) AddKey(filename, pubkey, signature, comment string) (string,
 }
 
 // RemoveKey adds a pubkey remove entry to hash chain.
-func (c *HashChain) RemoveKey(filename, pubkey string) (string, error) {
+func (c *HashChain) RemoveKey(pubkey string) (string, error) {
 	// TODO: check that pubkey is actually active in chain
 	// TODO: check that still enough public keys remain to reach M
 	l := &link{

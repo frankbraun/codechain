@@ -33,7 +33,8 @@ func RemKey(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
-	line, err := c.RemoveKey(hashchainFile, pubkey)
+	defer c.Close()
+	line, err := c.RemoveKey(pubkey)
 	if err != nil {
 		return err
 	}

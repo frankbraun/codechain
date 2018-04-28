@@ -7,7 +7,6 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/base64"
-	"golang.org/x/crypto/ed25519"
 )
 
 // AddKey implements the 'addkey' command.
@@ -35,24 +34,32 @@ func AddKey(argv0 string, args ...string) error {
 	if err != nil {
 		return fmt.Errorf("cannot decode pubkey: %s", err)
 	}
+	if len(pub) != 32 {
+		return fmt.Errorf("pubkey has wrong length: %d (must be 32)", len(pub))
+	}
 	signature := fs.Arg(1)
 	sig, err := base64.Decode(signature)
 	if err != nil {
 		return fmt.Errorf("cannot decode signature: %s", err)
 	}
+	if len(sig) != 64 {
+		return fmt.Errorf("decoded signature has wrong length: %d (must be 64)",
+			len(sig))
+	}
 	var comment string
 	if nArg == 3 {
 		comment = fs.Arg(2)
-	}
-	if !ed25519.Verify(pub, append(pub, []byte(comment)...), sig) {
-		return fmt.Errorf("signature does not verify")
 	}
 	c, err := hashchain.Read(hashchainFile)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
-	line, err := c.AddKey(hashchainFile, pubkey, signature, comment)
+	var pubKey [32]byte
+	copy(pubKey[:], pub)
+	var signtr [64]byte
+	copy(pubKey[:], sig)
+	line, err := c.AddKey(pubKey, signtr, comment)
 	if err != nil {
 		return err
 	}

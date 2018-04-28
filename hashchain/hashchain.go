@@ -61,6 +61,14 @@ type HashChain struct {
 	m     int // signature threshold
 }
 
+// verify hash chain.
+func (c HashChain) verify() error {
+	// TODO: make sure m is set correctly!
+	// TODO: make sure the link types are all valid
+	// TODO: check for empty hash chain
+	return nil
+}
+
 // Start returns a new hash chain with signature control list m.
 func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string, error) {
 	var c HashChain
@@ -177,26 +185,6 @@ func (c *HashChain) prevHash() []byte {
 	return h[:]
 }
 
-// SignatureControl adds a signature control entry to the hash chain.
-func (c *HashChain) SignatureControl(m int) (string, error) {
-	// TODO: check that we have enough keys to reach m.
-	if m <= 0 {
-		return "", ErrSignatureThresholdNonPositive
-	}
-	l := &link{
-		previous:   c.prevHash(),
-		datum:      time.Now(),
-		linkType:   signatureControlType,
-		typeFields: []string{strconv.Itoa(m)},
-	}
-	c.chain = append(c.chain, l)
-	entry := l.String()
-	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
-		return "", err
-	}
-	return entry, nil
-}
-
 // AddKey adds pubkey with signature and optional comment to hash chain.
 func (c *HashChain) AddKey(filename, pubkey, signature, comment string) (string, error) {
 	// TODO: verify
@@ -236,10 +224,22 @@ func (c *HashChain) RemoveKey(filename, pubkey string) (string, error) {
 	return entry, nil
 }
 
-// verify hash chain.
-func (c HashChain) verify() error {
-	// TODO: make sure m is set correctly!
-	// TODO: make sure the link types are all valid
-	// TODO: check for empty hash chain
-	return nil
+// SignatureControl adds a signature control entry to the hash chain.
+func (c *HashChain) SignatureControl(m int) (string, error) {
+	// TODO: check that we have enough keys to reach m.
+	if m <= 0 {
+		return "", ErrSignatureThresholdNonPositive
+	}
+	l := &link{
+		previous:   c.prevHash(),
+		datum:      time.Now(),
+		linkType:   signatureControlType,
+		typeFields: []string{strconv.Itoa(m)},
+	}
+	c.chain = append(c.chain, l)
+	entry := l.String()
+	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+		return "", err
+	}
+	return entry, nil
 }

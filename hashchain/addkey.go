@@ -23,9 +23,8 @@ func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment []byte) 
 	if len(comment) > 0 {
 		typeFields = append(typeFields, string(comment))
 	}
-	prev := c.LastEntryHash()
 	l := &link{
-		previous:   prev[:],
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   addKeyType,
 		typeFields: typeFields,

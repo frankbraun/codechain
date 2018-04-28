@@ -14,9 +14,8 @@ func (c *HashChain) RemoveKey(pubKey [32]byte) (string, error) {
 	// TODO: check that still enough public keys remain to reach m
 
 	// create entry
-	prev := c.LastEntryHash()
 	l := &link{
-		previous:   prev[:],
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   removeKeyType,
 		typeFields: []string{base64.Encode(pubKey[:])},

@@ -18,18 +18,21 @@ const (
 	signatureControlType = "sigctl"
 )
 
-var emptyTree []byte
+var emptyTree [32]byte
 
 func init() {
-	var err error
-	emptyTree, err = hex.DecodeString(tree.EmptyHash)
+	hash, err := hex.DecodeString(tree.EmptyHash)
 	if err != nil {
 		panic(err)
 	}
+	if len(hash) != 32 {
+		panic("len(hash) != 32")
+	}
+	copy(emptyTree[:], hash)
 }
 
 type link struct {
-	previous   []byte   // hash-of-previous
+	previous   [32]byte // hash-of-previous
 	datum      int64    // current-time
 	linkType   string   // type
 	typeFields []string // type-fields ...

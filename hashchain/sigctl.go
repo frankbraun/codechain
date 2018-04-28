@@ -18,9 +18,8 @@ func (c *HashChain) SignatureControl(m int) (string, error) {
 	}
 
 	// create entry
-	prev := c.LastEntryHash()
 	l := &link{
-		previous:   prev[:],
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   signatureControlType,
 		typeFields: []string{strconv.Itoa(m)},

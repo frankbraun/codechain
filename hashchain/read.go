@@ -42,12 +42,17 @@ func Read(filename string) (*HashChain, error) {
 		if err != nil {
 			return nil, fmt.Errorf("hashchain: cannot decode hash '%s': %s", line[0], err)
 		}
+		if len(previous) != 32 {
+			return nil, fmt.Errorf("hashchain: decoded hash has wrong length '%s': %s", line[0], err)
+		}
+		var prev [32]byte
+		copy(prev[:], previous)
 		t, err := time.Parse(line[1])
 		if err != nil {
 			return nil, fmt.Errorf("hashchain: cannot parse time '%s': %s", line[1], err)
 		}
 		l := &link{
-			previous:   previous,
+			previous:   prev,
 			datum:      t,
 			linkType:   line[2],
 			typeFields: strings.SplitN(line[3], " ", -1),

@@ -25,9 +25,8 @@ func (c *HashChain) Signature(entryHash [32]byte, secKey [64]byte) (string, erro
 		base64.Encode(pub),
 		base64.Encode(sig),
 	}
-	prev := c.LastEntryHash()
 	l := &link{
-		previous:   prev[:],
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   signatureType,
 		typeFields: typeFields,
@@ -67,9 +66,8 @@ func (c *HashChain) DetachedSignature(entryHash, pubKey [32]byte, signature [64]
 		base64.Encode(pubKey[:]),
 		base64.Encode(signature[:]),
 	}
-	prev := c.LastEntryHash()
 	l := &link{
-		previous:   prev[:],
+		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
 		linkType:   signatureType,
 		typeFields: typeFields,

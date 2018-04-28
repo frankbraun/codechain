@@ -162,6 +162,7 @@ func Read(filename string) (*HashChain, error) {
 	return &c, nil
 }
 
+// Close the underlying file pointer of hash chain and release lock.
 func (c *HashChain) Close() error {
 	err := c.fp.Close()
 	if err != nil {

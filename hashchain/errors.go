@@ -35,3 +35,9 @@ var ErrWrongTypeFields = errors.New("hashchain: entry has wrong number of type f
 
 // ErrWrongSigCStart is returned when the signature of a cstart entry doesn't validate.
 var ErrWrongSigCStart = errors.New("hashchain: cstart signature doesn't validate")
+
+// ErrWrongSigSource is returned when the signature of a source entry doesn't validate.
+var ErrWrongSigSource = errors.New("hashchain: source signature doesn't validate")
+
+// ErrWrongSigSignature is returned when the signature of a signature entry doesn't validate.
+var ErrWrongSigSignature = errors.New("hashchain: signature signature doesn't validate")

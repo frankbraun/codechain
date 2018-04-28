@@ -14,12 +14,16 @@ type HashChain struct {
 	chain []*link
 
 	// state
-	m              int               // signature threshold
-	n              int               // total weight of signers
-	signerWeights  map[string]int    // map signer pubkeys (in base64) to their weights
-	signerComments map[string]string // map signer pubkeys (in base64) to their comments
-	entryHashes    map[string]int    // map hash of chain entry (a line) to line number
-	treeHashes     []string          // all committed tree hashes, starting from empty tree
+	m                  int               // signature threshold
+	n                  int               // total weight of signers
+	signedLine         int               // line up to and including every entry is signed
+	signerWeights      map[string]int    // pubkey (in base64) -> weight
+	signerComments     map[string]string // pubkey (in base64) -> comment
+	signerBarriers     map[string]int    // pubkey (in base64) -> line number up to he signed
+	linkHashes         map[string]int    // link hash -> line number
+	treeHashes         map[string]string // tree hash -> link hash
+	signedTreeHashes   []string          // all signed tree hashes, starting from empty tree
+	unsignedTreeHashes []string          // all unsigned tree hashes
 }
 
 // LastEntryHash returns the hash of the last entry.

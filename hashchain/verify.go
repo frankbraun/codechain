@@ -50,7 +50,6 @@ func (c *HashChain) verifyChainStartType(i int, fields []string) error {
 	// update state
 	c.signerWeights[pub] = 1 // default weight for first signer
 	c.signerComments[pub] = comment
-	c.signerComments[pub] = ""
 	return nil
 }
 
@@ -87,7 +86,7 @@ func (c *HashChain) verifySourceType(i int, fields []string) error {
 	// validate fields
 	msg := append(treeHash, comment...)
 	if !ed25519.Verify(pubKey, msg, sig) {
-		return ErrWrongSigCStart
+		return ErrWrongSigSource
 	}
 	// make sure pubkey it is a valid signer
 	if c.signerWeights[pub] <= 0 {
@@ -95,7 +94,9 @@ func (c *HashChain) verifySourceType(i int, fields []string) error {
 	}
 
 	// update state
-	c.treeHashes = append(c.treeHashes, tree)
+	h := c.chain[i].Hash()
+	c.treeHashes[tree] = hex.Encode(h[:])
+	c.unsignedTreeHashes = append(c.unsignedTreeHashes, tree)
 	return nil
 }
 
@@ -110,6 +111,31 @@ func (c *HashChain) verifySignatureType(i int, fields []string) error {
 	}
 
 	// parse type fields
+	entry := fields[0]
+	linkHash, err := hex.Decode(entry, 32)
+	if err != nil {
+		return err
+	}
+	pub := fields[1]
+	pubKey, err := base64.Decode(pub, 32)
+	if err != nil {
+		return err
+	}
+	sig, err := base64.Decode(fields[2], 64)
+	if err != nil {
+		return err
+	}
+
+	// validate fields
+	if !ed25519.Verify(pubKey, linkHash, sig) {
+		return ErrWrongSigSignature
+	}
+	// make sure link hash does exist
+	if _, ok := c.linkHashes[entry]; !ok {
+		return fmt.Errorf("hashchain: link hash doesn't exist: %s", entry)
+	}
+
+	// update state
 	// TODO
 	return nil
 }
@@ -124,8 +150,10 @@ func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
 		return ErrWrongTypeFields
 	}
 
-	// parse type fields
 	// TODO
+	// parse type fields
+	// validate fields
+	// update state
 	return nil
 }
 
@@ -139,8 +167,10 @@ func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
 		return ErrWrongTypeFields
 	}
 
-	// parse type fields
 	// TODO
+	// parse type fields
+	// validate fields
+	// update state
 	return nil
 }
 
@@ -154,8 +184,10 @@ func (c *HashChain) verifySignatureControlType(i int, fields []string) error {
 		return ErrWrongTypeFields
 	}
 
-	// parse type fields
 	// TODO
+	// parse type fields
+	// validate fields
+	// update state
 	return nil
 }
 
@@ -169,10 +201,14 @@ func (c *HashChain) verify() error {
 	// set start state
 	c.m = 1
 	c.n = 1
+	c.signedLine = 0
 	c.signerWeights = make(map[string]int)
 	c.signerComments = make(map[string]string)
-	c.entryHashes = make(map[string]int)
-	c.treeHashes = []string{tree.EmptyHash}
+	c.signerBarriers = make(map[string]int)
+	c.linkHashes = make(map[string]int)
+	c.treeHashes = make(map[string]string)
+	c.signedTreeHashes = []string{tree.EmptyHash}
+	c.unsignedTreeHashes = []string{}
 
 	// iterate over all links
 	prevHash := emptyTree
@@ -180,7 +216,7 @@ func (c *HashChain) verify() error {
 	for i, l := range c.chain {
 		// store entry hash
 		h := l.Hash()
-		c.entryHashes[hex.Encode(h[:])] = i
+		c.linkHashes[hex.Encode(h[:])] = i
 
 		// make sure we actually have a hash chain
 		if !bytes.Equal(prevHash[:], l.previous[:]) {

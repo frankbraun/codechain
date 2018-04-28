@@ -4,24 +4,33 @@ import (
 	"fmt"
 
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/util/time"
 	"golang.org/x/crypto/ed25519"
 )
 
 // Signature adds a signature entry for entryHash signed by secKey to the hash chain.
-func (c *HashChain) Signature(entryHash [32]byte, secKey [64]byte) (string, error) {
+func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error) {
 	// check arguments
-	// TODO: check that entryHash is valid
-	// TODO: make sure secKey is a valid signer
+	// make sure link hash does exist
+	hash := hex.Encode(linkHash[:])
+	if _, ok := c.linkHashes[hash]; !ok {
+		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s", hash)
+	}
+	// make sure secKey is a valid signer
+	pub := secKey[32:]
+	pubKey := base64.Encode(pub)
+	if _, ok := c.signerWeights[pubKey]; !ok {
+		return "", fmt.Errorf("hashchain: not a valid signer: %s", pubKey)
+	}
 	// TODO: make sure entryHash is a valid position to sign
 
 	// create signature
-	pub := secKey[32:]
-	sig := ed25519.Sign(secKey[:], entryHash[:])
+	sig := ed25519.Sign(secKey[:], linkHash[:])
 
 	// create entry
 	typeFields := []string{
-		base64.Encode(entryHash[:]),
+		base64.Encode(linkHash[:]),
 		base64.Encode(pub),
 		base64.Encode(sig),
 	}
@@ -46,23 +55,31 @@ func (c *HashChain) Signature(entryHash [32]byte, secKey [64]byte) (string, erro
 	return entry, nil
 }
 
-// DetachedSignature adds a detached signature entry for entryHash signed by
+// DetachedSignature adds a detached signature entry for linkHash signed by
 // pubKey to the hash chain.
-func (c *HashChain) DetachedSignature(entryHash, pubKey [32]byte, signature [64]byte) (string, error) {
+func (c *HashChain) DetachedSignature(linkHash, pubKey [32]byte, signature [64]byte) (string, error) {
 	// check arguments
-	// TODO: check that entryHash is valid
-	// TODO: make sure secKey is a valid signer
+	// make sure link hash does exist
+	hash := hex.Encode(linkHash[:])
+	if _, ok := c.linkHashes[hash]; !ok {
+		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s", hash)
+	}
+	// make sure secKey is a valid signer
+	pub := base64.Encode(pubKey[:])
+	if _, ok := c.signerWeights[pub]; !ok {
+		return "", fmt.Errorf("hashchain: not a valid signer: %s", pub)
+	}
 	// TODO: make sure entryHash is a valid position to sign
-	// Same checks as for Signature()
+	// TODO: similar checks as for Signature() refactor?
 
 	// verify signature
-	if !ed25519.Verify(pubKey[:], entryHash[:], signature[:]) {
+	if !ed25519.Verify(pubKey[:], linkHash[:], signature[:]) {
 		return "", fmt.Errorf("signature does not verify")
 	}
 
 	// create entry
 	typeFields := []string{
-		base64.Encode(entryHash[:]),
+		base64.Encode(linkHash[:]),
 		base64.Encode(pubKey[:]),
 		base64.Encode(signature[:]),
 	}

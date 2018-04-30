@@ -3,27 +3,16 @@ package hashchain
 import (
 	"os"
 
+	"github.com/frankbraun/codechain/hashchain/internal/state"
 	"github.com/frankbraun/codechain/util/lockfile"
 )
 
 // HashChain of threshold signatures over a chain of code changes.
 type HashChain struct {
-	// chain
 	lock  lockfile.Lock
 	fp    *os.File
 	chain []*link
-
-	// state
-	m                  int               // signature threshold
-	n                  int               // total weight of signers
-	signedLine         int               // line up to and including every entry is signed
-	signerWeights      map[string]int    // pubkey (in base64) -> weight
-	signerComments     map[string]string // pubkey (in base64) -> comment
-	signerBarriers     map[string]int    // pubkey (in base64) -> line number up to he signed
-	linkHashes         map[string]int    // link hash -> line number
-	treeHashes         map[string]string // tree hash -> link hash
-	signedTreeHashes   []string          // all signed tree hashes, starting from empty tree
-	unsignedTreeHashes []string          // all unsigned tree hashes
+	state *state.State
 }
 
 // LastEntryHash returns the hash of the last entry.

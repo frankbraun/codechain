@@ -5,9 +5,9 @@ import (
 	"crypto/sha256"
 	"fmt"
 
+	"github.com/frankbraun/codechain/hashchain/internal/state"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/hex"
-	"github.com/frankbraun/codechain/tree"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -47,9 +47,8 @@ func (c *HashChain) verifyChainStartType(i int, fields []string) error {
 		return ErrWrongSigCStart
 	}
 
-	// update state
-	c.signerWeights[pub] = 1 // default weight for first signer
-	c.signerComments[pub] = comment
+	// start state
+	c.state = state.New(pub, comment)
 	return nil
 }
 
@@ -89,14 +88,16 @@ func (c *HashChain) verifySourceType(i int, fields []string) error {
 		return ErrWrongSigSource
 	}
 	// make sure pubkey it is a valid signer
-	if c.signerWeights[pub] <= 0 {
-		return fmt.Errorf("hashchain: %s is not a valid signer", pub)
+	var p [32]byte
+	copy(p[:], pubKey)
+	if !c.state.HasSigner(p) {
+		return fmt.Errorf("hashchain: not a valid signer: %s", pub)
 	}
 
 	// update state
-	h := c.chain[i].Hash()
-	c.treeHashes[tree] = hex.Encode(h[:])
-	c.unsignedTreeHashes = append(c.unsignedTreeHashes, tree)
+	var t [32]byte
+	copy(t[:], treeHash[:])
+	c.state.AddTreeHash(c.chain[i].Hash(), t)
 	return nil
 }
 
@@ -111,8 +112,8 @@ func (c *HashChain) verifySignatureType(i int, fields []string) error {
 	}
 
 	// parse type fields
-	entry := fields[0]
-	linkHash, err := hex.Decode(entry, 32)
+	link := fields[0]
+	linkHash, err := hex.Decode(link, 32)
 	if err != nil {
 		return err
 	}
@@ -131,8 +132,10 @@ func (c *HashChain) verifySignatureType(i int, fields []string) error {
 		return ErrWrongSigSignature
 	}
 	// make sure link hash does exist
-	if _, ok := c.linkHashes[entry]; !ok {
-		return fmt.Errorf("hashchain: link hash doesn't exist: %s", entry)
+	var l [32]byte
+	copy(l[:], linkHash)
+	if !c.state.HasLinkHash(l) {
+		return fmt.Errorf("hashchain: link hash doesn't exist: %s", link)
 	}
 
 	// update state
@@ -198,26 +201,10 @@ func (c *HashChain) verify() error {
 		return ErrEmpty
 	}
 
-	// set start state
-	c.m = 1
-	c.n = 1
-	c.signedLine = 0
-	c.signerWeights = make(map[string]int)
-	c.signerComments = make(map[string]string)
-	c.signerBarriers = make(map[string]int)
-	c.linkHashes = make(map[string]int)
-	c.treeHashes = make(map[string]string)
-	c.signedTreeHashes = []string{tree.EmptyHash}
-	c.unsignedTreeHashes = []string{}
-
 	// iterate over all links
 	prevHash := emptyTree
 	var prevDatum int64
 	for i, l := range c.chain {
-		// store entry hash
-		h := l.Hash()
-		c.linkHashes[hex.Encode(h[:])] = i
-
 		// make sure we actually have a hash chain
 		if !bytes.Equal(prevHash[:], l.previous[:]) {
 			return ErrLinkBroken
@@ -248,6 +235,9 @@ func (c *HashChain) verify() error {
 		if err != nil {
 			return err
 		}
+
+		// store link hash and line number
+		c.state.AddLinkHash(l.Hash(), i)
 
 		// prepare for next entry
 		prevHash = sha256.Sum256([]byte(l.String()))

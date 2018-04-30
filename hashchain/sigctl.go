@@ -13,7 +13,7 @@ func (c *HashChain) SignatureControl(m int) (string, error) {
 	if m <= 0 {
 		return "", ErrSignatureThresholdNonPositive
 	}
-	if m > c.n {
+	if m > c.state.N() {
 		return "", ErrMLargerThanN
 	}
 

@@ -13,15 +13,16 @@ import (
 func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error) {
 	// check arguments
 	// make sure link hash does exist
-	hash := hex.Encode(linkHash[:])
-	if _, ok := c.linkHashes[hash]; !ok {
-		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s", hash)
+	if !c.state.HasLinkHash(linkHash) {
+		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s",
+			hex.Encode(linkHash[:]))
 	}
 	// make sure secKey is a valid signer
-	pub := secKey[32:]
-	pubKey := base64.Encode(pub)
-	if _, ok := c.signerWeights[pubKey]; !ok {
-		return "", fmt.Errorf("hashchain: not a valid signer: %s", pubKey)
+	var pub [32]byte
+	copy(pub[:], secKey[32:])
+	if !c.state.HasSigner(pub) {
+		return "", fmt.Errorf("hashchain: not a valid signer: %s",
+			hex.Encode(pub[:]))
 	}
 	// TODO: make sure entryHash is a valid position to sign
 
@@ -31,7 +32,7 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error
 	// create entry
 	typeFields := []string{
 		base64.Encode(linkHash[:]),
-		base64.Encode(pub),
+		base64.Encode(pub[:]),
 		base64.Encode(sig),
 	}
 	l := &link{
@@ -60,16 +61,15 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error
 func (c *HashChain) DetachedSignature(linkHash, pubKey [32]byte, signature [64]byte) (string, error) {
 	// check arguments
 	// make sure link hash does exist
-	hash := hex.Encode(linkHash[:])
-	if _, ok := c.linkHashes[hash]; !ok {
-		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s", hash)
+	if !c.state.HasLinkHash(linkHash) {
+		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s",
+			hex.Encode(linkHash[:]))
 	}
 	// make sure secKey is a valid signer
-	pub := base64.Encode(pubKey[:])
-	if _, ok := c.signerWeights[pub]; !ok {
-		return "", fmt.Errorf("hashchain: not a valid signer: %s", pub)
+	if !c.state.HasSigner(pubKey) {
+		return "", fmt.Errorf("hashchain: not a valid signer: %s",
+			hex.Encode(pubKey[:]))
 	}
-	// TODO: make sure entryHash is a valid position to sign
 	// TODO: similar checks as for Signature() refactor?
 
 	// verify signature

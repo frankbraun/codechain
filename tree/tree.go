@@ -16,7 +16,7 @@ const EmptyHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b
 
 // List returns a list in lexical order of newline separated hashes of all
 // files in the file tree rooted at root, except for the paths in
-// excludePaths. Directories are only implicitely listed (i.e., if they
+// excludePaths. Directories are only implicitly listed (i.e., if they
 // contain files). Entries start with 'f' if it is a regular file (read and
 // write permission for user) and with 'x' if it is an executable (read,
 // write, and executabele for user).

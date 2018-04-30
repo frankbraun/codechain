@@ -1,3 +1,4 @@
+// Package hex implements hex encoding related utility functions.
 package hex
 
 import (

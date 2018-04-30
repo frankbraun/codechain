@@ -13,7 +13,7 @@ func usage() {
 	cmd := os.Args[0]
 	fmt.Fprintf(os.Stderr, "Usage: %s treehash [-l]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s keygen [-s seckey.bin]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s pubkey -s seckey.bin [-c]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s keyfile -s seckey.bin [-c]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s start -s seckey.bin\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s publish [-s seckey.bin]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s review [-s seckey.bin] [treehash]\n", cmd)
@@ -38,8 +38,8 @@ func main() {
 		err = command.TreeHash(argv0, args...)
 	case "keygen":
 		err = command.KeyGen(argv0, args...)
-	case "pubkey":
-		err = command.PubKey(argv0, args...)
+	case "keyfile":
+		err = command.KeyFile(argv0, args...)
 	case "start":
 		err = command.Start(argv0, args...)
 	case "publish":

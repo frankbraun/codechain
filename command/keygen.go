@@ -24,8 +24,8 @@ var (
 	testComment string
 )
 
-// GenKey implements the 'genkey' command.
-func GenKey(argv0 string, args ...string) error {
+// KeyGen implements the 'keygen' command.
+func KeyGen(argv0 string, args ...string) error {
 	var (
 		homeDir string
 		pass    []byte

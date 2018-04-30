@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	testPubkey = "0CLTw2MXB6kybhvlfTg6kkFxLkB-w7DM1SeNMWhUu2g"
-	testSig    = "amHTVxtXCgXO0j8s7MujvbGdOej3OsrxkPlsAVDH1cfNyy4dY16u4fyrZK5KTMAsNvuWsQwiKAsr6R7Jo9IUDg"
+	testPubkey = "zx4xyVAbEfEdGeP1-yv-Jkv4BI0yoA1ySrAiVrSatb0"
+	testSig    = "H8TsdqsqPV7ogkjqkfQq_m7sn2Xb8LzyWCOT0ZURKN4uGDlk_cmktt5bxzfIbJ-PTFj_q1kA1erTdKnZy0i_Aw"
 )
 
 func TestKey(t *testing.T) {
@@ -40,15 +40,15 @@ func TestKey(t *testing.T) {
 	}
 	testPass = "passphrase"
 	testComment = "John Doe"
-	// codechain genkey -s seckey.bin
-	err = GenKey("genkey", "-s", "seckey.bin")
+	// codechain keyge -s seckey.bin
+	err = KeyGen("keygen", "-s", "seckey.bin")
 	if err != nil {
-		t.Fatalf("GenKey() failed: %v ", err)
+		t.Fatalf("KeyGen() failed: %v ", err)
 	}
-	// codechain pubkey -s seckey.bin
-	err = PubKey("pubkey", "-s", "seckey.bin")
+	// codechain keyfile -s seckey.bin
+	err = KeyFile("pubkey", "-s", "testkey.bin")
 	if err != nil {
-		t.Errorf("PubKey() failed: %v ", err)
+		t.Errorf("KeyFile() failed: %v ", err)
 	}
 	// codechain start -m 3
 	err = Start("start", "-s", "seckey.bin")

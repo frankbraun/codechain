@@ -99,7 +99,7 @@ func (c *HashChain) verifySourceType(i int, fields []string) error {
 
 	// update state
 	var t [32]byte
-	copy(t[:], treeHash[:])
+	copy(t[:], treeHash)
 	c.state.AddSourceHash(c.chain[i].Hash(), t, p, comment)
 	return nil
 }

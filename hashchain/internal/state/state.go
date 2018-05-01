@@ -89,7 +89,7 @@ func (s *State) LinkHashes() int {
 // HasSigner checks wether the state s contains a valid the signer with
 // pubKey.
 func (s *State) HasSigner(pubKey [32]byte) bool {
-	_, ok := s.signerWeights[hex.Encode(pubKey[:])]
+	_, ok := s.signerWeights[base64.Encode(pubKey[:])]
 	return ok
 }
 

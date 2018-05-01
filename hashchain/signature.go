@@ -32,7 +32,7 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error
 
 	// create entry
 	typeFields := []string{
-		base64.Encode(linkHash[:]),
+		hex.Encode(linkHash[:]),
 		base64.Encode(pub[:]),
 		base64.Encode(sig),
 	}
@@ -42,6 +42,7 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error
 		linkType:   linktype.Signature,
 		typeFields: typeFields,
 	}
+	c.chain = append(c.chain, l)
 
 	// verify
 	if err := c.verify(); err != nil {
@@ -49,7 +50,6 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error
 	}
 
 	// save
-	c.chain = append(c.chain, l)
 	entry := l.String()
 	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
 		return "", err
@@ -80,7 +80,7 @@ func (c *HashChain) DetachedSignature(linkHash, pubKey [32]byte, signature [64]b
 
 	// create entry
 	typeFields := []string{
-		base64.Encode(linkHash[:]),
+		hex.Encode(linkHash[:]),
 		base64.Encode(pubKey[:]),
 		base64.Encode(signature[:]),
 	}

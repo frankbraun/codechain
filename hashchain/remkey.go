@@ -22,7 +22,6 @@ func (c *HashChain) RemoveKey(pubKey [32]byte) (string, error) {
 		typeFields: []string{base64.Encode(pubKey[:])},
 	}
 	c.chain = append(c.chain, l)
-	entry := l.String()
 
 	// verify
 	if err := c.verify(); err != nil {
@@ -30,6 +29,7 @@ func (c *HashChain) RemoveKey(pubKey [32]byte) (string, error) {
 	}
 
 	// save
+	entry := l.String()
 	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
 		return "", err
 	}

@@ -8,37 +8,83 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/frankbraun/codechain/internal/hex"
 	"golang.org/x/crypto/ed25519"
 )
 
-func TestStart(t *testing.T) {
+const helloHashHex = "5998c63aca42e471297c0fa353538a93d4d4cfafe9a672df6989e694188b4a92"
+
+var (
+	pubA      [32]byte
+	secA      [64]byte
+	pubB      [32]byte
+	secB      [64]byte
+	helloHash [32]byte
+)
+
+func init() {
+	pub, sec, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		panic(err)
+	}
+	copy(secA[:], sec[:])
+	copy(pubA[:], pub[:])
+	pub, sec, err = ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		panic(err)
+	}
+	copy(secB[:], sec[:])
+	copy(pubB[:], pub[:])
+	hash, err := hex.Decode(helloHashHex, 32)
+	if err != nil {
+		panic(err)
+	}
+	copy(helloHash[:], hash)
+}
+
+func TestStartEmpty(t *testing.T) {
 	tmpdir, err := ioutil.TempDir("", "hashchain_test")
 	if err != nil {
 		t.Fatalf("ioutil.TempDir() failed: %v", err)
 	}
 	defer os.RemoveAll(tmpdir)
 
-	_, sec, err := ed25519.GenerateKey(rand.Reader)
-	if err != nil {
-		t.Fatalf("ed25519.GenerateKey() failed: %v", err)
-	}
-	var secKey [64]byte
-	copy(secKey[:], sec)
-
 	filename := filepath.Join(tmpdir, "hashchain")
-	c, entry, err := Start(filename, secKey, nil)
+	c, l, err := Start(filename, secA, nil)
 	if err != nil {
 		t.Fatalf("Start() failed: %v", err)
 	}
 	defer c.Close()
-	fmt.Println(entry)
+	fmt.Println(l)
+}
 
-	filename = filepath.Join(tmpdir, "hashchain2")
-	c, entry, err = Start(filename, secKey, []byte("comment"))
+func TestStartSourceSign(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "hashchain_test")
+	if err != nil {
+		t.Fatalf("ioutil.TempDir() failed: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	// start empty chain
+	filename := filepath.Join(tmpdir, "hashchain")
+	c, l, err := Start(filename, secA, []byte("comment"))
 	if err != nil {
 		t.Fatalf("Start() failed: %v", err)
 	}
 	defer c.Close()
-	fmt.Println(entry)
+	fmt.Println(l)
 
+	// add hello.go
+	l, err = c.Source(helloHash, secA, []byte("add hello.go"))
+	if err != nil {
+		t.Fatalf("c.Source() failed: %v", err)
+	}
+	fmt.Println(l)
+
+	// sign hello.go
+	l, err = c.Signature(c.LastEntryHash(), secA)
+	if err != nil {
+		t.Fatalf("c.Signature() failed: %v", err)
+	}
+	fmt.Println(l)
 }

@@ -25,7 +25,7 @@ func TestEmpty(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Hash() should not fail: %v", err)
 	}
-	if hex.EncodeToString(h) != EmptyHash {
+	if hex.EncodeToString(h[:]) != EmptyHash {
 		t.Errorf("Hash() should return the EmptyHash")
 	}
 }
@@ -48,7 +48,7 @@ func TestTestdata(t *testing.T) {
 	if err != nil {
 		t.Errorf("Hash() should not fail: %v", err)
 	}
-	if hex.EncodeToString(h) != testdataHash {
+	if hex.EncodeToString(h[:]) != testdataHash {
 		t.Errorf("Hash() should return the testdataHash")
 	}
 }
@@ -70,7 +70,7 @@ func TestTestdataExclude(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Hash() should not fail: %v", err)
 	}
-	if hex.EncodeToString(h) != testdataHashExclude {
+	if hex.EncodeToString(h[:]) != testdataHashExclude {
 		t.Errorf("Hash() should return the testdataHashExclude")
 	}
 }
@@ -90,7 +90,7 @@ func TestTestdataChdir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Hash() should not fail: %v", err)
 	}
-	if hex.EncodeToString(h) != testdataHash {
+	if hex.EncodeToString(h[:]) != testdataHash {
 		t.Errorf("Hash() should return the testdataHash")
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/git"
 	"github.com/frankbraun/codechain/util/home"
 )
 
@@ -22,6 +23,7 @@ func Publish(argv0 string, args ...string) error {
 		fs.PrintDefaults()
 	}
 	seckey := fs.String("s", "", "Secret key file")
+	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -51,14 +53,27 @@ func Publish(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	_, err := hashchain.Read(hashchainFile)
-	if err != nil {
+	if err := os.MkdirAll(treeDir, 0755); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(patchDir, 0755); err != nil {
 		return err
 	}
 
-	// TODO: get last published treehash
+	c, err := hashchain.Read(hashchainFile)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
 
-	// TODO: bring .codechain/tree in sync with last published treehash
+	// get last published treehash
+	treeHash := c.LastTreeHash()
+
+	// bring .codechain/tree in sync with last published treehash
+	err = tree.Sync(treeDir, treeHash, patchDir, *verbose, excludePaths)
+	if err != nil {
+		return err
+	}
 
 	// calculate current treehash
 	hash, err := tree.Hash(".", excludePaths)
@@ -67,7 +82,10 @@ func Publish(argv0 string, args ...string) error {
 	}
 	fmt.Printf("%x\n", hash[:])
 
-	// TODO: compute diff
+	// display diff
+	if err := git.DiffPager(treeDir, "."); err != nil {
+		return err
+	}
 
 	// TODO: display diff
 

@@ -71,7 +71,7 @@ func TestDiffApply(t *testing.T) {
 	if err != nil {
 		t.Fatalf("tree.Hash(treeB) failed: %v", err)
 	}
-	if !bytes.Equal(treeHashA, treeHashB) {
+	if !bytes.Equal(treeHashA[:], treeHashB[:]) {
 		t.Error("treeHashA should equal treeHashB")
 	}
 	// try to apply patch to treeB again (should fail)
@@ -99,7 +99,7 @@ func TestDiffApply(t *testing.T) {
 	if err != nil {
 		t.Fatalf("tree.Hash(treeB) failed: %v", err)
 	}
-	if hex.EncodeToString(treeHashB) != tree.EmptyHash {
+	if hex.EncodeToString(treeHashB[:]) != tree.EmptyHash {
 		t.Errorf("tree.Hash(treeHashB) should return the EmptyHash")
 	}
 }

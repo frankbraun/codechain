@@ -28,7 +28,7 @@ func Start(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	if err := os.MkdirAll(codechainDir, 0700); err != nil {
+	if err := os.MkdirAll(codechainDir, 0755); err != nil {
 		return err
 	}
 	exists, err := file.Exists(hashchainFile)

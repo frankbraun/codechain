@@ -102,11 +102,11 @@ func List(root string, excludePaths []string) ([]byte, error) {
 // Hash returns a SHA256 hash of all files and directories in the file tree
 // rooted at root, except for the paths in excludePaths. The result of the
 // List function serves as a deterministic input if the hash function.
-func Hash(root string, excludePaths []string) ([]byte, error) {
+func Hash(root string, excludePaths []string) (*[32]byte, error) {
 	l, err := List(root, excludePaths)
 	if err != nil {
 		return nil, err
 	}
 	h := sha256.Sum256(l)
-	return h[:], nil
+	return &h, nil
 }

@@ -11,6 +11,8 @@ const (
 
 var (
 	hashchainFile = filepath.Join(codechainDir, "hashchain")
+	treeDir       = filepath.Join(codechainDir, "tree")
+	patchDir      = filepath.Join(codechainDir, "patches")
 	excludePaths  = []string{
 		codechainDir,
 		".git",

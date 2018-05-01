@@ -28,7 +28,7 @@ func TestCopyDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("tree.Hash(dst) failed: %v", err)
 	}
-	if !bytes.Equal(srcHash, dstHash) {
+	if !bytes.Equal(srcHash[:], dstHash[:]) {
 		t.Error("srcHash and dstHash differ")
 	}
 }

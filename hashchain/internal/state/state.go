@@ -116,6 +116,11 @@ func (s *State) NotSigner(pubKey [32]byte) error {
 	return nil
 }
 
+// LastTreeHash returns the most current signed tree hash.
+func (s *State) LastTreeHash() string {
+	return s.signedTreeHashes[len(s.signedTreeHashes)-1]
+}
+
 // LastWeight returns the last weight added for given pubKey (unconfirmed or
 // confirmed).
 func (s *State) LastWeight(pubKey [32]byte) (int, error) {

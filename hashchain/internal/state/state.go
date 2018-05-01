@@ -89,37 +89,8 @@ func (s *State) HasSigner(pubKey [32]byte) bool {
 	return ok
 }
 
-// AddSourceHash adds treeHash at given linkHash to state.
-func (s *State) AddSourceHash(linkHash, treeHash, pubKey [32]byte, comment string) {
-	link := hex.Encode(linkHash[:])
-	tree := hex.Encode(treeHash[:])
-	pub := hex.Encode(pubKey[:])
-	s.treeHashes[tree] = link
-	op := newSourceOP(tree, pub, comment)
-	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
-}
-
-func (s *State) AddSigner(pubKey [32]byte, weight int) {
-	pub := hex.Encode(pubKey[:])
-	op := newAddKeyOP(pub, weight)
-	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
-}
-
-func (s *State) RemoveSigner(pubKey [32]byte, weight int) {
-	pub := hex.Encode(pubKey[:])
-	op := newRemKeyOP(pub, weight)
-	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
-}
-
-func (s *State) SetSignatureControl(m int) {
-	op := newSigCtlOp(m)
-	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
-}
-
-func (s *State) Sign(linkHash, pubKey [32]byte) {
-	// TODO
-}
-
+// LastWeight returns the last weight added for given pubKey (unconfirmed or
+// confirmed).
 func (s *State) LastWeight(pubKey [32]byte) (int, error) {
 	pub := hex.Encode(pubKey[:])
 	for i := len(s.unconfirmedOPs) - 1; i > s.signedLine; i-- {
@@ -139,4 +110,40 @@ func (s *State) LastWeight(pubKey [32]byte) (int, error) {
 		return 0, errors.New("state: unknown remkey")
 	}
 	return w, nil
+}
+
+// AddSourceHash adds treeHash at given linkHash to state.
+func (s *State) AddSourceHash(linkHash, treeHash, pubKey [32]byte, comment string) {
+	link := hex.Encode(linkHash[:])
+	tree := hex.Encode(treeHash[:])
+	pub := hex.Encode(pubKey[:])
+	s.treeHashes[tree] = link
+	op := newSourceOP(tree, pub, comment)
+	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
+}
+
+// AddSigner adds pubKey with weight to state (unconfirmed).
+func (s *State) AddSigner(pubKey [32]byte, weight int) {
+	pub := hex.Encode(pubKey[:])
+	op := newAddKeyOP(pub, weight)
+	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
+}
+
+// RemoveSigner removes pubKey with weight (must equal last addition) from
+// state (unconfirmed).
+func (s *State) RemoveSigner(pubKey [32]byte, weight int) {
+	pub := hex.Encode(pubKey[:])
+	op := newRemKeyOP(pub, weight)
+	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
+}
+
+// SetSignatureControl sets new signature control m (unconfirmed).
+func (s *State) SetSignatureControl(m int) {
+	op := newSigCtlOp(m)
+	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
+}
+
+// Sign signs the given linkHash with pubKey.
+func (s *State) Sign(linkHash, pubKey [32]byte) {
+	// TODO
 }

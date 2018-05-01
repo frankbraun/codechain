@@ -162,7 +162,7 @@ func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
 	w := fields[0]
 	weight, err := strconv.Atoi(w)
 	if err != nil {
-		return fmt.Errorf("hashchain: cannot parse weight: %d", w)
+		return fmt.Errorf("hashchain: cannot parse weight: %s", w)
 	}
 	pub := fields[1]
 	pubKey, err := base64.Decode(pub, 32)

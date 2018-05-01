@@ -17,7 +17,7 @@ func AddKey(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Add new signer to hashchain.\n")
 		fs.PrintDefaults()
 	}
-	w := fs.Int("w", 1, "Signature weight W")
+	w := fs.Int("w", 1, "Signature weight w")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func AddKey(argv0 string, args ...string) error {
 	copy(pubKey[:], pub)
 	var signtr [64]byte
 	copy(signtr[:], sig)
-	line, err := c.AddKey(pubKey, signtr, comment)
+	line, err := c.AddKey(*w, pubKey, signtr, comment)
 	if err != nil {
 		return err
 	}

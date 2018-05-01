@@ -2,6 +2,7 @@ package hashchain
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/internal/base64"
@@ -10,7 +11,7 @@ import (
 )
 
 // AddKey adds pubkey with signature and optional comment to hash chain.
-func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment []byte) (string, error) {
+func (c *HashChain) AddKey(weight int, pubKey [32]byte, signature [64]byte, comment []byte) (string, error) {
 	// check arguments
 	if !ed25519.Verify(pubKey[:], append(pubKey[:], comment...), signature[:]) {
 		return "", fmt.Errorf("signature does not verify")
@@ -18,6 +19,7 @@ func (c *HashChain) AddKey(pubKey [32]byte, signature [64]byte, comment []byte) 
 
 	// create entry
 	typeFields := []string{
+		strconv.Itoa(weight),
 		base64.Encode(pubKey[:]),
 		base64.Encode(signature[:]),
 	}

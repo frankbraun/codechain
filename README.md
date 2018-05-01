@@ -13,6 +13,9 @@ Every published code state is uniquely identified by a deterministic
 source tree hash stored in the hash chain, signed by a single
 responsible developer.
 
+Please note that Codechain uses files to store the hash chain, not a
+distributed "blockchain".
+
 ### Installation
 
 ```

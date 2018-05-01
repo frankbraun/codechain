@@ -96,12 +96,12 @@ func copyDir(src, dst string, excludePaths []string) error {
 		return err
 	}
 	// process source directory
-	fis, err := ioutil.ReadDir(src)
+	files, err := ioutil.ReadDir(src)
 	if err != nil {
 		return err
 	}
 outer:
-	for _, fi := range fis {
+	for _, fi := range files {
 		s := filepath.Join(src, fi.Name())
 		d := filepath.Join(dst, fi.Name())
 		if excludePaths != nil {

@@ -53,11 +53,11 @@ func TestDiffApply(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Diff() failed: %v", err)
 	}
-	if patch != expectedPatch {
+	if string(patch) != expectedPatch {
 		t.Error("patch != expectedPatch")
 	}
 	// apply patch to treeB
-	r := bytes.NewBufferString(patch)
+	r := bytes.NewBuffer(patch)
 	err = Apply(r, 2, treeB, false)
 	if err != nil {
 		t.Fatalf("Apply() failed: %v", err)
@@ -75,7 +75,7 @@ func TestDiffApply(t *testing.T) {
 		t.Error("treeHashA should equal treeHashB")
 	}
 	// try to apply patch to treeB again (should fail)
-	r = bytes.NewBufferString(patch)
+	r = bytes.NewBuffer(patch)
 	err = Apply(r, 2, treeB, false)
 	if err == nil {
 		t.Error("Apply() should fail")
@@ -85,11 +85,11 @@ func TestDiffApply(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Diff() failed: %v", err)
 	}
-	if patch2 != "" {
+	if len(patch2) != 0 {
 		t.Error("patch2 should be empty")
 	}
 	// apply patch to treeB in reverse
-	r = bytes.NewBufferString(patch)
+	r = bytes.NewBuffer(patch)
 	err = Apply(r, 2, treeB, true)
 	if err != nil {
 		t.Fatalf("Apply() failed: %v", err)

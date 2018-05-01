@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-func diff(a, b string, capture bool) (string, error) {
+func diff(a, b string, capture bool) ([]byte, error) {
 	var buf bytes.Buffer
 	cmd := exec.Command("git", "diff", "--no-index", a, b)
 	if capture {
@@ -22,27 +22,25 @@ func diff(a, b string, capture bool) (string, error) {
 	if err := cmd.Run(); err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				if capture {
-					if status.ExitStatus() == 1 {
-						return buf.String(), nil
-					}
-				} else {
+				if status.ExitStatus() == 1 {
+					return buf.Bytes(), nil
+				} else if !capture {
 					// ignore SIGPIPE for non-caputuring output
 					if status.Signaled() && status.Signal() == syscall.SIGPIPE {
-						return "", nil
+						return nil, nil
 					}
 				}
 			}
-			return "", fmt.Errorf("%s: %s", exiterr, string(exiterr.Stderr))
+			return nil, fmt.Errorf("%s: %s", exiterr, string(exiterr.Stderr))
 		}
-		return "", err
+		return nil, err
 	}
-	return buf.String(), nil
+	return buf.Bytes(), nil
 }
 
 // Diff calls `git diff --no-index` on the two directory trees rooted at a and
 // b and returns the resulting patch.
-func Diff(a, b string) (string, error) {
+func Diff(a, b string) ([]byte, error) {
 	return diff(a, b, true)
 }
 

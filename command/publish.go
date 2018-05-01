@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,13 +19,28 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func publish(c *hashchain.HashChain, verbose bool) error {
+func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
+	// load secret key
+	secKey, _, _, err := seckeyLoad(c, secKeyFile)
+	if err != nil {
+		return err
+	}
 
 	// get last published treehash
 	treeHash := c.LastTreeHash()
 
+	// make sure patch file for last
+	patchFile := filepath.Join(patchDir, treeHash)
+	exists, err := file.Exists(patchFile)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("%s: patch file already exists", patchFile)
+	}
+
 	// bring .codechain/tree/a in sync with last published treehash
-	err := tree.Sync(treeDirA, treeHash, patchDir, verbose, excludePaths)
+	err = tree.Sync(treeDirA, treeHash, patchDir, verbose, excludePaths)
 	if err != nil {
 		return err
 	}
@@ -55,6 +71,7 @@ func publish(c *hashchain.HashChain, verbose bool) error {
 		return err
 	}
 
+	// confirm patch
 	for {
 		fmt.Print("publish patch? [y/n]: ")
 		answer, err := terminal.ReadLine(os.Stdin)
@@ -71,16 +88,33 @@ func publish(c *hashchain.HashChain, verbose bool) error {
 		}
 	}
 
+	// read comment
+	fmt.Println("comment describing code change (can be empty):")
+	comment, err := terminal.ReadLine(os.Stdin)
+	if err != nil {
+		return err
+	}
+
 	// get patch
 	patch, err := git.Diff(treeDirA, treeDirB)
 	if err != nil {
 		return err
 	}
-	fmt.Printf(patch)
 
 	// save patch
+	if err := ioutil.WriteFile(patchFile, patch, 0644); err != nil {
+		return err
+	}
+	if verbose {
+		fmt.Printf("%s: written\n", patchFile)
+	}
 
 	// sign patch and add to hash chain
+	entry, err := c.Source(*curHash, *secKey, comment)
+	if err != nil {
+		return err
+	}
+	fmt.Println(entry)
 
 	return nil
 }
@@ -144,7 +178,7 @@ func Publish(argv0 string, args ...string) error {
 	})
 	// run publish
 	go func() {
-		if err := publish(c, *verbose); err != nil {
+		if err := publish(c, *seckey, *verbose); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

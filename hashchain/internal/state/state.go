@@ -150,6 +150,15 @@ func (s *State) LastWeight(pubKey [32]byte) (int, error) {
 	return w, nil
 }
 
+// Signer returns a containing all active signers for state.
+func (s *State) Signer() map[string]bool {
+	signer := make(map[string]bool)
+	for s := range s.signerWeights {
+		signer[s] = true
+	}
+	return signer
+}
+
 // AddSourceHash adds treeHash at given linkHash to state.
 func (s *State) AddSourceHash(linkHash, treeHash, pubKey [32]byte, comment string) {
 	link := hex.Encode(linkHash[:])

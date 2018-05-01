@@ -25,6 +25,11 @@ func (c *HashChain) LastTreeHash() string {
 	return c.state.LastTreeHash()
 }
 
+// Signer returns a map containing all active signers for hash chain.
+func (c *HashChain) Signer() map[string]bool {
+	return c.state.Signer()
+}
+
 // EntryHash returns the entry hash for the given treeHash.
 func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
 	var h [32]byte

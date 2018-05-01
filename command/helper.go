@@ -2,11 +2,15 @@ package command
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"syscall"
 
+	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/home"
 	"github.com/frankbraun/codechain/util/terminal"
 	"golang.org/x/crypto/ed25519"
 )
@@ -19,6 +23,7 @@ func seckeyRead(filename string) (*[64]byte, *[64]byte, []byte, error) {
 	if !exists {
 		return nil, nil, nil, fmt.Errorf("file '%s' does not exist", filename)
 	}
+	fmt.Printf("opening keyfile: %s\n", filename)
 	var pass []byte
 	if testPass == "" {
 		pass, err = terminal.ReadPassphrase(syscall.Stdin, false)
@@ -37,4 +42,35 @@ func seckeyRead(filename string) (*[64]byte, *[64]byte, []byte, error) {
 		return nil, nil, nil, fmt.Errorf("signature does not verify")
 	}
 	return sec, sig, comment, nil
+}
+
+func seckeyLoad(c *hashchain.HashChain, filename string) (*[64]byte, *[64]byte, []byte, error) {
+	if filename != "" {
+		return seckeyRead(filename)
+	}
+	homeDir := home.AppDataDir("codechain", false)
+	homeDir = filepath.Join(homeDir, secretsDir)
+	signer := c.Signer()
+
+	files, err := ioutil.ReadDir(homeDir)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	var pubKey string
+	for _, fi := range files {
+		if signer[fi.Name()] {
+			if pubKey == "" {
+				pubKey = fi.Name()
+			} else {
+				return nil, nil, nil,
+					fmt.Errorf("more than one matching keyfile found: you have too many secrets")
+			}
+		}
+	}
+	if pubKey == "" {
+		return nil, nil, nil,
+			fmt.Errorf("directory '%s' doesn' contain any matching secret keyfile", homeDir)
+	}
+	return seckeyRead(filepath.Join(homeDir, pubKey))
 }

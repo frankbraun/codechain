@@ -45,6 +45,14 @@ func Create(anchorFile string) (Lock, error) {
 
 // Release the lock.
 // The protected process should call this method during shutdown.
-func (l Lock) Release() error {
-	return os.Remove(string(l))
+func (l *Lock) Release() error {
+	s := string(*l)
+	if s == "" {
+		return nil
+	}
+	err := os.Remove(s)
+	if err != nil {
+		*l = ""
+	}
+	return err
 }

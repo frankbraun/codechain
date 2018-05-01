@@ -56,6 +56,20 @@ func TestStartEmpty(t *testing.T) {
 	}
 	defer c.Close()
 	fmt.Println(l)
+
+	_, err = Read(filename)
+	if err == nil {
+		t.Error("Read() should fail (lockfile)")
+	}
+	err = c.Close()
+	if err != nil {
+		t.Fatalf("c.Close() failed: %v", err)
+	}
+	c2, err := Read(filename)
+	if err != nil {
+		t.Fatalf("Read() 2 failed: %v", err)
+	}
+	defer c2.Close()
 }
 
 func TestStartSourceSign(t *testing.T) {
@@ -87,4 +101,139 @@ func TestStartSourceSign(t *testing.T) {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
 	fmt.Println(l)
+}
+
+func TestStartAddKeySignSigCtlSign(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "hashchain_test")
+	if err != nil {
+		t.Fatalf("ioutil.TempDir() failed: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	// start empty chain
+	filename := filepath.Join(tmpdir, "hashchain")
+	c, l, err := Start(filename, secA, []byte("this is a comment"))
+	if err != nil {
+		t.Fatalf("Start() failed: %v", err)
+	}
+	defer c.Close()
+	fmt.Println(l)
+
+	// addkey pubB hello.go
+	sig := ed25519.Sign(secB[:], pubB[:])
+	var signature [64]byte
+	copy(signature[:], sig)
+	l, err = c.AddKey(1, pubB, signature, nil)
+	if err != nil {
+		t.Fatalf("c.AddKey() failed: %v", err)
+	}
+	fmt.Println(l)
+	if c.state.N() != 1 {
+		t.Errorf("total weight should be n=1")
+	}
+	if c.state.HeadN() != 2 {
+		t.Errorf("total weight including unconfirmed should be 2")
+	}
+
+	// sign other signer
+	l, err = c.Signature(c.LastEntryHash(), secA)
+	if err != nil {
+		t.Fatalf("c.Signature() failed: %v", err)
+	}
+	fmt.Println(l)
+	if c.state.N() != 2 {
+		t.Errorf("total weight should be n=2")
+	}
+	if !c.state.HasSigner(pubB) {
+		t.Errorf("pubB should be a signer")
+	}
+
+	// sigctl
+	_, err = c.SignatureControl(3)
+	if err != ErrMLargerThanN {
+		t.Errorf("should fail with ErrMLargerThanN")
+	}
+	l, err = c.SignatureControl(2)
+	if err != nil {
+		t.Fatalf("c.SignatureControl() failed")
+	}
+	fmt.Println(l)
+
+	// sign sigctl
+	l, err = c.Signature(c.LastEntryHash(), secB)
+	if err != nil {
+		t.Fatalf("c.Signature() failed: %v", err)
+	}
+	fmt.Println(l)
+}
+
+func TestStartAddKeySignRemKeySign(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "hashchain_test")
+	if err != nil {
+		t.Fatalf("ioutil.TempDir() failed: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	// start empty chain
+	filename := filepath.Join(tmpdir, "hashchain")
+	c, l, err := Start(filename, secA, []byte("this is a comment"))
+	if err != nil {
+		t.Fatalf("Start() failed: %v", err)
+	}
+	defer c.Close()
+	fmt.Println(l)
+
+	// addkey pubB hello.go
+	sig := ed25519.Sign(secB[:], pubB[:])
+	var signature [64]byte
+	copy(signature[:], sig)
+	l, err = c.AddKey(1, pubB, signature, nil)
+	if err != nil {
+		t.Fatalf("c.AddKey() failed: %v", err)
+	}
+	fmt.Println(l)
+	if c.state.N() != 1 {
+		t.Errorf("total weight should be n=1")
+	}
+	if c.state.HeadN() != 2 {
+		t.Errorf("total weight including unconfirmed should be 2")
+	}
+
+	// sign other signer
+	l, err = c.Signature(c.LastEntryHash(), secA)
+	if err != nil {
+		t.Fatalf("c.Signature() failed: %v", err)
+	}
+	fmt.Println(l)
+	if c.state.N() != 2 {
+		t.Errorf("total weight should be n=2")
+	}
+	if !c.state.HasSigner(pubB) {
+		t.Errorf("pubB should be a signer")
+	}
+
+	// remove key
+	l, err = c.RemoveKey(pubA)
+	if err != nil {
+		t.Fatalf("c.RemoveKey() failed: %v", err)
+	}
+	fmt.Println(l)
+
+	// sign sigctl
+	l, err = c.Signature(c.LastEntryHash(), secB)
+	if err != nil {
+		t.Fatalf("c.Signature() failed: %v", err)
+	}
+	fmt.Println(l)
+
+	// read
+	err = c.Close()
+	if err != nil {
+		t.Fatalf("c.Close() failed: %v", err)
+	}
+	c2, err := Read(filename)
+	if err != nil {
+		t.Fatalf("Read() 2 failed: %v", err)
+	}
+	defer c2.Close()
 }

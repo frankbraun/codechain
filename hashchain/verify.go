@@ -209,7 +209,7 @@ func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
 
 	// validate fields
 	var p [32]byte
-	copy(p[:], pubKey[:])
+	copy(p[:], pubKey)
 	w, err := c.state.LastWeight(p)
 	if err != nil {
 		return err

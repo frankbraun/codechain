@@ -96,7 +96,7 @@ func (s *State) HasSigner(pubKey [32]byte) bool {
 // LastWeight returns the last weight added for given pubKey (unconfirmed or
 // confirmed).
 func (s *State) LastWeight(pubKey [32]byte) (int, error) {
-	pub := hex.Encode(pubKey[:])
+	pub := base64.Encode(pubKey[:])
 	for i := len(s.unconfirmedOPs) - 1; i > s.signedLine; i-- {
 		switch op := s.unconfirmedOPs[i].(type) {
 		case *addKeyOP:

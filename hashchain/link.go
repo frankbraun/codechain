@@ -10,15 +10,6 @@ import (
 	"github.com/frankbraun/codechain/util/time"
 )
 
-const (
-	chainStartType       = "cstart"
-	sourceType           = "source"
-	signatureType        = "signtr"
-	addKeyType           = "addkey"
-	removeKeyType        = "remkey"
-	signatureControlType = "sigctl"
-)
-
 var emptyTree [32]byte
 
 func init() {

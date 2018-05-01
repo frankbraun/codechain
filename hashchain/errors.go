@@ -39,5 +39,8 @@ var ErrWrongSigCStart = errors.New("hashchain: cstart signature doesn't validate
 // ErrWrongSigSource is returned when the signature of a source entry doesn't validate.
 var ErrWrongSigSource = errors.New("hashchain: source signature doesn't validate")
 
+// ErrWrongSigAddKey is returned when the signature of an addkey entry doesn't validate.
+var ErrWrongSigAddKey = errors.New("hashchain: addkey signature doesn't validate")
+
 // ErrWrongSigSignature is returned when the signature of a signature entry doesn't validate.
 var ErrWrongSigSignature = errors.New("hashchain: signature signature doesn't validate")

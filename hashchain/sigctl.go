@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/util/time"
 )
 
@@ -13,7 +14,7 @@ func (c *HashChain) SignatureControl(m int) (string, error) {
 	if m <= 0 {
 		return "", ErrSignatureThresholdNonPositive
 	}
-	if m > c.state.N() {
+	if m > c.state.HeadN() {
 		return "", ErrMLargerThanN
 	}
 
@@ -21,7 +22,7 @@ func (c *HashChain) SignatureControl(m int) (string, error) {
 	l := &link{
 		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
-		linkType:   signatureControlType,
+		linkType:   linktype.SignatureControl,
 		typeFields: []string{strconv.Itoa(m)},
 	}
 	c.chain = append(c.chain, l)

@@ -18,21 +18,22 @@ type State struct {
 	treeHashes         map[string]string // tree hash -> link hash
 	signedTreeHashes   []string          // all signed tree hashes, starting from empty tree
 	unsignedTreeHashes []string          // all unsigned tree hashes
+	unconfirmedOPs     []op              // unconfirmed operations
 }
 
 // New returns a new state for pubKey with optional comment.
 func New(pubKey, comment string) *State {
 	s := &State{
-		m:                  1,
-		n:                  1,
-		signedLine:         0,
-		signerWeights:      make(map[string]int),
-		signerComments:     make(map[string]string),
-		signerBarriers:     make(map[string]int),
-		linkHashes:         make(map[string]int),
-		treeHashes:         make(map[string]string),
-		signedTreeHashes:   []string{tree.EmptyHash},
-		unsignedTreeHashes: []string{},
+		m:                1,
+		n:                1,
+		signedLine:       0,
+		signerWeights:    make(map[string]int),
+		signerComments:   make(map[string]string),
+		signerBarriers:   make(map[string]int),
+		linkHashes:       make(map[string]int),
+		treeHashes:       make(map[string]string),
+		signedTreeHashes: []string{tree.EmptyHash},
+		unconfirmedOPs:   []op{nop},
 	}
 	s.signerWeights[pubKey] = 1 // default weight for first signer
 	s.signerComments[pubKey] = comment
@@ -42,6 +43,18 @@ func New(pubKey, comment string) *State {
 // N returns the total weight of all signers.
 func (s *State) N() int {
 	return s.n
+}
+
+// HeadN returns the total weight of all signers, including unconfirmed
+// key additions and removals.
+func (s *State) HeadN() int {
+	// TODO: add unconfirmed ones
+	return s.n
+}
+
+// OPs returns the number of operations in the hash chain.
+func (s *State) OPs() int {
+	return len(s.unconfirmedOPs)
 }
 
 // AddLinkHash adds linkHash with lineNumber to state.
@@ -55,6 +68,11 @@ func (s *State) HasLinkHash(linkHash [32]byte) bool {
 	return ok
 }
 
+// LinkHashes returns the number of link hashes contained in state.
+func (s *State) LinkHashes() int {
+	return len(s.linkHashes)
+}
+
 // HasSigner checks wether the state s contains a valid the signer with
 // pubKey.
 func (s *State) HasSigner(pubKey [32]byte) bool {
@@ -62,10 +80,33 @@ func (s *State) HasSigner(pubKey [32]byte) bool {
 	return ok
 }
 
-// AddTreeHash adds treeHash at given linkHash to state.
-func (s *State) AddTreeHash(linkHash, treeHash [32]byte) {
+// AddSourceHash adds treeHash at given linkHash to state.
+func (s *State) AddSourceHash(linkHash, treeHash, pubKey [32]byte, comment string) {
 	link := hex.Encode(linkHash[:])
 	tree := hex.Encode(treeHash[:])
+	pub := hex.Encode(pubKey[:])
 	s.treeHashes[tree] = link
-	s.unsignedTreeHashes = append(s.unsignedTreeHashes, tree)
+	op := newSourceOP(tree, pub, comment)
+	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
+}
+
+func (s *State) AddSigner(pubKey [32]byte, weight int) {
+	pub := hex.Encode(pubKey[:])
+	op := newAddKeyOP(pub, weight)
+	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
+}
+
+func (s *State) RemoveSigner(pubKey [32]byte) {
+	pub := hex.Encode(pubKey[:])
+	op := newRemKeyOP(pub)
+	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
+}
+
+func (s *State) SetSignatureControl(m int) {
+	op := newSigCtlOp(m)
+	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
+}
+
+func (s *State) Sign(linkHash, pubKey [32]byte) {
+	// TODO
 }

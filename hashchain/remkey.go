@@ -3,6 +3,7 @@ package hashchain
 import (
 	"fmt"
 
+	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/util/time"
 )
@@ -17,7 +18,7 @@ func (c *HashChain) RemoveKey(pubKey [32]byte) (string, error) {
 	l := &link{
 		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
-		linkType:   removeKeyType,
+		linkType:   linktype.RemoveKey,
 		typeFields: []string{base64.Encode(pubKey[:])},
 	}
 	c.chain = append(c.chain, l)

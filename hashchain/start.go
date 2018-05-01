@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/lockfile"
@@ -59,7 +60,7 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 	l := &link{
 		previous:   emptyTree,
 		datum:      time.Now(),
-		linkType:   chainStartType,
+		linkType:   linktype.ChainStart,
 		typeFields: typeFields,
 	}
 	c.chain = append(c.chain, l)

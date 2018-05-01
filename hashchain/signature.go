@@ -3,6 +3,7 @@ package hashchain
 import (
 	"fmt"
 
+	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/util/time"
@@ -38,7 +39,7 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error
 	l := &link{
 		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
-		linkType:   signatureType,
+		linkType:   linktype.Signature,
 		typeFields: typeFields,
 	}
 
@@ -86,7 +87,7 @@ func (c *HashChain) DetachedSignature(linkHash, pubKey [32]byte, signature [64]b
 	l := &link{
 		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
-		linkType:   signatureType,
+		linkType:   linktype.Signature,
 		typeFields: typeFields,
 	}
 	c.chain = append(c.chain, l)

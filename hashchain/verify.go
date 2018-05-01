@@ -3,9 +3,12 @@ package hashchain
 import (
 	"bytes"
 	"crypto/sha256"
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/frankbraun/codechain/hashchain/internal/state"
+	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/hex"
 	"golang.org/x/crypto/ed25519"
@@ -97,7 +100,7 @@ func (c *HashChain) verifySourceType(i int, fields []string) error {
 	// update state
 	var t [32]byte
 	copy(t[:], treeHash[:])
-	c.state.AddTreeHash(c.chain[i].Hash(), t)
+	c.state.AddSourceHash(c.chain[i].Hash(), t, p, comment)
 	return nil
 }
 
@@ -139,7 +142,9 @@ func (c *HashChain) verifySignatureType(i int, fields []string) error {
 	}
 
 	// update state
-	// TODO
+	var p [32]byte
+	copy(p[:], pubKey[:])
+	c.state.Sign(l, p)
 	return nil
 }
 
@@ -153,10 +158,36 @@ func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
 		return ErrWrongTypeFields
 	}
 
-	// TODO
 	// parse type fields
+	w := fields[0]
+	weight, err := strconv.Atoi(w)
+	if err != nil {
+		return fmt.Errorf("hashchain: cannot parse weight: %d", w)
+	}
+	pub := fields[1]
+	pubKey, err := base64.Decode(pub, 32)
+	if err != nil {
+		return err
+	}
+	sig, err := base64.Decode(fields[2], 64)
+	if err != nil {
+		return err
+	}
+	var comment string
+	if len(fields) == 4 {
+		comment = fields[3]
+	}
+
 	// validate fields
+	var p [32]byte
+	copy(p[:], pubKey)
+	if !ed25519.Verify(p[:], append(pubKey, comment...), sig) {
+		return ErrWrongSigAddKey
+	}
+
 	// update state
+	c.state.AddSigner(p, weight)
+
 	return nil
 }
 
@@ -166,14 +197,25 @@ func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
 	}
-	if len(fields) != 2 {
+	if len(fields) != 1 {
 		return ErrWrongTypeFields
 	}
 
-	// TODO
 	// parse type fields
+	pub := fields[0]
+	pubKey, err := base64.Decode(pub, 32)
+	if err != nil {
+		return err
+	}
+
 	// validate fields
+	// TODO: make sure pubkey is either valid signer or unconfirmed signer
+
 	// update state
+	var p [32]byte
+	copy(p[:], pubKey[:])
+	c.state.RemoveSigner(p)
+
 	return nil
 }
 
@@ -183,14 +225,27 @@ func (c *HashChain) verifySignatureControlType(i int, fields []string) error {
 	if i == 0 {
 		return ErrMustStartWithCStart
 	}
-	if len(fields) != 2 {
+	if len(fields) != 1 {
 		return ErrWrongTypeFields
 	}
 
-	// TODO
 	// parse type fields
+	m, err := strconv.Atoi(fields[0])
+	if err != nil {
+		return fmt.Errorf("hashchain: cannot parse m: %d", m)
+	}
+
 	// validate fields
+	if m <= 0 {
+		return ErrSignatureThresholdNonPositive
+	}
+	if m > c.state.HeadN() {
+		return ErrMLargerThanN
+	}
+
 	// update state
+	c.state.SetSignatureControl(m)
+
 	return nil
 }
 
@@ -217,17 +272,17 @@ func (c *HashChain) verify() error {
 
 		var err error
 		switch l.linkType {
-		case chainStartType:
+		case linktype.ChainStart:
 			err = c.verifyChainStartType(i, l.typeFields)
-		case sourceType:
+		case linktype.Source:
 			err = c.verifySourceType(i, l.typeFields)
-		case signatureType:
+		case linktype.Signature:
 			err = c.verifySignatureType(i, l.typeFields)
-		case addKeyType:
+		case linktype.AddKey:
 			err = c.verifyAddKeyType(i, l.typeFields)
-		case removeKeyType:
+		case linktype.RemoveKey:
 			err = c.verifyRemoveKeyType(i, l.typeFields)
-		case signatureControlType:
+		case linktype.SignatureControl:
 			err = c.verifySignatureControlType(i, l.typeFields)
 		default:
 			err = ErrUnknownLinkType
@@ -238,6 +293,9 @@ func (c *HashChain) verify() error {
 
 		// store link hash and line number
 		c.state.AddLinkHash(l.Hash(), i)
+		if c.state.LinkHashes() != c.state.OPs() {
+			return errors.New("c.state.LinkHashes() != c.state.OPs()") // should never happen
+		}
 
 		// prepare for next entry
 		prevHash = sha256.Sum256([]byte(l.String()))

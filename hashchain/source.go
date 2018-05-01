@@ -3,6 +3,7 @@ package hashchain
 import (
 	"fmt"
 
+	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/util/time"
 	"golang.org/x/crypto/ed25519"
@@ -35,7 +36,7 @@ func (c *HashChain) Source(treeHash [32]byte, secKey [64]byte, comment []byte) (
 	l := &link{
 		previous:   c.LastEntryHash(),
 		datum:      time.Now(),
-		linkType:   sourceType,
+		linkType:   linktype.Source,
 		typeFields: typeFields,
 	}
 	c.chain = append(c.chain, l)

@@ -20,7 +20,7 @@ func (c *HashChain) LastEntryHash() [32]byte {
 	return c.chain[len(c.chain)-1].Hash()
 }
 
-// LastTreeHash returns the most current signed tree hash.
+// LastTreeHash returns the most current tree hash.
 func (c *HashChain) LastTreeHash() string {
 	return c.state.LastTreeHash()
 }

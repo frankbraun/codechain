@@ -11,7 +11,9 @@ const (
 
 var (
 	hashchainFile = filepath.Join(codechainDir, "hashchain")
-	treeDir       = filepath.Join(codechainDir, "tree")
+	treeDirRoot   = filepath.Join(codechainDir, "tree")
+	treeDirA      = filepath.Join(treeDirRoot, "a")
+	treeDirB      = filepath.Join(treeDirRoot, "b")
 	patchDir      = filepath.Join(codechainDir, "patches")
 	excludePaths  = []string{
 		codechainDir,

@@ -2,23 +2,24 @@
 package state
 
 import (
+	"errors"
+
 	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/tree"
 )
 
 // State hold the state of a hashchain.
 type State struct {
-	m                  int               // signature threshold
-	n                  int               // total weight of signers
-	signedLine         int               // line up to and including every entry is signed
-	signerWeights      map[string]int    // pubkey (in base64) -> weight
-	signerComments     map[string]string // pubkey (in base64) -> comment
-	signerBarriers     map[string]int    // pubkey (in base64) -> line number up to he signed
-	linkHashes         map[string]int    // link hash -> line number
-	treeHashes         map[string]string // tree hash -> link hash
-	signedTreeHashes   []string          // all signed tree hashes, starting from empty tree
-	unsignedTreeHashes []string          // all unsigned tree hashes
-	unconfirmedOPs     []op              // unconfirmed operations
+	m                int               // signature threshold
+	n                int               // total weight of signers
+	signedLine       int               // line up to and including every entry is signed
+	signerWeights    map[string]int    // pubkey (in base64) -> weight
+	signerComments   map[string]string // pubkey (in base64) -> comment
+	signerBarriers   map[string]int    // pubkey (in base64) -> line number up to he signed
+	linkHashes       map[string]int    // link hash -> line number
+	treeHashes       map[string]string // tree hash -> link hash
+	signedTreeHashes []string          // all signed tree hashes, starting from empty tree
+	unconfirmedOPs   []op              // unconfirmed operations
 }
 
 // New returns a new state for pubKey with optional comment.
@@ -48,8 +49,16 @@ func (s *State) N() int {
 // HeadN returns the total weight of all signers, including unconfirmed
 // key additions and removals.
 func (s *State) HeadN() int {
-	// TODO: add unconfirmed ones
-	return s.n
+	n := s.n
+	for i := s.signedLine + 1; i < len(s.unconfirmedOPs); i++ {
+		switch op := s.unconfirmedOPs[i].(type) {
+		case *addKeyOP:
+			n += op.weight
+		case *remKeyOP:
+			n -= op.weight
+		}
+	}
+	return n
 }
 
 // OPs returns the number of operations in the hash chain.
@@ -96,9 +105,9 @@ func (s *State) AddSigner(pubKey [32]byte, weight int) {
 	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
 }
 
-func (s *State) RemoveSigner(pubKey [32]byte) {
+func (s *State) RemoveSigner(pubKey [32]byte, weight int) {
 	pub := hex.Encode(pubKey[:])
-	op := newRemKeyOP(pub)
+	op := newRemKeyOP(pub, weight)
 	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
 }
 
@@ -109,4 +118,25 @@ func (s *State) SetSignatureControl(m int) {
 
 func (s *State) Sign(linkHash, pubKey [32]byte) {
 	// TODO
+}
+
+func (s *State) LastWeight(pubKey [32]byte) (int, error) {
+	pub := hex.Encode(pubKey[:])
+	for i := len(s.unconfirmedOPs) - 1; i > s.signedLine; i-- {
+		switch op := s.unconfirmedOPs[i].(type) {
+		case *addKeyOP:
+			if op.pubKey == pub {
+				return op.weight, nil
+			}
+		case *remKeyOP:
+			if op.pubKey == pub {
+				return 0, errors.New("state: duplicate remkey")
+			}
+		}
+	}
+	w, ok := s.signerWeights[pub]
+	if !ok {
+		return 0, errors.New("state: unknown remkey")
+	}
+	return w, nil
 }

@@ -78,11 +78,13 @@ func (op *addKeyOP) String() string {
 type remKeyOP struct {
 	signable
 	pubKey string
+	weight int
 }
 
-func newRemKeyOP(pubKey string) *remKeyOP {
+func newRemKeyOP(pubKey string, weight int) *remKeyOP {
 	return &remKeyOP{
 		pubKey: pubKey,
+		weight: weight,
 	}
 }
 

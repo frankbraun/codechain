@@ -209,12 +209,15 @@ func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
 	}
 
 	// validate fields
-	// TODO: make sure pubkey is either valid signer or unconfirmed signer
-
-	// update state
 	var p [32]byte
 	copy(p[:], pubKey[:])
-	c.state.RemoveSigner(p)
+	w, err := c.state.LastWeight(p)
+	if err != nil {
+		return err
+	}
+
+	// update state
+	c.state.RemoveSigner(p, w)
 
 	return nil
 }

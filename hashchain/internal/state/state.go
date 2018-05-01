@@ -119,7 +119,7 @@ func (s *State) NotSigner(pubKey [32]byte) error {
 // LastTreeHash returns the most current tree hash.
 func (s *State) LastTreeHash() string {
 	for i := len(s.unconfirmedOPs) - 1; i > s.signedLine; i-- {
-		op, ok := s.unconfirmedOPs[i].(sourceOP)
+		op, ok := s.unconfirmedOPs[i].(*sourceOP)
 		if ok {
 			return op.treeHash
 		}

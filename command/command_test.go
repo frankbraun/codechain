@@ -1,6 +1,7 @@
 package command
 
 import (
+	"flag"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -71,5 +72,68 @@ func TestKey(t *testing.T) {
 	err = Status("status")
 	if err != nil {
 		t.Errorf("Status() failed: %v ", err)
+	}
+}
+
+func TestHelp(t *testing.T) {
+	// codechain treehash -h
+	err := TreeHash("codechain treehash", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain treehash -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain keygen -h
+	err = KeyGen("codechain keygen", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain keygen -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain keyfile -h
+	err = KeyFile("codechain keyfile", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain keyfile -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain start -h
+	err = Start("codechain start", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain start -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain publish -h
+	err = Publish("codechain publish", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain publish -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain review -h
+	err = Review("codechain review", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain review -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain addkey -h
+	err = AddKey("codechain addkey", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain addkey -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain remkey -h
+	err = RemKey("codechain remkey", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain remkey -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain sigctl -h
+	err = SigCtl("codechain sigctl", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain sigctl -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain apply -h
+	err = Apply("codechain apply", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain apply -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain status -h
+	err = Status("codechain status", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain status -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain cleanslate -h
+	err = CleanSlate("codechain cleanslate", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain cleanslate -h should fail with flag.ErrHelp: %v", err)
 	}
 }

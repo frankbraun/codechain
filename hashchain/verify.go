@@ -144,8 +144,7 @@ func (c *HashChain) verifySignatureType(i int, fields []string) error {
 	// update state
 	var p [32]byte
 	copy(p[:], pubKey[:])
-	c.state.Sign(l, p)
-	return nil
+	return c.state.Sign(l, p)
 }
 
 // hash-of-previous current-time addkey pubkey-add w pubkey signature [comment]
@@ -186,7 +185,7 @@ func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
 	}
 
 	// update state
-	c.state.AddSigner(p, weight)
+	c.state.AddSigner(p, weight, comment)
 
 	return nil
 }

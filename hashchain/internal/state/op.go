@@ -60,14 +60,16 @@ func (op *sourceOP) String() string {
 
 type addKeyOP struct {
 	signable
-	pubKey string
-	weight int
+	pubKey  string
+	weight  int
+	comment string
 }
 
-func newAddKeyOP(pubKey string, weight int) *addKeyOP {
+func newAddKeyOP(pubKey string, weight int, comment string) *addKeyOP {
 	return &addKeyOP{
-		pubKey: pubKey,
-		weight: weight,
+		pubKey:  pubKey,
+		weight:  weight,
+		comment: comment,
 	}
 }
 

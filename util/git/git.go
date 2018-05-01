@@ -22,8 +22,15 @@ func diff(a, b string, capture bool) (string, error) {
 	if err := cmd.Run(); err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				if status.ExitStatus() == 1 {
-					return buf.String(), nil
+				if capture {
+					if status.ExitStatus() == 1 {
+						return buf.String(), nil
+					}
+				} else {
+					// ignore SIGPIPE for non-caputuring output
+					if status.Signaled() && status.Signal() == syscall.SIGPIPE {
+						return "", nil
+					}
 				}
 			}
 			return "", fmt.Errorf("%s: %s", exiterr, string(exiterr.Stderr))

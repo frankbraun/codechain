@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Exists checks if filename exists already.
@@ -67,10 +68,7 @@ func Copy(src, dst string) error {
 	return nil
 }
 
-// CopyDir recursively copies the source directory src to destination directory
-// dst. The source directory must exist already and only contain regular files
-// and directories. The destination directory must not exist already.
-func CopyDir(src, dst string) error {
+func copyDir(src, dst string, excludePaths []string) error {
 	if dst == "." {
 		dst = filepath.Base(src)
 	}
@@ -102,12 +100,26 @@ func CopyDir(src, dst string) error {
 	if err != nil {
 		return err
 	}
+outer:
 	for _, fi := range fis {
 		s := filepath.Join(src, fi.Name())
 		d := filepath.Join(dst, fi.Name())
+		if excludePaths != nil {
+			canonical := s
+			if src != "." {
+				canonical = strings.TrimPrefix(s, src)
+				canonical = strings.TrimPrefix(canonical, string(filepath.Separator))
+			}
+			canonical = filepath.ToSlash(canonical)
+			for _, excludePath := range excludePaths {
+				if excludePath == canonical {
+					continue outer
+				}
+			}
+		}
 		if fi.IsDir() {
 			// recursion
-			if err := CopyDir(s, d); err != nil {
+			if err := copyDir(s, d, nil); err != nil {
 				return err
 			}
 		} else {
@@ -117,4 +129,19 @@ func CopyDir(src, dst string) error {
 		}
 	}
 	return nil
+}
+
+// CopyDir recursively copies the source directory src to destination directory
+// dst. The source directory must exist already and only contain regular files
+// and directories. The destination directory must not exist already.
+func CopyDir(src, dst string) error {
+	return copyDir(src, dst, nil)
+}
+
+// CopyDirExclude recursively copies the source directory src to destination
+// directory dst, except for paths contained in excludePath. The source
+// directory must exist already and only contain regular files and
+// directories. The destination directory must not exist already.
+func CopyDirExclude(src, dst string, excludePaths []string) error {
+	return copyDir(src, dst, excludePaths)
 }

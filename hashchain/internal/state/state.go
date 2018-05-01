@@ -93,6 +93,29 @@ func (s *State) HasSigner(pubKey [32]byte) bool {
 	return ok
 }
 
+// NotSigner makes sure the given pubKey is not a signer (unconfirmed or
+// confirmed).
+func (s *State) NotSigner(pubKey [32]byte) error {
+	pub := base64.Encode(pubKey[:])
+	for i := len(s.unconfirmedOPs) - 1; i > s.signedLine; i-- {
+		switch op := s.unconfirmedOPs[i].(type) {
+		case *addKeyOP:
+			if op.pubKey == pub {
+				return errors.New("state: duplicate addkey (unsigned)")
+			}
+		case *remKeyOP:
+			if op.pubKey == pub {
+				return nil
+			}
+		}
+	}
+	_, ok := s.signerWeights[pub]
+	if ok {
+		return errors.New("state: duplicate addkey (signed)")
+	}
+	return nil
+}
+
 // LastWeight returns the last weight added for given pubKey (unconfirmed or
 // confirmed).
 func (s *State) LastWeight(pubKey [32]byte) (int, error) {

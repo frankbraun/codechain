@@ -183,6 +183,10 @@ func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
 	if !ed25519.Verify(p[:], append(pubKey, comment...), sig) {
 		return ErrWrongSigAddKey
 	}
+	err = c.state.NotSigner(p)
+	if err != nil {
+		return err
+	}
 
 	// update state
 	c.state.AddSigner(p, weight, comment)

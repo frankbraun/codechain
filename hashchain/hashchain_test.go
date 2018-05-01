@@ -237,3 +237,29 @@ func TestStartAddKeySignRemKeySign(t *testing.T) {
 	}
 	defer c2.Close()
 }
+
+func TestStartAddSameKey(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "hashchain_test")
+	if err != nil {
+		t.Fatalf("ioutil.TempDir() failed: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	// start empty chain
+	filename := filepath.Join(tmpdir, "hashchain")
+	c, l, err := Start(filename, secA, []byte("this is a comment"))
+	if err != nil {
+		t.Fatalf("Start() failed: %v", err)
+	}
+	defer c.Close()
+	fmt.Println(l)
+
+	// addkey pubA
+	sig := ed25519.Sign(secA[:], pubA[:])
+	var signature [64]byte
+	copy(signature[:], sig)
+	_, err = c.AddKey(1, pubA, signature, nil)
+	if err == nil {
+		t.Fatalf("c.AddKey() should failv")
+	}
+}

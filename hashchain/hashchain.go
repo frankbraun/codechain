@@ -29,10 +29,14 @@ func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
 
 // Close the underlying file pointer of hash chain and release lock.
 func (c *HashChain) Close() error {
+	if c.fp == nil {
+		return c.lock.Release()
+	}
 	err := c.fp.Close()
 	if err != nil {
 		c.lock.Release()
 		return err
 	}
+	c.fp = nil
 	return c.lock.Release()
 }

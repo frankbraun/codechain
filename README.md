@@ -1,6 +1,8 @@
-## Codechain — code trust through hash chains
+## Codechain — code trust through hash chains — α release
 
 [![GoDoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/frankbraun/codechain) [![Build Status](https://img.shields.io/travis/frankbraun/codechain.svg?style=flat-square)](https://travis-ci.org/frankbraun/codechain) [![Go Report Card](https://goreportcard.com/badge/github.com/frankbraun/codechain?style=flat-square)](https://goreportcard.com/report/github.com/frankbraun/codechain)
+
+This is an **alpha** release of Codechain — **the hash chain might be reset**!
 
 Codechain establishes code trust via multi-party reviews recorded in
 unmodifiable hash chains.

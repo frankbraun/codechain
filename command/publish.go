@@ -56,7 +56,7 @@ func publish(c *hashchain.HashChain, verbose bool) error {
 	}
 
 	for {
-		fmt.Print("publish path? [y/n]: ")
+		fmt.Print("publish patch? [y/n]: ")
 		answer, err := terminal.ReadLine(os.Stdin)
 		if err != nil {
 			return err
@@ -78,7 +78,9 @@ func publish(c *hashchain.HashChain, verbose bool) error {
 	}
 	fmt.Printf(patch)
 
-	// TODO: sign diff and add to hash chain
+	// save patch
+
+	// sign patch and add to hash chain
 
 	return nil
 }

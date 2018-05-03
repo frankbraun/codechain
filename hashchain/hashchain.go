@@ -47,14 +47,11 @@ func (c *HashChain) Signer() map[string]bool {
 	return c.state.Signer()
 }
 
-// SignerInfo returns signer pubkey and comment for patch with given treeHash.
+// SignerInfo returns signer pubKey and comment for patch with given treeHash.
 func (c *HashChain) SignerInfo(treeHash string) (string, string) {
 	link := c.chain[c.state.SourceLine(treeHash)]
-	var comment string
-	if len(link.typeFields) == 4 {
-		comment = link.typeFields[3]
-	}
-	return link.typeFields[1], comment
+	pubKey := link.typeFields[1]
+	return pubKey, c.state.SignerComment(pubKey)
 }
 
 // EntryHash returns the entry hash for the given treeHash.

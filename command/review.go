@@ -34,26 +34,37 @@ func review(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 		return fmt.Errorf("invariant failed: len(treeHashes) == len(treeComments)")
 	}
 
+	if verbose {
+		fmt.Println("treeHashes :")
+		for _, h := range treeHashes {
+			fmt.Println(h)
+		}
+		fmt.Println("treeComments:")
+		for _, c := range treeComments {
+			fmt.Println(c)
+		}
+	}
+
 	// TODO: also show commits which have been signed, but not by this signer
 	// TODO: deal with explicit treehash
 	// TODO: show changes in signers/sigctl!
 
-	for i := idx; i < len(treeHashes)-1; i++ {
+	for i := idx + 1; i < len(treeHashes); i++ {
 		// bring .codechain/tree/a in sync
-		err = tree.Sync(treeDirA, treeHashes[i], patchDir, treeHashes, verbose, excludePaths)
+		err = tree.Sync(treeDirA, treeHashes[i-1], patchDir, treeHashes, verbose, excludePaths)
 		if err != nil {
 			return err
 		}
 
 		// bring .codechain/tree/b in sync
-		err = tree.Sync(treeDirB, treeHashes[i+1], patchDir, treeHashes, verbose, excludePaths)
+		err = tree.Sync(treeDirB, treeHashes[i], patchDir, treeHashes, verbose, excludePaths)
 		if err != nil {
 			return err
 		}
 
 		// show patches info
-		pub, comment := c.SignerInfo(treeHashes[i+1])
-		fmt.Printf("patch %d/%d\n", i-idx+1, len(treeHashes)-idx-1)
+		pub, comment := c.SignerInfo(treeHashes[i])
+		fmt.Printf("patch %d/%d\n", i-idx, len(treeHashes)-idx-1)
 		if treeComments[i] != "" {
 			fmt.Println(treeComments[i])
 		}

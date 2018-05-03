@@ -196,6 +196,11 @@ func (s *State) Signer() map[string]bool {
 	return signer
 }
 
+// SignerComment returns the signer comment for given pubKey.
+func (s *State) SignerComment(pubKey string) string {
+	return s.signerComments[pubKey]
+}
+
 // AddSourceHash adds treeHash at given linkHash to state.
 func (s *State) AddSourceHash(linkHash, treeHash, pubKey [32]byte, comment string) {
 	link := hex.Encode(linkHash[:])

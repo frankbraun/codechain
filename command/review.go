@@ -30,6 +30,9 @@ func review(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 	}
 	treeHashes := c.TreeHashes()
 	treeComments := c.TreeComments()
+	if len(treeHashes) != len(treeComments) {
+		return fmt.Errorf("invariant failed: len(treeHashes) == len(treeComments)")
+	}
 
 	// TODO: also show commits which have been signed, but not by this signer
 	// TODO: deal with explicit treehash
@@ -49,8 +52,8 @@ func review(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 		}
 
 		// show patches info
-		pub, comment := c.SignerInfo(treeHashes[i])
-		fmt.Printf("patch %d/%d\n", i-idx+1, len(treeHashes)-idx)
+		pub, comment := c.SignerInfo(treeHashes[i+1])
+		fmt.Printf("patch %d/%d\n", i-idx+1, len(treeHashes)-idx-1)
 		if treeComments[i] != "" {
 			fmt.Println(treeComments[i])
 		}

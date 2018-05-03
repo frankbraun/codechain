@@ -19,6 +19,8 @@ func diff(a, b string, capture bool) ([]byte, error) {
 	} else {
 		cmd.Stdout = os.Stdout
 	}
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
@@ -31,7 +33,7 @@ func diff(a, b string, capture bool) ([]byte, error) {
 					}
 				}
 			}
-			return nil, fmt.Errorf("%s: %s", exiterr, string(exiterr.Stderr))
+			return nil, fmt.Errorf("%s: %s", exiterr, stderr.String())
 		}
 		return nil, err
 	}
@@ -66,9 +68,11 @@ func Apply(patch io.Reader, p int, dir string, reverse bool) error {
 	cmd.Dir = dir
 	cmd.Stdin = patch
 	cmd.Stdout = os.Stdout
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
-			return fmt.Errorf("%s: %s", exiterr, string(exiterr.Stderr))
+			return fmt.Errorf("%s: %s", exiterr, stderr.String())
 		}
 		return err
 	}

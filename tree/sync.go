@@ -99,6 +99,9 @@ func Sync(
 		}
 
 		// apply patch
+		if verbose {
+			fmt.Println("applying patch")
+		}
 		err = git.Apply(patch, 4, treeDir, false)
 		if err != nil {
 			patch.Close()

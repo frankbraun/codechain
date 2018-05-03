@@ -40,7 +40,7 @@ func showUnsignedReleases(c *hashchain.HashChain) {
 	_, idx := c.LastSignedTreeHash()
 	treeHashes := c.TreeHashes()
 	if idx == len(treeHashes)-1 {
-		fmt.Println("no unssigned releases")
+		fmt.Println("no unsigned releases")
 		return
 	}
 	treeComments := c.TreeComments()

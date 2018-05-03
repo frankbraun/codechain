@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -28,5 +29,5 @@ func Status(argv0 string, args ...string) error {
 		return err
 	}
 	// TODO: implement
-	return nil
+	return errors.New("not implemented")
 }

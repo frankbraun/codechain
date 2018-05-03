@@ -20,9 +20,20 @@ func (c *HashChain) LastEntryHash() [32]byte {
 	return c.chain[len(c.chain)-1].Hash()
 }
 
-// LastTreeHash returns the most current tree hash.
+// LastTreeHash returns the most current tree hash (can be unsigned).
 func (c *HashChain) LastTreeHash() string {
 	return c.state.LastTreeHash()
+}
+
+// LastSignedTreeHash returns the last signed tree hash.
+func (c *HashChain) LastSignedTreeHash() string {
+	return c.state.LastSignedTreeHash()
+}
+
+// TreeHashes returns a list of all tree hashes in order (starting from
+// tree.EmptyHash).
+func (c *HashChain) TreeHashes() []string {
+	return c.state.TreeHashes()
 }
 
 // Signer returns a map containing all active signers for hash chain.

@@ -127,6 +127,24 @@ func (s *State) LastTreeHash() string {
 	return s.signedTreeHashes[len(s.signedTreeHashes)-1]
 }
 
+// LastSignedTreeHash returns the last signed tree hash.
+func (s *State) LastSignedTreeHash() string {
+	return s.signedTreeHashes[len(s.signedTreeHashes)-1]
+}
+
+// TreeHashes returns a list of all tree hashes in order (starting from
+// tree.EmptyHash).
+func (s *State) TreeHashes() []string {
+	treeHashes := append([]string{}, s.signedTreeHashes...)
+	for i := s.signedLine + 1; i < len(s.unconfirmedOPs); i++ {
+		op, ok := s.unconfirmedOPs[i].(*sourceOP)
+		if ok {
+			treeHashes = append(treeHashes, op.treeHash)
+		}
+	}
+	return treeHashes
+}
+
 // LastWeight returns the last weight added for given pubKey (unconfirmed or
 // confirmed).
 func (s *State) LastWeight(pubKey [32]byte) (int, error) {
@@ -241,6 +259,7 @@ func (s *State) Sign(linkHash, pubKey [32]byte) error {
 			break
 		}
 	}
+	s.signedLine = i - 1
 	s.signerBarriers[pub] = i - 1
 	s.unconfirmedOPs = append(s.unconfirmedOPs, nop)
 	return nil

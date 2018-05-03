@@ -15,6 +15,31 @@ import (
 	"golang.org/x/crypto/ed25519"
 )
 
+func seckeyCheck(seckey string) error {
+	if seckey != "" {
+		exists, err := file.Exists(seckey)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			return fmt.Errorf("file '%s' doesn't exists", seckey)
+		}
+	} else {
+		homeDir := home.AppDataDir("codechain", false)
+		homeDir = filepath.Join(homeDir, secretsDir)
+		// make sure we have the secrets directory present
+		exists, err := file.Exists(homeDir)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			return fmt.Errorf("directory '%s' doesn't exists: you have no secrets",
+				homeDir)
+		}
+	}
+	return nil
+}
+
 func seckeyRead(filename string) (*[64]byte, *[64]byte, []byte, error) {
 	exists, err := file.Exists(filename)
 	if err != nil {

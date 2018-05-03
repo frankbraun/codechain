@@ -14,7 +14,6 @@ import (
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/git"
-	"github.com/frankbraun/codechain/util/home"
 	"github.com/frankbraun/codechain/util/interrupt"
 	"github.com/frankbraun/codechain/util/terminal"
 )
@@ -29,7 +28,7 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 	// get last published treehash
 	treeHash := c.LastTreeHash()
 
-	// make sure patch file for last
+	// make sure patch file doesn't exist for last tree hash
 	patchFile := filepath.Join(patchDir, treeHash)
 	exists, err := file.Exists(patchFile)
 	if err != nil {
@@ -40,7 +39,8 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 	}
 
 	// bring .codechain/tree/a in sync with last published treehash
-	err = tree.Sync(treeDirA, treeHash, patchDir, verbose, excludePaths)
+	treeHashes := c.TreeHashes()
+	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, verbose, excludePaths)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 	}
 	fmt.Printf("%x\n", curHash[:])
 
-	// bring .codechain/tree/b in sync with last published treehash
+	// bring .codechain/tree/b in sync with the tree hash to be published
 	tmpHash, err := tree.Hash(treeDirB, excludePaths)
 	if err != nil {
 		return err
@@ -132,27 +132,8 @@ func Publish(argv0 string, args ...string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	var homeDir string
-	if *seckey != "" {
-		exists, err := file.Exists(*seckey)
-		if err != nil {
-			return err
-		}
-		if !exists {
-			return fmt.Errorf("file '%s' doesn't exists", *seckey)
-		}
-	} else {
-		homeDir = home.AppDataDir("codechain", false)
-		homeDir = filepath.Join(homeDir, secretsDir)
-		// make sure we have the secrets directory at least present
-		exists, err := file.Exists(homeDir)
-		if err != nil {
-			return err
-		}
-		if !exists {
-			return fmt.Errorf("directory '%s' doesn't exists: you have no secrets",
-				homeDir)
-		}
+	if err := seckeyCheck(*seckey); err != nil {
+		return err
 	}
 	if fs.NArg() != 0 {
 		fs.Usage()

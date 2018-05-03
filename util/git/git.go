@@ -56,8 +56,11 @@ func DiffPager(a, b string) error {
 // Apply calls `git apply` with the given patch in directory dir.
 // Set p > 1 to remove more than 1 leading slashes from traditional diff paths.
 // Use reverse to enable option -R.
-func Apply(patch io.Reader, p int, dir string, reverse bool) error {
-	args := []string{"apply", "--directory", dir}
+func Apply(patch io.Reader, p int, dir string, dirOpt, reverse bool) error {
+	args := []string{"apply"}
+	if dirOpt {
+		args = append(args, "--directory", dir)
+	}
 	if p > 1 {
 		args = append(args, "-p", strconv.Itoa(p))
 	}
@@ -65,6 +68,7 @@ func Apply(patch io.Reader, p int, dir string, reverse bool) error {
 		args = append(args, "-R")
 	}
 	cmd := exec.Command("git", args...)
+	// TODO: check for "."?
 	cmd.Dir = dir
 	cmd.Stdin = patch
 	cmd.Stdout = os.Stdout

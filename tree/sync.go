@@ -94,7 +94,7 @@ func Sync(
 
 		// apply patch
 		log.Println("applying patch")
-		err = git.Apply(patch, 4, treeDir, false)
+		err = git.Apply(patch, 4, treeDir, true, false)
 		if err != nil {
 			patch.Close()
 			return err

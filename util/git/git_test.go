@@ -1,4 +1,4 @@
-package git
+package git_test
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/git"
 )
 
 const expectedPatch = `diff --git a/treeA/bar/baz.txt b/treeA/bar/baz.txt
@@ -49,7 +50,7 @@ func TestDiffApply(t *testing.T) {
 		t.Fatalf("os.Chdir() should not fail: %v", err)
 	}
 	// diff trees
-	patch, err := Diff("treeB", "treeA")
+	patch, err := git.Diff("treeB", "treeA")
 	if err != nil {
 		t.Fatalf("Diff() failed: %v", err)
 	}
@@ -58,7 +59,7 @@ func TestDiffApply(t *testing.T) {
 	}
 	// apply patch to treeB
 	r := bytes.NewBuffer(patch)
-	err = Apply(r, 2, treeB, false)
+	err = git.Apply(r, 2, treeB, false)
 	if err != nil {
 		t.Fatalf("Apply() failed: %v", err)
 	}
@@ -76,12 +77,12 @@ func TestDiffApply(t *testing.T) {
 	}
 	// try to apply patch to treeB again (should fail)
 	r = bytes.NewBuffer(patch)
-	err = Apply(r, 2, treeB, false)
+	err = git.Apply(r, 2, treeB, false)
 	if err == nil {
 		t.Error("Apply() should fail")
 	}
 	// diff trees again (should be empty)
-	patch2, err := Diff("treeA", "treeB")
+	patch2, err := git.Diff("treeA", "treeB")
 	if err != nil {
 		t.Fatalf("Diff() failed: %v", err)
 	}
@@ -90,7 +91,7 @@ func TestDiffApply(t *testing.T) {
 	}
 	// apply patch to treeB in reverse
 	r = bytes.NewBuffer(patch)
-	err = Apply(r, 2, treeB, true)
+	err = git.Apply(r, 2, treeB, true)
 	if err != nil {
 		t.Fatalf("Apply() failed: %v", err)
 	}

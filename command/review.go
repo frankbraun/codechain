@@ -23,61 +23,86 @@ func review(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 	}
 
 	// get last tree hashes
-	unsignedTreeHash := c.LastTreeHash()
-	signedTreeHash := c.LastSignedTreeHash()
-
-	if unsignedTreeHash == signedTreeHash {
+	signedTreeHash, idx := c.LastSignedTreeHash()
+	if signedTreeHash == c.LastTreeHash() {
 		fmt.Printf("%s: already signed\n", signedTreeHash)
 		return nil
 	}
-
-	// bring .codechain/tree/a in sync with last signed tree hash
 	treeHashes := c.TreeHashes()
-	err = tree.Sync(treeDirA, signedTreeHash, patchDir, treeHashes, verbose, excludePaths)
-	if err != nil {
-		return err
-	}
-	// TODO: also show commits which have been signed, but not by this signer
+	treeComments := c.TreeComments()
 
-	// TODO: show patches separately
+	// TODO: also show commits which have been signed, but not by this signer
+	// TODO: deal with explicit treehash
 	// TODO: show changes in signers/sigctl!
 
-	// bring .codechain/tree/b in sync with last unsigned tree hash
-	err = tree.Sync(treeDirB, unsignedTreeHash, patchDir, treeHashes, verbose, excludePaths)
-	if err != nil {
-		return err
-	}
-
-	// display diff *pager
-	if err := git.DiffPager(treeDirA, treeDirB); err != nil {
-		return err
-	}
-
-	// confirm patch
-	for {
-		fmt.Print("sign patch? [y/n]: ")
-		answer, err := terminal.ReadLine(os.Stdin)
+	for i := idx; i < len(treeHashes)-1; i++ {
+		// bring .codechain/tree/a in sync
+		err = tree.Sync(treeDirA, treeHashes[i], patchDir, treeHashes, verbose, excludePaths)
 		if err != nil {
 			return err
 		}
-		a := string(bytes.ToLower(answer))
-		if strings.HasPrefix(a, "y") {
-			break
-		} else if strings.HasPrefix(a, "n") {
-			return errors.New("aborted")
-		} else {
-			fmt.Println("answer not recognized")
+
+		// bring .codechain/tree/b in sync
+		err = tree.Sync(treeDirB, treeHashes[i+1], patchDir, treeHashes, verbose, excludePaths)
+		if err != nil {
+			return err
+		}
+
+		// show patches info
+		pub, comment := c.SignerInfo(treeHashes[i])
+		fmt.Printf("patch %d/%d\n", i-idx+1, len(treeHashes)-idx)
+		if treeComments[i] != "" {
+			fmt.Println(treeComments[i])
+		}
+		fmt.Printf("developer: %s\n", pub)
+		if comment != "" {
+			fmt.Println(comment)
+		}
+		for {
+			fmt.Print("review patch? [y/n]: ")
+			answer, err := terminal.ReadLine(os.Stdin)
+			if err != nil {
+				return err
+			}
+			a := string(bytes.ToLower(answer))
+			if strings.HasPrefix(a, "y") {
+				break
+			} else if strings.HasPrefix(a, "n") {
+				return errors.New("aborted")
+			} else {
+				fmt.Println("answer not recognized")
+			}
+		}
+
+		// display diff *pager
+		if err := git.DiffPager(treeDirA, treeDirB); err != nil {
+			return err
+		}
+
+		// confirm patch
+		for {
+			fmt.Print("sign patch? [y/n]: ")
+			answer, err := terminal.ReadLine(os.Stdin)
+			if err != nil {
+				return err
+			}
+			a := string(bytes.ToLower(answer))
+			if strings.HasPrefix(a, "y") {
+				break
+			} else if strings.HasPrefix(a, "n") {
+				return errors.New("aborted")
+			} else {
+				fmt.Println("answer not recognized")
+			}
 		}
 	}
 
-	// sign patch and add to hash chain
-	// TODO: deal with explicit treehash
+	// sign patches and add to hash chain
 	entry, err := c.Signature(c.LastEntryHash(), *secKey)
 	if err != nil {
 		return err
 	}
 	fmt.Println(entry)
-
 	return nil
 }
 

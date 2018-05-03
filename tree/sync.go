@@ -13,7 +13,6 @@ import (
 // Sync treeDir to the state of treeHash with patches from patchDir.
 // Prints status info if verbose is true.
 func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose bool, excludePaths []string) error {
-	fmt.Println("Sync()")
 	// argument checking
 	if treeHashes[0] != EmptyHash {
 		return fmt.Errorf("tree: treeHashes doesn't start with EmptyHash")
@@ -33,7 +32,9 @@ func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose boo
 	}
 
 	if hashStr == targetHash {
-		fmt.Println("treeDir in sync")
+		if verbose {
+			fmt.Println("treeDir in sync")
+		}
 		return nil
 	}
 
@@ -45,9 +46,7 @@ func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose boo
 	}
 
 	prev := EmptyHash
-	fmt.Println("iterate")
 	for _, h := range treeHashes {
-		fmt.Printf("h: %s\n", h)
 		// verify previous patch
 		p, err := Hash(treeDir, excludePaths)
 		if err != nil {
@@ -66,7 +65,6 @@ func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose boo
 			return err
 		}
 		// apply patch
-		fmt.Println("apply")
 		err = git.Apply(patch, 4, treeDir, false)
 		if err != nil {
 			patch.Close()
@@ -77,14 +75,11 @@ func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose boo
 		prev = h
 	}
 	if treeHashes[len(treeHashes)-1] == targetHash {
-		fmt.Println("check")
-		fmt.Println(treeDir)
 		// targetHash was last hash, verify it
 		p, err := Hash(treeDir, excludePaths)
 		if err != nil {
 			return err
 		}
-		fmt.Println(hex.Encode(p[:]))
 		if hex.Encode(p[:]) != targetHash {
 			return fmt.Errorf("tree: patch failed to create target: %s", targetHash)
 		}

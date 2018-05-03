@@ -26,7 +26,7 @@ func (c *HashChain) LastTreeHash() string {
 }
 
 // LastSignedTreeHash returns the last signed tree hash.
-func (c *HashChain) LastSignedTreeHash() string {
+func (c *HashChain) LastSignedTreeHash() (string, int) {
 	return c.state.LastSignedTreeHash()
 }
 
@@ -36,9 +36,25 @@ func (c *HashChain) TreeHashes() []string {
 	return c.state.TreeHashes()
 }
 
+// TreeComments returns a list of all tree comments in order (starting from
+// tree.EmptyHash).
+func (c *HashChain) TreeComments() []string {
+	return c.state.TreeComments()
+}
+
 // Signer returns a map containing all active signers for hash chain.
 func (c *HashChain) Signer() map[string]bool {
 	return c.state.Signer()
+}
+
+// SignerInfo returns signer pubkey and comment for patch with given treeHash.
+func (c *HashChain) SignerInfo(treeHash string) (string, string) {
+	link := c.chain[c.state.SourceLine(treeHash)]
+	var comment string
+	if len(link.typeFields) == 4 {
+		comment = link.typeFields[3]
+	}
+	return link.typeFields[1], comment
 }
 
 // EntryHash returns the entry hash for the given treeHash.

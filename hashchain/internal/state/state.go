@@ -86,6 +86,11 @@ func (s *State) LinkHashes() int {
 	return len(s.linkHashes)
 }
 
+// SourceLine returns the line number where the given tree hash was signed.
+func (s *State) SourceLine(treeHash string) int {
+	return s.linkHashes[s.treeHashes[treeHash]]
+}
+
 // HasSigner checks wether the state s contains a valid the signer with
 // pubKey.
 func (s *State) HasSigner(pubKey [32]byte) bool {
@@ -128,8 +133,9 @@ func (s *State) LastTreeHash() string {
 }
 
 // LastSignedTreeHash returns the last signed tree hash.
-func (s *State) LastSignedTreeHash() string {
-	return s.signedTreeHashes[len(s.signedTreeHashes)-1]
+func (s *State) LastSignedTreeHash() (string, int) {
+	idx := len(s.signedTreeHashes) - 1
+	return s.signedTreeHashes[idx], idx
 }
 
 // TreeHashes returns a list of all tree hashes in order (starting from
@@ -143,6 +149,19 @@ func (s *State) TreeHashes() []string {
 		}
 	}
 	return treeHashes
+}
+
+// TreeComments returns a list of all tree comments in order (starting from
+// tree.EmptyHash).
+func (s *State) TreeComments() []string {
+	treeComments := append([]string{}, s.signedTreeComments...)
+	for i := s.signedLine + 1; i < len(s.unconfirmedOPs); i++ {
+		op, ok := s.unconfirmedOPs[i].(*sourceOP)
+		if ok {
+			treeComments = append(treeComments, op.comment)
+		}
+	}
+	return treeComments
 }
 
 // LastWeight returns the last weight added for given pubKey (unconfirmed or

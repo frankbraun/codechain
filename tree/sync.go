@@ -47,6 +47,7 @@ func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose boo
 	prev := EmptyHash
 	fmt.Println("iterate")
 	for _, h := range treeHashes {
+		fmt.Printf("h: %s\n", h)
 		// verify previous patch
 		p, err := Hash(treeDir, excludePaths)
 		if err != nil {
@@ -65,7 +66,8 @@ func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose boo
 			return err
 		}
 		// apply patch
-		err = git.Apply(patch, 1, treeDir, false)
+		fmt.Println("apply")
+		err = git.Apply(patch, 4, treeDir, false)
 		if err != nil {
 			patch.Close()
 			return err
@@ -75,11 +77,14 @@ func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose boo
 		prev = h
 	}
 	if treeHashes[len(treeHashes)-1] == targetHash {
+		fmt.Println("check")
+		fmt.Println(treeDir)
 		// targetHash was last hash, verify it
 		p, err := Hash(treeDir, excludePaths)
 		if err != nil {
 			return err
 		}
+		fmt.Println(hex.Encode(p[:]))
 		if hex.Encode(p[:]) != targetHash {
 			return fmt.Errorf("tree: patch failed to create target: %s", targetHash)
 		}

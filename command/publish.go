@@ -39,11 +39,13 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 	}
 
 	// bring .codechain/tree/a in sync with last published treehash
+	fmt.Println("sync tree/a")
 	treeHashes := c.TreeHashes()
 	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, verbose, excludePaths)
 	if err != nil {
 		return err
 	}
+	fmt.Println("done")
 
 	// calculate current treehash
 	curHash, err := tree.Hash(".", excludePaths)

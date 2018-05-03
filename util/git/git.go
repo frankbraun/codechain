@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"syscall"
 )
 
@@ -33,7 +34,7 @@ func diff(a, b string, capture bool) ([]byte, error) {
 					}
 				}
 			}
-			return nil, fmt.Errorf("%s: %s", exiterr, stderr.String())
+			return nil, fmt.Errorf("%s: %s", exiterr, strings.TrimSpace(stderr.String()))
 		}
 		return nil, err
 	}
@@ -58,7 +59,7 @@ func DiffPager(a, b string) error {
 // Use reverse to enable option -R.
 func Apply(patch io.Reader, p int, dir string, dirOpt, reverse bool) error {
 	args := []string{"apply"}
-	if dirOpt {
+	if dirOpt && dir != "." {
 		args = append(args, "--directory", dir)
 	}
 	if p > 1 {
@@ -76,7 +77,7 @@ func Apply(patch io.Reader, p int, dir string, dirOpt, reverse bool) error {
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
-			return fmt.Errorf("%s: %s", exiterr, stderr.String())
+			return fmt.Errorf("%s: %s", exiterr, strings.TrimSpace(stderr.String()))
 		}
 		return err
 	}

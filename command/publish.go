@@ -15,6 +15,7 @@ import (
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/git"
 	"github.com/frankbraun/codechain/util/interrupt"
+	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
@@ -43,7 +44,7 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 		fmt.Println("sync tree/a")
 	}
 	treeHashes := c.TreeHashes()
-	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, verbose, excludePaths, true)
+	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, excludePaths, true)
 	if err != nil {
 		return err
 	}
@@ -140,6 +141,9 @@ func Publish(argv0 string, args ...string) error {
 	}
 	if err := seckeyCheck(*seckey); err != nil {
 		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
 	}
 	if fs.NArg() != 0 {
 		fs.Usage()

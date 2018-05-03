@@ -7,12 +7,13 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/tree"
+	"github.com/frankbraun/codechain/util/log"
 )
 
-func apply(c *hashchain.HashChain, verbose bool) error {
+func apply(c *hashchain.HashChain) error {
 	targetHash, _ := c.LastSignedTreeHash()
 	treeHashes := c.TreeHashes()
-	err := tree.Sync(".", targetHash, patchDir, treeHashes, verbose, excludePaths, false)
+	err := tree.Sync(".", targetHash, patchDir, treeHashes, excludePaths, false)
 	if err != nil {
 		return err
 	}
@@ -32,6 +33,9 @@ func Apply(argv0 string, args ...string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
+	}
 	if fs.NArg() != 0 {
 		fs.Usage()
 		return flag.ErrHelp
@@ -43,5 +47,5 @@ func Apply(argv0 string, args ...string) error {
 	if err := c.Close(); err != nil {
 		return err
 	}
-	return apply(c, *verbose)
+	return apply(c)
 }

@@ -12,10 +12,11 @@ import (
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/git"
 	"github.com/frankbraun/codechain/util/interrupt"
+	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func review(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
+func review(c *hashchain.HashChain, secKeyFile string) error {
 	// load secret key
 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
 	if err != nil {
@@ -34,14 +35,14 @@ func review(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 		return fmt.Errorf("invariant failed: len(treeHashes) == len(treeComments)")
 	}
 
-	if verbose {
-		fmt.Println("treeHashes :")
+	if log.Std != nil {
+		log.Println("treeHashes :")
 		for _, h := range treeHashes {
-			fmt.Println(h)
+			log.Println(h)
 		}
-		fmt.Println("treeComments:")
+		log.Println("treeComments:")
 		for _, c := range treeComments {
-			fmt.Println(c)
+			log.Println(c)
 		}
 	}
 
@@ -51,13 +52,13 @@ func review(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 
 	for i := idx + 1; i < len(treeHashes); i++ {
 		// bring .codechain/tree/a in sync
-		err = tree.Sync(treeDirA, treeHashes[i-1], patchDir, treeHashes, verbose, excludePaths, true)
+		err = tree.Sync(treeDirA, treeHashes[i-1], patchDir, treeHashes, excludePaths, true)
 		if err != nil {
 			return err
 		}
 
 		// bring .codechain/tree/b in sync
-		err = tree.Sync(treeDirB, treeHashes[i], patchDir, treeHashes, verbose, excludePaths, true)
+		err = tree.Sync(treeDirB, treeHashes[i], patchDir, treeHashes, excludePaths, true)
 		if err != nil {
 			return err
 		}
@@ -136,6 +137,9 @@ func Review(argv0 string, args ...string) error {
 	if err := seckeyCheck(*seckey); err != nil {
 		return err
 	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
+	}
 	if fs.NArg() != 0 && fs.NArg() != 1 {
 		fs.Usage()
 		return flag.ErrHelp
@@ -165,7 +169,7 @@ func Review(argv0 string, args ...string) error {
 	})
 	// run review
 	go func() {
-		if err := review(c, *seckey, *verbose); err != nil {
+		if err := review(c, *seckey); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

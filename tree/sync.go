@@ -9,6 +9,7 @@ import (
 	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/util"
 	"github.com/frankbraun/codechain/util/git"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // Sync treeDir to the state of treeHash with patches from patchDir.
@@ -16,7 +17,6 @@ import (
 func Sync(
 	treeDir, targetHash, patchDir string,
 	treeHashes []string,
-	verbose bool,
 	excludePaths []string,
 	canRemoveDir bool,
 ) error {
@@ -33,16 +33,12 @@ func Sync(
 		return err
 	}
 	hashStr := hex.Encode(hash[:])
-	if verbose {
-		fmt.Printf("treeDir    : %s\n", treeDir)
-		fmt.Printf("treeDirHash: %x\n", hash[:])
-		fmt.Printf("targetHash : %s\n", targetHash)
-	}
+	log.Printf("treeDir    : %s\n", treeDir)
+	log.Printf("treeDirHash: %x\n", hash[:])
+	log.Printf("targetHash : %s\n", targetHash)
 
 	if hashStr == targetHash {
-		if verbose {
-			fmt.Println("treeDir in sync")
-		}
+		log.Println("treeDir in sync")
 		return nil
 	}
 
@@ -74,9 +70,7 @@ func Sync(
 	}
 
 	for _, h := range treeHashes {
-		if verbose {
-			fmt.Printf("apply patch: %s\n", h)
-		}
+		log.Printf("apply patch: %s\n", h)
 
 		// verify previous patch
 		p, err := Hash(treeDir, excludePaths)
@@ -99,9 +93,7 @@ func Sync(
 		}
 
 		// apply patch
-		if verbose {
-			fmt.Println("applying patch")
-		}
+		log.Println("applying patch")
 		err = git.Apply(patch, 4, treeDir, false)
 		if err != nil {
 			patch.Close()

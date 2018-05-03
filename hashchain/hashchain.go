@@ -15,6 +15,16 @@ type HashChain struct {
 	state *state.State
 }
 
+// M returns the signature threshold.
+func (c *HashChain) M() int {
+	return c.state.M()
+}
+
+// N returns the total weight of all signers.
+func (c *HashChain) N() int {
+	return c.state.N()
+}
+
 // LastEntryHash returns the hash of the last entry.
 func (c *HashChain) LastEntryHash() [32]byte {
 	return c.chain[len(c.chain)-1].Hash()
@@ -45,6 +55,16 @@ func (c *HashChain) TreeComments() []string {
 // Signer returns a map containing all active signers for hash chain.
 func (c *HashChain) Signer() map[string]bool {
 	return c.state.Signer()
+}
+
+// SignerComment returns the signer comment for given pubKey.
+func (c *HashChain) SignerComment(pubKey string) string {
+	return c.state.SignerComment(pubKey)
+}
+
+// SignerWeight returns the signer weight for given pubKey.
+func (c *HashChain) SignerWeight(pubKey string) int {
+	return c.state.SignerWeight(pubKey)
 }
 
 // SignerInfo returns signer pubKey and comment for patch with given treeHash.

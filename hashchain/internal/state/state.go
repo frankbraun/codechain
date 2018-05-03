@@ -45,6 +45,11 @@ func New(pubKey, comment string) *State {
 	return s
 }
 
+// M returns the signature threshold.
+func (s *State) M() int {
+	return s.m
+}
+
 // N returns the total weight of all signers.
 func (s *State) N() int {
 	return s.n
@@ -199,6 +204,11 @@ func (s *State) Signer() map[string]bool {
 // SignerComment returns the signer comment for given pubKey.
 func (s *State) SignerComment(pubKey string) string {
 	return s.signerComments[pubKey]
+}
+
+// SignerWeight returns the signer weight for given pubKey.
+func (s *State) SignerWeight(pubKey string) int {
+	return s.signerWeights[pubKey]
 }
 
 // AddSourceHash adds treeHash at given linkHash to state.

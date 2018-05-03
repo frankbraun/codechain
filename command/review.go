@@ -37,7 +37,7 @@ func review(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 	if err != nil {
 		return err
 	}
-	// TODO: also show commits which have signed, but not by this signer
+	// TODO: also show commits which have been signed, but not by this signer
 
 	// TODO: show patches separately
 	// TODO: show changes in signers/sigctl!

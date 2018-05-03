@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,7 +13,13 @@ import (
 
 // Sync treeDir to the state of treeHash with patches from patchDir.
 // Prints status info if verbose is true.
-func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose bool, excludePaths []string) error {
+func Sync(
+	treeDir, targetHash, patchDir string,
+	treeHashes []string,
+	verbose bool,
+	excludePaths []string,
+	canRemoveDir bool,
+) error {
 	// argument checking
 	if treeHashes[0] != EmptyHash {
 		return fmt.Errorf("tree: treeHashes doesn't start with EmptyHash")
@@ -39,11 +46,31 @@ func Sync(treeDir, targetHash, patchDir string, treeHashes []string, verbose boo
 		return nil
 	}
 
-	if err := os.RemoveAll(treeDir); err != nil {
-		return err
+	// find target hash index
+	var idx int
+	for ; idx < len(treeHashes); idx++ {
+		if treeHashes[idx] == targetHash {
+			break
+		}
 	}
-	if err := os.Mkdir(treeDir, 0755); err != nil {
-		return err
+
+	// find start position
+	var i int
+	for ; i < idx; i++ {
+		if hashStr == treeHashes[i] {
+			break
+		}
+	}
+	if i == idx {
+		if !canRemoveDir {
+			return errors.New("tree: could not find a valid start to apply, try with empty dir")
+		}
+		if err := os.RemoveAll(treeDir); err != nil {
+			return err
+		}
+		if err := os.Mkdir(treeDir, 0755); err != nil {
+			return err
+		}
 	}
 
 	for _, h := range treeHashes {

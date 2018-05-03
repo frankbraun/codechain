@@ -43,7 +43,7 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 		fmt.Println("sync tree/a")
 	}
 	treeHashes := c.TreeHashes()
-	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, verbose, excludePaths)
+	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, verbose, excludePaths, true)
 	if err != nil {
 		return err
 	}

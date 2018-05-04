@@ -31,6 +31,7 @@ func Read(filename string) (*HashChain, error) {
 	}
 	c.fp, err = os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {
+		c.lock.Release()
 		return nil, err
 	}
 
@@ -42,12 +43,14 @@ func Read(filename string) (*HashChain, error) {
 		line := strings.SplitN(text, " ", 4)
 		previous, err := hex.Decode(line[0], 32)
 		if err != nil {
+			c.lock.Release()
 			return nil, err
 		}
 		var prev [32]byte
 		copy(prev[:], previous)
 		t, err := time.Parse(line[1])
 		if err != nil {
+			c.lock.Release()
 			return nil, fmt.Errorf("hashchain: cannot parse time '%s': %s", line[1], err)
 		}
 		l := &link{
@@ -57,16 +60,19 @@ func Read(filename string) (*HashChain, error) {
 			typeFields: strings.SplitN(line[3], " ", 4),
 		}
 		if l.String() != text {
+			c.lock.Release()
 			return nil, fmt.Errorf("hashchain: cannot reproduce line:\n%s", text)
 		}
 		c.chain = append(c.chain, l)
 	}
 	if err := s.Err(); err != nil {
+		c.lock.Release()
 		return nil, err
 	}
 
 	// verify
 	if err := c.verify(); err != nil {
+		c.lock.Release()
 		return nil, err
 	}
 	return &c, nil

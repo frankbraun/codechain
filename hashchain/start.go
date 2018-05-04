@@ -33,12 +33,14 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 	}
 	c.fp, err = os.Create(filename)
 	if err != nil {
+		c.lock.Release()
 		return nil, "", err
 	}
 
 	// create signature
 	var nonce [24]byte
 	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
+		c.lock.Release()
 		return nil, "", err
 	}
 	pub := secKey[32:]
@@ -67,12 +69,14 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 
 	// verify
 	if err := c.verify(); err != nil {
+		c.lock.Release()
 		return nil, "", err
 	}
 
 	// save
 	entry := l.String()
 	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+		c.lock.Release()
 		return nil, "", err
 	}
 	return &c, entry, nil

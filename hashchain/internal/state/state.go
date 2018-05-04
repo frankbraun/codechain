@@ -8,6 +8,7 @@ import (
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/tree"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // State hold the state of a hashchain.
@@ -294,10 +295,21 @@ func (s *State) Sign(linkHash, pubKey [32]byte) error {
 	if !ok {
 		return errors.New("state: Sign(): unknown pubKey")
 	}
-	// sign lines
-	for i := s.signedLine + 1; i <= line; i++ {
+	// make sure this pubkey hasn't already signed
+	log.Printf("state.Sign(): pubKey=%s", pub)
+	log.Printf("state.Sign(): line=%d", line)
+	log.Printf("state.Sign(): signerBarrier=%d", s.signerBarriers[pub])
+	/* let him sign again?
+	if line <= s.signerBarriers[pub]+1 {
+		return errors.New("this pubkey has already signed")
+	}
+	*/
+	// sign lines not signed by this signer yet
+	for i := s.signerBarriers[pub] + 1; i <= line; i++ {
 		s.unconfirmedOPs[i].sign(weight)
 	}
+	s.signerBarriers[pub] = line
+	log.Printf("state.Sign(): signerBarrier=%d", s.signerBarriers[pub])
 	// check if we can commit stuff
 	var i int
 	for i = s.signedLine + 1; i <= line; i++ {
@@ -334,7 +346,6 @@ func (s *State) Sign(linkHash, pubKey [32]byte) error {
 		}
 	}
 	s.signedLine = i - 1
-	s.signerBarriers[pub] = i - 1
 	s.unconfirmedOPs = append(s.unconfirmedOPs, nop)
 	return nil
 }
@@ -343,13 +354,17 @@ func (s *State) Sign(linkHash, pubKey [32]byte) error {
 // entries suitable for printing.
 // If TreeHash is defined it returns info until that treeHash.
 // If omitSource is true source lines are omitted
-func (s *State) UnsignedInfo(treeHash string, omitSource bool) ([]string, error) {
+func (s *State) UnsignedInfo(pubKey, treeHash string, omitSource bool) ([]string, error) {
 	var infos []string
 	end := len(s.unconfirmedOPs)
 	if treeHash != "" {
 		end = s.SourceLine(treeHash)
 	}
-	for i := s.signedLine + 1; i < end; i++ {
+	i := s.signedLine + 1
+	if pubKey != "" {
+		i = s.signerBarriers[pubKey] + 1
+	}
+	for ; i < end; i++ {
 		switch op := s.unconfirmedOPs[i].(type) {
 		case *noOP:
 			continue
@@ -374,4 +389,8 @@ func (s *State) UnsignedInfo(treeHash string, omitSource bool) ([]string, error)
 		}
 	}
 	return infos, nil
+}
+
+func (s *State) SignerBarrier(pubKey string) int {
+	return s.signerBarriers[pubKey]
 }

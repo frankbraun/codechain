@@ -93,6 +93,11 @@ func (c *HashChain) LinkHash(treeHash string) [32]byte {
 	return c.state.LinkHash(treeHash)
 }
 
+// SourceLine returns the line number where the given tree hash was signed.
+func (c *HashChain) SourceLine(treeHash string) int {
+	return c.state.SourceLine(treeHash)
+}
+
 // EntryHash returns the entry hash for the given treeHash.
 func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
 	var h [32]byte
@@ -104,6 +109,10 @@ func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
 // entries suitable for printing.
 // If TreeHash is defined it returns info until that treeHash.
 // If omitSource is true source lines are omitted
-func (c *HashChain) UnsignedInfo(treeHash string, omitSource bool) ([]string, error) {
-	return c.state.UnsignedInfo(treeHash, omitSource)
+func (c *HashChain) UnsignedInfo(pubkey, treeHash string, omitSource bool) ([]string, error) {
+	return c.state.UnsignedInfo(pubkey, treeHash, omitSource)
+}
+
+func (c *HashChain) SignerBarrier(pubKey string) int {
+	return c.state.SignerBarrier(pubKey)
 }

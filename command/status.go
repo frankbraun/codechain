@@ -37,7 +37,7 @@ func showSignedReleases(c *hashchain.HashChain) {
 }
 
 func showUnsigned(c *hashchain.HashChain) error {
-	infos, err := c.UnsignedInfo("", false)
+	infos, err := c.UnsignedInfo("", "", false)
 	if err != nil {
 		return err
 	}

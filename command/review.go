@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/git"
 	"github.com/frankbraun/codechain/util/interrupt"
@@ -24,11 +25,13 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 	}
 
 	// get last tree hashes
-	signedTreeHash, idx := c.LastSignedTreeHash()
-	if signedTreeHash == c.LastTreeHash() {
-		fmt.Printf("%s: already signed\n", signedTreeHash)
-		return nil
-	}
+	_, idx := c.LastSignedTreeHash()
+	/*
+		if signedTreeHash == c.LastTreeHash() {
+			fmt.Printf("%s: already signed\n", signedTreeHash)
+			return nil
+		}
+	*/
 	treeHashes := c.TreeHashes()
 	treeComments := c.TreeComments()
 	if len(treeHashes) != len(treeComments) {
@@ -66,7 +69,9 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 	}
 
 	// show changes in signers/sigctl
-	infos, err := c.UnsignedInfo(treeHash, true)
+	var signed bool
+	pubKey := base64.Encode(secKey[32:])
+	infos, err := c.UnsignedInfo(pubKey, treeHash, true)
 	if err != nil {
 		return err
 	}
@@ -83,6 +88,7 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 			}
 			a := string(bytes.ToLower(answer))
 			if strings.HasPrefix(a, "y") {
+				signed = true
 				break
 			} else if strings.HasPrefix(a, "n") {
 				return errors.New("aborted")
@@ -92,7 +98,59 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 		}
 	}
 
-	// TODO: also show commits which have been signed, but not by this signer
+	// show commits which have been signed, but not by this signer
+	barrier := c.SignerBarrier(pubKey)
+	// TODO: deduplicate code
+outer:
+	for i := 1; i <= idx; i++ {
+		if c.SourceLine(treeHashes[i]) > barrier {
+			// show patche info
+			pub, comment := c.SignerInfo(treeHashes[i])
+			fmt.Printf("patch %d/%d\n", i-idx, len(treeHashes)-idx-1)
+			if treeComments[i] != "" {
+				fmt.Println(treeComments[i])
+			}
+			fmt.Printf("developer: %s\n", pub)
+			if comment != "" {
+				fmt.Println(comment)
+			}
+			for {
+				fmt.Print("review already signed patch (no continues)? [y/n]: ")
+				answer, err := terminal.ReadLine(os.Stdin)
+				if err != nil {
+					return err
+				}
+				a := string(bytes.ToLower(answer))
+				if strings.HasPrefix(a, "y") {
+					break
+				} else if strings.HasPrefix(a, "n") {
+					continue outer
+				} else {
+					fmt.Println("answer not recognized")
+				}
+			}
+
+			// bring .codechain/tree/a in sync
+			log.Println("bring .codechain/tree/a in sync")
+			err = tree.Sync(treeDirA, treeHashes[i-1], patchDir, treeHashes, excludePaths, true)
+			if err != nil {
+				return err
+			}
+
+			// bring .codechain/tree/b in sync
+			log.Println("bring .codechain/tree/b in sync")
+			err = tree.Sync(treeDirB, treeHashes[i], patchDir, treeHashes, excludePaths, true)
+			if err != nil {
+				return err
+			}
+
+			// display diff *pager
+			if err := git.DiffPager(treeDirA, treeDirB); err != nil {
+				return err
+			}
+		}
+	}
+
 	for i := idx + 1; i < len(treeHashes); i++ {
 		// bring .codechain/tree/a in sync
 		log.Println("bring .codechain/tree/a in sync")
@@ -108,7 +166,7 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 			return err
 		}
 
-		// show patches info
+		// show patche info
 		pub, comment := c.SignerInfo(treeHashes[i])
 		fmt.Printf("patch %d/%d\n", i-idx, len(treeHashes)-idx-1)
 		if treeComments[i] != "" {
@@ -119,13 +177,14 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 			fmt.Println(comment)
 		}
 		for {
-			fmt.Print("review patch? [y/n]: ")
+			fmt.Print("review patch (no aborts)? [y/n]: ")
 			answer, err := terminal.ReadLine(os.Stdin)
 			if err != nil {
 				return err
 			}
 			a := string(bytes.ToLower(answer))
 			if strings.HasPrefix(a, "y") {
+				signed = true
 				break
 			} else if strings.HasPrefix(a, "n") {
 				return errors.New("aborted")
@@ -148,6 +207,26 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 			}
 			a := string(bytes.ToLower(answer))
 			if strings.HasPrefix(a, "y") {
+				break
+			} else if strings.HasPrefix(a, "n") {
+				return errors.New("aborted")
+			} else {
+				fmt.Println("answer not recognized")
+			}
+		}
+	}
+
+	if !signed {
+		for {
+			fmt.Println("no new signer/sigctl changes or source publications to sign")
+			fmt.Print("sign anyway? [y/n]: ")
+			answer, err := terminal.ReadLine(os.Stdin)
+			if err != nil {
+				return err
+			}
+			a := string(bytes.ToLower(answer))
+			if strings.HasPrefix(a, "y") {
+				signed = true
 				break
 			} else if strings.HasPrefix(a, "n") {
 				return errors.New("aborted")

@@ -13,6 +13,7 @@ import (
 	"syscall"
 
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 func diff(a, b string, capture bool) ([]byte, error) {
@@ -71,6 +72,7 @@ func Apply(patch io.Reader, p int, dir string, dirOpt, reverse bool) error {
 	if reverse {
 		args = append(args, "-R")
 	}
+	log.Printf("git " + strings.Join(args, " "))
 	cmd := exec.Command("git", args...)
 	// TODO: check for "."?
 	cmd.Dir = dir

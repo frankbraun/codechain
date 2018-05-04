@@ -15,6 +15,20 @@ type HashChain struct {
 	state *state.State
 }
 
+// Close the underlying file pointer of hash chain and release lock.
+func (c *HashChain) Close() error {
+	if c.fp == nil {
+		return c.lock.Release()
+	}
+	err := c.fp.Close()
+	if err != nil {
+		c.lock.Release()
+		return err
+	}
+	c.fp = nil
+	return c.lock.Release()
+}
+
 // M returns the signature threshold.
 func (c *HashChain) M() int {
 	return c.state.M()
@@ -86,16 +100,10 @@ func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
 	return h
 }
 
-// Close the underlying file pointer of hash chain and release lock.
-func (c *HashChain) Close() error {
-	if c.fp == nil {
-		return c.lock.Release()
-	}
-	err := c.fp.Close()
-	if err != nil {
-		c.lock.Release()
-		return err
-	}
-	c.fp = nil
-	return c.lock.Release()
+// UnsignedInfo returns a string slice with information about all unsigned
+// entries suitable for printing.
+// If TreeHash is defined it returns info until that treeHash.
+// If omitSource is true source lines are omitted
+func (c *HashChain) UnsignedInfo(treeHash string, omitSource bool) ([]string, error) {
+	return c.state.UnsignedInfo(treeHash, omitSource)
 }

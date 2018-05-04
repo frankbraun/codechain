@@ -36,25 +36,28 @@ func showSignedReleases(c *hashchain.HashChain) {
 	}
 }
 
-func showUnsignedReleases(c *hashchain.HashChain) {
-	_, idx := c.LastSignedTreeHash()
-	treeHashes := c.TreeHashes()
-	if idx == len(treeHashes)-1 {
-		fmt.Println("no unsigned releases")
-		return
+func showUnsigned(c *hashchain.HashChain) error {
+	infos, err := c.UnsignedInfo("", false)
+	if err != nil {
+		return err
 	}
-	treeComments := c.TreeComments()
-	fmt.Println("unsigned releases:")
-	for i := idx + 1; i < len(treeHashes); i++ {
-		fmt.Printf("%s %s\n", treeHashes[i], treeComments[i])
+	if len(infos) == 0 {
+		fmt.Println("no unsigned entries")
+		return nil
 	}
+	fmt.Println("unsigned entries:")
+	for _, info := range infos {
+		fmt.Println(info)
+	}
+	return nil
 }
 
 func status(c *hashchain.HashChain) error {
-	showSigner(c)
 	showSignedReleases(c)
-	showUnsignedReleases(c)
-	return nil
+	fmt.Println()
+	showSigner(c)
+	fmt.Println()
+	return showUnsigned(c)
 }
 
 // Status implement the 'status' command.

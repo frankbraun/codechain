@@ -3,6 +3,7 @@ package state
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/hex"
@@ -308,4 +309,41 @@ func (s *State) Sign(linkHash, pubKey [32]byte) error {
 	s.signerBarriers[pub] = i - 1
 	s.unconfirmedOPs = append(s.unconfirmedOPs, nop)
 	return nil
+}
+
+// UnsignedInfo returns a string slice with information about all unsigned
+// entries suitable for printing.
+// If TreeHash is defined it returns info until that treeHash.
+// If omitSource is true source lines are omitted
+func (s *State) UnsignedInfo(treeHash string, omitSource bool) ([]string, error) {
+	var infos []string
+	end := len(s.unconfirmedOPs)
+	if treeHash != "" {
+		end = s.SourceLine(treeHash)
+	}
+	for i := s.signedLine + 1; i < end; i++ {
+		switch op := s.unconfirmedOPs[i].(type) {
+		case *noOP:
+			continue
+		case *sourceOP:
+			if omitSource {
+				continue
+			}
+			info := fmt.Sprintf("source %s %s", op.treeHash, op.comment)
+			infos = append(infos, info)
+		case *addKeyOP:
+			info := fmt.Sprintf("addkey %d %s %s", op.weight, op.pubKey, op.comment)
+			infos = append(infos, info)
+		case *remKeyOP:
+			info := fmt.Sprintf("remkey %d %s %s", op.weight, op.pubKey,
+				s.signerComments[op.pubKey]) // shows only comments from already confirmed signers, but that's fine
+			infos = append(infos, info)
+		case *sigCtlOp:
+			info := fmt.Sprintf("sigctl %d", op.m)
+			infos = append(infos, info)
+		default:
+			return nil, errors.New("state: Sign(): unknown OP type")
+		}
+	}
+	return infos, nil
 }

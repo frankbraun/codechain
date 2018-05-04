@@ -357,17 +357,17 @@ func (s *State) UnsignedInfo(treeHash string, omitSource bool) ([]string, error)
 			if omitSource {
 				continue
 			}
-			info := fmt.Sprintf("source %s %s", op.treeHash, op.comment)
+			info := fmt.Sprintf("%d source %s %s", op.signatures(), op.treeHash, op.comment)
 			infos = append(infos, info)
 		case *addKeyOP:
-			info := fmt.Sprintf("addkey %d %s %s", op.weight, op.pubKey, op.comment)
+			info := fmt.Sprintf("%d addkey %d %s %s", op.signatures(), op.weight, op.pubKey, op.comment)
 			infos = append(infos, info)
 		case *remKeyOP:
-			info := fmt.Sprintf("remkey %d %s %s", op.weight, op.pubKey,
+			info := fmt.Sprintf("%d remkey %d %s %s", op.signatures(), op.weight, op.pubKey,
 				s.signerComments[op.pubKey]) // shows only comments from already confirmed signers, but that's fine
 			infos = append(infos, info)
 		case *sigCtlOp:
-			info := fmt.Sprintf("sigctl %d", op.m)
+			info := fmt.Sprintf("%d sigctl %d", op.signatures(), op.m)
 			infos = append(infos, info)
 		default:
 			return nil, errors.New("state: Sign(): unknown OP type")

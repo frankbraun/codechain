@@ -76,10 +76,10 @@ func KeyFile(argv0 string, args ...string) error {
 		return err
 	}
 	if *change && *list {
-		return fmt.Errorf("%s: options -c and -l exclude each other")
+		return fmt.Errorf("%s: options -c and -l exclude each other", argv0)
 	}
 	if *seckey != "" && *list {
-		return fmt.Errorf("%s: options -s and -l exclude each other")
+		return fmt.Errorf("%s: options -s and -l exclude each other", argv0)
 	}
 	if *seckey == "" && !*list {
 		return fmt.Errorf("%s: option -s is mandatory", argv0)

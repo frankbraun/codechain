@@ -7,9 +7,12 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/frankbraun/codechain/util/file"
 )
 
 func diff(a, b string, capture bool) ([]byte, error) {
@@ -80,6 +83,31 @@ func Apply(patch io.Reader, p int, dir string, dirOpt, reverse bool) error {
 			return fmt.Errorf("%s: %s", exiterr, strings.TrimSpace(stderr.String()))
 		}
 		return err
+	}
+	return nil
+}
+
+// EnsureRootGitDir ensures that dir is either the root of a Git repository or
+// not in a Git repository at all.
+func EnsureRootGitDir(dir string) error {
+	exists, err := file.Exists(filepath.Join(dir, ".git"))
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+	d, _ := filepath.Split(strings.TrimSuffix(dir, string(filepath.Separator)))
+	for d != "" {
+		exists, err := file.Exists(filepath.Join(d, ".git"))
+		if err != nil {
+			return err
+		}
+		if exists {
+			return fmt.Errorf("'%s' is not root of Git repo '%s'",
+				dir, filepath.Join(d, ".git"))
+		}
+		d, _ = filepath.Split(strings.TrimSuffix(d, string(filepath.Separator)))
 	}
 	return nil
 }

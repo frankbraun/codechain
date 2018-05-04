@@ -16,7 +16,7 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func review(c *hashchain.HashChain, secKeyFile, treehash string) error {
+func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 	// load secret key
 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
 	if err != nil {
@@ -35,6 +35,25 @@ func review(c *hashchain.HashChain, secKeyFile, treehash string) error {
 		return fmt.Errorf("invariant failed: len(treeHashes) == len(treeComments)")
 	}
 
+	// deal with explicit treehash
+	if treeHash != "" {
+		log.Printf("treehash=%s", treeHash)
+		var i int
+		for ; i < len(treeHashes); i++ {
+			if treeHash == treeHashes[i] {
+				log.Printf("treehash found at index %d", i)
+				break
+			}
+		}
+		if i == len(treeHashes) {
+			return errors.New("cannot find treehash in hashchain")
+		}
+		if i <= idx {
+			return errors.New("given treehash is already signed")
+		}
+		idx = i
+	}
+
 	if log.Std != nil {
 		log.Println("treeHashes :")
 		for _, h := range treeHashes {
@@ -44,23 +63,6 @@ func review(c *hashchain.HashChain, secKeyFile, treehash string) error {
 		for _, c := range treeComments {
 			log.Println(c)
 		}
-	}
-
-	// deal with explicit treehash
-	if treehash != "" {
-		var i int
-		for ; i < len(treeHashes); i++ {
-			if treehash == treeHashes[i] {
-				break
-			}
-		}
-		if i == len(treeHashes) {
-			return errors.New("cannot find treehash in hashchain")
-		}
-		if i < idx {
-			return errors.New("given treehash is already signed")
-		}
-		idx = i
 	}
 
 	// TODO: also show commits which have been signed, but not by this signer
@@ -131,7 +133,13 @@ func review(c *hashchain.HashChain, secKeyFile, treehash string) error {
 	}
 
 	// sign patches and add to hash chain
-	entry, err := c.Signature(c.LastEntryHash(), *secKey)
+	var linkHash [32]byte
+	if treeHash != "" {
+		linkHash = c.LinkHash(treeHash)
+	} else {
+		linkHash = c.LastEntryHash()
+	}
+	entry, err := c.Signature(linkHash, *secKey)
 	if err != nil {
 		return err
 	}
@@ -168,9 +176,9 @@ func Review(argv0 string, args ...string) error {
 	if err := os.MkdirAll(treeDirB, 0755); err != nil {
 		return err
 	}
-	var treehash string
+	var treeHash string
 	if fs.NArg() == 1 {
-		treehash = fs.Arg(0)
+		treeHash = fs.Arg(0)
 	}
 	c, err := hashchain.Read(hashchainFile)
 	if err != nil {
@@ -183,7 +191,7 @@ func Review(argv0 string, args ...string) error {
 	})
 	// run review
 	go func() {
-		if err := review(c, *seckey, treehash); err != nil {
+		if err := review(c, *seckey, treeHash); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

@@ -96,6 +96,17 @@ func (s *State) SourceLine(treeHash string) int {
 	return s.linkHashes[s.treeHashes[treeHash]]
 }
 
+// LinkHash returns the link hash corresponding to given treeHash.
+func (s *State) LinkHash(treeHash string) [32]byte {
+	linkHash, err := hex.Decode(s.treeHashes[treeHash], 32)
+	if err != nil {
+		panic(err)
+	}
+	var lh [32]byte
+	copy(lh[:], linkHash)
+	return lh
+}
+
 // HasSigner checks wether the state s contains a valid the signer with
 // pubKey.
 func (s *State) HasSigner(pubKey [32]byte) bool {

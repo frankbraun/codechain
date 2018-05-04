@@ -74,6 +74,11 @@ func (c *HashChain) SignerInfo(treeHash string) (string, string) {
 	return pubKey, c.state.SignerComment(pubKey)
 }
 
+// LinkHash returns the link hash corresponding to given treeHash.
+func (c *HashChain) LinkHash(treeHash string) [32]byte {
+	return c.state.LinkHash(treeHash)
+}
+
 // EntryHash returns the entry hash for the given treeHash.
 func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
 	var h [32]byte

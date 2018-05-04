@@ -65,9 +65,34 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 		}
 	}
 
-	// TODO: also show commits which have been signed, but not by this signer
-	// TODO: show changes in signers/sigctl!
+	// show changes in signers/sigctl
+	infos, err := c.UnsignedInfo(treeHash, true)
+	if err != nil {
+		return err
+	}
+	if len(infos) > 0 {
+		fmt.Println("signer/sigctl changes:")
+		for _, info := range infos {
+			fmt.Println(info)
+		}
+		for {
+			fmt.Print("confirm signer/sigctl changes? [y/n]: ")
+			answer, err := terminal.ReadLine(os.Stdin)
+			if err != nil {
+				return err
+			}
+			a := string(bytes.ToLower(answer))
+			if strings.HasPrefix(a, "y") {
+				break
+			} else if strings.HasPrefix(a, "n") {
+				return errors.New("aborted")
+			} else {
+				fmt.Println("answer not recognized")
+			}
+		}
+	}
 
+	// TODO: also show commits which have been signed, but not by this signer
 	for i := idx + 1; i < len(treeHashes); i++ {
 		// bring .codechain/tree/a in sync
 		log.Println("bring .codechain/tree/a in sync")

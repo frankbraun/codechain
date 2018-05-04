@@ -1,0 +1,63 @@
+diff --git a/.codechain/tree/a/command/review.go b/.codechain/tree/b/command/review.go
+index 4bfcc53..38efbc7 100644
+--- a/.codechain/tree/a/command/review.go
++++ b/.codechain/tree/b/command/review.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/frankbraun/codechain/util/terminal"
+ )
+ 
+-func review(c *hashchain.HashChain, secKeyFile string) error {
++func review(c *hashchain.HashChain, secKeyFile, treehash string) error {
+ 	// load secret key
+ 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
+ 	if err != nil {
+@@ -46,8 +46,24 @@ func review(c *hashchain.HashChain, secKeyFile string) error {
+ 		}
+ 	}
+ 
++	// deal with explicit treehash
++	if treehash != "" {
++		var i int
++		for ; i < len(treeHashes); i++ {
++			if treehash == treeHashes[i] {
++				break
++			}
++		}
++		if i == len(treeHashes) {
++			return errors.New("cannot find treehash in hashchain")
++		}
++		if i < idx {
++			return errors.New("given treehash is already signed")
++		}
++		idx = i
++	}
++
+ 	// TODO: also show commits which have been signed, but not by this signer
+-	// TODO: deal with explicit treehash
+ 	// TODO: show changes in signers/sigctl!
+ 
+ 	for i := idx + 1; i < len(treeHashes); i++ {
+@@ -152,14 +168,10 @@ func Review(argv0 string, args ...string) error {
+ 	if err := os.MkdirAll(treeDirB, 0755); err != nil {
+ 		return err
+ 	}
+-	/* TODO
+ 	var treehash string
+ 	if fs.NArg() == 1 {
+ 		treehash = fs.Arg(0)
+-		// TODO
+-		return errors.New("not implemented")
+ 	}
+-	*/
+ 	c, err := hashchain.Read(hashchainFile)
+ 	if err != nil {
+ 		return err
+@@ -171,7 +183,7 @@ func Review(argv0 string, args ...string) error {
+ 	})
+ 	// run review
+ 	go func() {
+-		if err := review(c, *seckey); err != nil {
++		if err := review(c, *seckey, treehash); err != nil {
+ 			interrupt.ShutdownChannel <- err
+ 			return
+ 		}

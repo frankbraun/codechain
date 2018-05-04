@@ -1,0 +1,309 @@
+diff --git a/.codechain/tree/a/command/apply.go b/.codechain/tree/b/command/apply.go
+index fc6faec..065c9d4 100644
+--- a/.codechain/tree/a/command/apply.go
++++ b/.codechain/tree/b/command/apply.go
+@@ -7,13 +7,22 @@ import (
+ 
+ 	"github.com/frankbraun/codechain/hashchain"
+ 	"github.com/frankbraun/codechain/tree"
++	"github.com/frankbraun/codechain/util/git"
+ 	"github.com/frankbraun/codechain/util/log"
+ )
+ 
+ func apply(c *hashchain.HashChain) error {
++	dir, err := os.Getwd()
++	if err != nil {
++		return err
++	}
++	if err := git.EnsureRootGitDir(dir); err != nil {
++		return err
++	}
++
+ 	targetHash, _ := c.LastSignedTreeHash()
+ 	treeHashes := c.TreeHashes()
+-	err := tree.Sync(".", targetHash, patchDir, treeHashes, excludePaths, false)
++	err = tree.Sync(".", targetHash, patchDir, treeHashes, excludePaths, false)
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/.codechain/tree/a/command/keyfile.go b/.codechain/tree/b/command/keyfile.go
+index 0884904..7c4097f 100644
+--- a/.codechain/tree/a/command/keyfile.go
++++ b/.codechain/tree/b/command/keyfile.go
+@@ -4,10 +4,32 @@ import (
+ 	"flag"
+ 	"fmt"
+ 	"os"
++	"syscall"
+ 
+ 	"github.com/frankbraun/codechain/internal/base64"
++	"github.com/frankbraun/codechain/keyfile"
++	"github.com/frankbraun/codechain/util/bzero"
++	"github.com/frankbraun/codechain/util/terminal"
+ )
+ 
++func changePassphrase(filename string, sec, sig *[64]byte, comment []byte) error {
++	pass, err := terminal.ReadPassphrase(syscall.Stdin, true)
++	if err != nil {
++		return err
++	}
++	defer bzero.Bytes(pass)
++	tmpfile := filename + ".new"
++	os.Remove(tmpfile) // ignore error
++	// create new keyfile
++	if err := keyfile.Create(tmpfile, pass, *sec, *sig, comment); err != nil {
++		return err
++	}
++	// move temp. file in place
++	return os.Rename(tmpfile, filename)
++
++	return nil
++}
++
+ // KeyFile implements the 'keyfile' command.
+ func KeyFile(argv0 string, args ...string) error {
+ 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
+@@ -21,10 +43,6 @@ func KeyFile(argv0 string, args ...string) error {
+ 	if err := fs.Parse(args); err != nil {
+ 		return err
+ 	}
+-	if *change {
+-		// TODO
+-		return fmt.Errorf("%s: option -c not implemented yet", argv0)
+-	}
+ 	if *seckey == "" {
+ 		return fmt.Errorf("%s: option -s is mandatory", argv0)
+ 	}
+@@ -36,11 +54,19 @@ func KeyFile(argv0 string, args ...string) error {
+ 	if err != nil {
+ 		return err
+ 	}
+-	fmt.Println("public key with signature and optional comment")
+-	fmt.Printf("%s %s", base64.Encode(sec[32:]), base64.Encode(sig[:]))
+-	if len(comment) > 0 {
+-		fmt.Printf(" '%s'", string(comment))
++	if *change {
++		fmt.Printf("%s read, please provide new ", *seckey)
++		if err := changePassphrase(*seckey, sec, sig, comment); err != nil {
++			return err
++		}
++		fmt.Println("passphrase changed")
++	} else {
++		fmt.Println("public key with signature and optional comment")
++		fmt.Printf("%s %s", base64.Encode(sec[32:]), base64.Encode(sig[:]))
++		if len(comment) > 0 {
++			fmt.Printf(" '%s'", string(comment))
++		}
++		fmt.Println("")
+ 	}
+-	fmt.Println("")
+ 	return nil
+ }
+diff --git a/.codechain/tree/a/command/publish.go b/.codechain/tree/b/command/publish.go
+index 967bb3b..582b738 100644
+--- a/.codechain/tree/a/command/publish.go
++++ b/.codechain/tree/b/command/publish.go
+@@ -19,7 +19,7 @@ import (
+ 	"github.com/frankbraun/codechain/util/terminal"
+ )
+ 
+-func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
++func publish(c *hashchain.HashChain, secKeyFile string) error {
+ 	// load secret key
+ 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
+ 	if err != nil {
+@@ -40,17 +40,13 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
+ 	}
+ 
+ 	// bring .codechain/tree/a in sync with last published treehash
+-	if verbose {
+-		fmt.Println("sync tree/a")
+-	}
++	log.Println("sync tree/a")
+ 	treeHashes := c.TreeHashes()
+ 	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, excludePaths, true)
+ 	if err != nil {
+ 		return err
+ 	}
+-	if verbose {
+-		fmt.Println("done")
+-	}
++	log.Println("done")
+ 
+ 	// calculate current treehash
+ 	curHash, err := tree.Hash(".", excludePaths)
+@@ -112,9 +108,7 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
+ 	if err := ioutil.WriteFile(patchFile, patch, 0644); err != nil {
+ 		return err
+ 	}
+-	if verbose {
+-		fmt.Printf("%s: written\n", patchFile)
+-	}
++	log.Printf("%s: written\n", patchFile)
+ 
+ 	// sign patch and add to hash chain
+ 	entry, err := c.Source(*curHash, *secKey, comment)
+@@ -169,7 +163,7 @@ func Publish(argv0 string, args ...string) error {
+ 	})
+ 	// run publish
+ 	go func() {
+-		if err := publish(c, *seckey, *verbose); err != nil {
++		if err := publish(c, *seckey); err != nil {
+ 			interrupt.ShutdownChannel <- err
+ 			return
+ 		}
+diff --git a/.codechain/tree/a/command/review.go b/.codechain/tree/b/command/review.go
+index 17e4780..4bfcc53 100644
+--- a/.codechain/tree/a/command/review.go
++++ b/.codechain/tree/b/command/review.go
+@@ -52,12 +52,14 @@ func review(c *hashchain.HashChain, secKeyFile string) error {
+ 
+ 	for i := idx + 1; i < len(treeHashes); i++ {
+ 		// bring .codechain/tree/a in sync
++		log.Println("bring .codechain/tree/a in sync")
+ 		err = tree.Sync(treeDirA, treeHashes[i-1], patchDir, treeHashes, excludePaths, true)
+ 		if err != nil {
+ 			return err
+ 		}
+ 
+ 		// bring .codechain/tree/b in sync
++		log.Println("bring .codechain/tree/b in sync")
+ 		err = tree.Sync(treeDirB, treeHashes[i], patchDir, treeHashes, excludePaths, true)
+ 		if err != nil {
+ 			return err
+diff --git a/.codechain/tree/a/tree/sync.go b/.codechain/tree/b/tree/sync.go
+index 2d33612..8058efe 100644
+--- a/.codechain/tree/a/tree/sync.go
++++ b/.codechain/tree/b/tree/sync.go
+@@ -49,11 +49,15 @@ func Sync(
+ 			break
+ 		}
+ 	}
++	if idx == len(treeHashes) {
++		return fmt.Errorf("tree: could not find target hash: %s", targetHash)
++	}
+ 
+ 	// find start position
+ 	var i int
+ 	for ; i < idx; i++ {
+ 		if hashStr == treeHashes[i] {
++			log.Printf("start position %d found", i)
+ 			break
+ 		}
+ 	}
+@@ -61,6 +65,7 @@ func Sync(
+ 		if !canRemoveDir {
+ 			return errors.New("tree: could not find a valid start to apply, try with empty dir")
+ 		}
++		log.Println("could not find a valid start to apply, trying with empty dir...")
+ 		if err := os.RemoveAll(treeDir); err != nil {
+ 			return err
+ 		}
+@@ -69,7 +74,8 @@ func Sync(
+ 		}
+ 	}
+ 
+-	for _, h := range treeHashes {
++	for ; i <= idx; i++ {
++		h := treeHashes[i]
+ 		log.Printf("apply patch: %s\n", h)
+ 
+ 		// verify previous patch
+diff --git a/.codechain/tree/a/util/file/file_test.go b/.codechain/tree/b/util/file/file_test.go
+index 04a293b..6473f9c 100644
+--- a/.codechain/tree/a/util/file/file_test.go
++++ b/.codechain/tree/b/util/file/file_test.go
+@@ -1,4 +1,4 @@
+-package file
++package file_test
+ 
+ import (
+ 	"bytes"
+@@ -8,6 +8,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/frankbraun/codechain/tree"
++	"github.com/frankbraun/codechain/util/file"
+ )
+ 
+ func TestCopyDir(t *testing.T) {
+@@ -17,7 +18,7 @@ func TestCopyDir(t *testing.T) {
+ 	}
+ 	defer os.RemoveAll(tmpdir)
+ 	dst := filepath.Join(tmpdir, "dst")
+-	if err := CopyDir("testdata", dst); err != nil {
++	if err := file.CopyDir("testdata", dst); err != nil {
+ 		t.Fatalf("CopyDir() failed: %v", err)
+ 	}
+ 	srcHash, err := tree.Hash("testdata", nil)
+diff --git a/.codechain/tree/a/util/git/git.go b/.codechain/tree/b/util/git/git.go
+index 85aad45..470f794 100644
+--- a/.codechain/tree/a/util/git/git.go
++++ b/.codechain/tree/b/util/git/git.go
+@@ -7,8 +7,12 @@ import (
+ 	"io"
+ 	"os"
+ 	"os/exec"
++	"path/filepath"
+ 	"strconv"
++	"strings"
+ 	"syscall"
++
++	"github.com/frankbraun/codechain/util/file"
+ )
+ 
+ func diff(a, b string, capture bool) ([]byte, error) {
+@@ -33,7 +37,7 @@ func diff(a, b string, capture bool) ([]byte, error) {
+ 					}
+ 				}
+ 			}
+-			return nil, fmt.Errorf("%s: %s", exiterr, stderr.String())
++			return nil, fmt.Errorf("%s: %s", exiterr, strings.TrimSpace(stderr.String()))
+ 		}
+ 		return nil, err
+ 	}
+@@ -58,7 +62,7 @@ func DiffPager(a, b string) error {
+ // Use reverse to enable option -R.
+ func Apply(patch io.Reader, p int, dir string, dirOpt, reverse bool) error {
+ 	args := []string{"apply"}
+-	if dirOpt {
++	if dirOpt && dir != "." {
+ 		args = append(args, "--directory", dir)
+ 	}
+ 	if p > 1 {
+@@ -76,9 +80,34 @@ func Apply(patch io.Reader, p int, dir string, dirOpt, reverse bool) error {
+ 	cmd.Stderr = &stderr
+ 	if err := cmd.Run(); err != nil {
+ 		if exiterr, ok := err.(*exec.ExitError); ok {
+-			return fmt.Errorf("%s: %s", exiterr, stderr.String())
++			return fmt.Errorf("%s: %s", exiterr, strings.TrimSpace(stderr.String()))
+ 		}
+ 		return err
+ 	}
+ 	return nil
+ }
++
++// EnsureRootGitDir ensures that dir is either the root of a Git repository or
++// not in a Git repository at all.
++func EnsureRootGitDir(dir string) error {
++	exists, err := file.Exists(filepath.Join(dir, ".git"))
++	if err != nil {
++		return err
++	}
++	if exists {
++		return nil
++	}
++	d, _ := filepath.Split(strings.TrimSuffix(dir, string(filepath.Separator)))
++	for d != "" {
++		exists, err := file.Exists(filepath.Join(d, ".git"))
++		if err != nil {
++			return err
++		}
++		if exists {
++			return fmt.Errorf("'%s' is not root of Git repo '%s'",
++				dir, filepath.Join(d, ".git"))
++		}
++		d, _ = filepath.Split(strings.TrimSuffix(d, string(filepath.Separator)))
++	}
++	return nil
++}

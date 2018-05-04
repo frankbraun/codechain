@@ -1,0 +1,160 @@
+diff --git a/.codechain/tree/a/command/keyfile.go b/.codechain/tree/b/command/keyfile.go
+index 7c4097f..ce160cf 100644
+--- a/.codechain/tree/a/command/keyfile.go
++++ b/.codechain/tree/b/command/keyfile.go
+@@ -26,8 +26,6 @@ func changePassphrase(filename string, sec, sig *[64]byte, comment []byte) error
+ 	}
+ 	// move temp. file in place
+ 	return os.Rename(tmpfile, filename)
+-
+-	return nil
+ }
+ 
+ // KeyFile implements the 'keyfile' command.
+diff --git a/.codechain/tree/a/command/status.go b/.codechain/tree/b/command/status.go
+index c80897d..906914e 100644
+--- a/.codechain/tree/a/command/status.go
++++ b/.codechain/tree/b/command/status.go
+@@ -36,25 +36,28 @@ func showSignedReleases(c *hashchain.HashChain) {
+ 	}
+ }
+ 
+-func showUnsignedReleases(c *hashchain.HashChain) {
+-	_, idx := c.LastSignedTreeHash()
+-	treeHashes := c.TreeHashes()
+-	if idx == len(treeHashes)-1 {
+-		fmt.Println("no unsigned releases")
+-		return
++func showUnsigned(c *hashchain.HashChain) error {
++	infos, err := c.UnsignedInfo("", false)
++	if err != nil {
++		return err
+ 	}
+-	treeComments := c.TreeComments()
+-	fmt.Println("unsigned releases:")
+-	for i := idx + 1; i < len(treeHashes); i++ {
+-		fmt.Printf("%s %s\n", treeHashes[i], treeComments[i])
++	if len(infos) == 0 {
++		fmt.Println("no unsigned entries")
++		return nil
++	}
++	fmt.Println("unsigned entries:")
++	for _, info := range infos {
++		fmt.Println(info)
+ 	}
++	return nil
+ }
+ 
+ func status(c *hashchain.HashChain) error {
+-	showSigner(c)
+ 	showSignedReleases(c)
+-	showUnsignedReleases(c)
+-	return nil
++	fmt.Println()
++	showSigner(c)
++	fmt.Println()
++	return showUnsigned(c)
+ }
+ 
+ // Status implement the 'status' command.
+diff --git a/.codechain/tree/a/hashchain/hashchain.go b/.codechain/tree/b/hashchain/hashchain.go
+index 5c1c5ee..db044d3 100644
+--- a/.codechain/tree/a/hashchain/hashchain.go
++++ b/.codechain/tree/b/hashchain/hashchain.go
+@@ -15,6 +15,20 @@ type HashChain struct {
+ 	state *state.State
+ }
+ 
++// Close the underlying file pointer of hash chain and release lock.
++func (c *HashChain) Close() error {
++	if c.fp == nil {
++		return c.lock.Release()
++	}
++	err := c.fp.Close()
++	if err != nil {
++		c.lock.Release()
++		return err
++	}
++	c.fp = nil
++	return c.lock.Release()
++}
++
+ // M returns the signature threshold.
+ func (c *HashChain) M() int {
+ 	return c.state.M()
+@@ -86,16 +100,10 @@ func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
+ 	return h
+ }
+ 
+-// Close the underlying file pointer of hash chain and release lock.
+-func (c *HashChain) Close() error {
+-	if c.fp == nil {
+-		return c.lock.Release()
+-	}
+-	err := c.fp.Close()
+-	if err != nil {
+-		c.lock.Release()
+-		return err
+-	}
+-	c.fp = nil
+-	return c.lock.Release()
++// UnsignedInfo returns a string slice with information about all unsigned
++// entries suitable for printing.
++// If TreeHash is defined it returns info until that treeHash.
++// If omitSource is true source lines are omitted
++func (c *HashChain) UnsignedInfo(treeHash string, omitSource bool) ([]string, error) {
++	return c.state.UnsignedInfo(treeHash, omitSource)
+ }
+diff --git a/.codechain/tree/a/hashchain/internal/state/state.go b/.codechain/tree/b/hashchain/internal/state/state.go
+index f154a0f..b4a5fa9 100644
+--- a/.codechain/tree/a/hashchain/internal/state/state.go
++++ b/.codechain/tree/b/hashchain/internal/state/state.go
+@@ -3,6 +3,7 @@ package state
+ 
+ import (
+ 	"errors"
++	"fmt"
+ 
+ 	"github.com/frankbraun/codechain/internal/base64"
+ 	"github.com/frankbraun/codechain/internal/hex"
+@@ -309,3 +310,40 @@ func (s *State) Sign(linkHash, pubKey [32]byte) error {
+ 	s.unconfirmedOPs = append(s.unconfirmedOPs, nop)
+ 	return nil
+ }
++
++// UnsignedInfo returns a string slice with information about all unsigned
++// entries suitable for printing.
++// If TreeHash is defined it returns info until that treeHash.
++// If omitSource is true source lines are omitted
++func (s *State) UnsignedInfo(treeHash string, omitSource bool) ([]string, error) {
++	var infos []string
++	end := len(s.unconfirmedOPs)
++	if treeHash != "" {
++		end = s.SourceLine(treeHash)
++	}
++	for i := s.signedLine + 1; i < end; i++ {
++		switch op := s.unconfirmedOPs[i].(type) {
++		case *noOP:
++			continue
++		case *sourceOP:
++			if omitSource {
++				continue
++			}
++			info := fmt.Sprintf("source %s %s", op.treeHash, op.comment)
++			infos = append(infos, info)
++		case *addKeyOP:
++			info := fmt.Sprintf("addkey %d %s %s", op.weight, op.pubKey, op.comment)
++			infos = append(infos, info)
++		case *remKeyOP:
++			info := fmt.Sprintf("remkey %d %s %s", op.weight, op.pubKey,
++				s.signerComments[op.pubKey]) // shows only comments from already confirmed signers, but that's fine
++			infos = append(infos, info)
++		case *sigCtlOp:
++			info := fmt.Sprintf("sigctl %d", op.m)
++			infos = append(infos, info)
++		default:
++			return nil, errors.New("state: Sign(): unknown OP type")
++		}
++	}
++	return infos, nil
++}

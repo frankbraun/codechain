@@ -211,18 +211,10 @@ func (c *HashChain) verifyRemoveKeyType(i int, fields []string) error {
 		return err
 	}
 
-	// validate fields
+	// update state
 	var p [32]byte
 	copy(p[:], pubKey)
-	w, err := c.state.LastWeight(p)
-	if err != nil {
-		return err
-	}
-
-	// update state
-	c.state.RemoveSigner(p, w)
-
-	return nil
+	return c.state.RemoveSigner(p)
 }
 
 // hash-of-previous current-time sigctl m

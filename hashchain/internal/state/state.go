@@ -181,9 +181,9 @@ func (s *State) TreeComments() []string {
 	return treeComments
 }
 
-// LastWeight returns the last weight added for given pubKey (unconfirmed or
+// lastWeight returns the last weight added for given pubKey (unconfirmed or
 // confirmed).
-func (s *State) LastWeight(pubKey [32]byte) (int, error) {
+func (s *State) lastWeight(pubKey [32]byte) (int, error) {
 	pub := base64.Encode(pubKey[:])
 	for i := len(s.unconfirmedOPs) - 1; i > s.signedLine; i-- {
 		switch op := s.unconfirmedOPs[i].(type) {
@@ -242,10 +242,38 @@ func (s *State) AddSigner(pubKey [32]byte, weight int, comment string) {
 
 // RemoveSigner removes pubKey with weight (must equal last addition) from
 // state (unconfirmed).
-func (s *State) RemoveSigner(pubKey [32]byte, weight int) {
+func (s *State) RemoveSigner(pubKey [32]byte) error {
 	pub := base64.Encode(pubKey[:])
-	op := newRemKeyOP(pub, weight)
+	w, err := s.lastWeight(pubKey)
+	if err != nil {
+		return err
+	}
+	op := newRemKeyOP(pub, w)
+
+	m := s.m
+	n := s.n
+	for i := s.signedLine + 1; i < len(s.unconfirmedOPs); i++ {
+		switch op := s.unconfirmedOPs[i].(type) {
+		case *noOP:
+			continue
+		case *sourceOP:
+			continue
+		case *addKeyOP:
+			n += op.weight
+		case *remKeyOP:
+			n -= op.weight
+		case *sigCtlOp:
+			m = op.m
+		default:
+			return errors.New("state: RemoveSigner(): unknown OP type")
+		}
+	}
+	if n-w < m {
+		return errors.New("remkey would lead to n < m, lower sigctl first")
+	}
 	s.unconfirmedOPs = append(s.unconfirmedOPs, op)
+	return nil
+
 }
 
 // SetSignatureControl sets new signature control m (unconfirmed).

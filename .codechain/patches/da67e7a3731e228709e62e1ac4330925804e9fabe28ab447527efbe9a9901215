@@ -1,0 +1,138 @@
+diff --git a/.codechain/tree/a/command/review.go b/.codechain/tree/b/command/review.go
+index 38efbc7..fb80913 100644
+--- a/.codechain/tree/a/command/review.go
++++ b/.codechain/tree/b/command/review.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/frankbraun/codechain/util/terminal"
+ )
+ 
+-func review(c *hashchain.HashChain, secKeyFile, treehash string) error {
++func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
+ 	// load secret key
+ 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
+ 	if err != nil {
+@@ -35,34 +35,36 @@ func review(c *hashchain.HashChain, secKeyFile, treehash string) error {
+ 		return fmt.Errorf("invariant failed: len(treeHashes) == len(treeComments)")
+ 	}
+ 
+-	if log.Std != nil {
+-		log.Println("treeHashes :")
+-		for _, h := range treeHashes {
+-			log.Println(h)
+-		}
+-		log.Println("treeComments:")
+-		for _, c := range treeComments {
+-			log.Println(c)
+-		}
+-	}
+-
+ 	// deal with explicit treehash
+-	if treehash != "" {
++	if treeHash != "" {
++		log.Printf("treehash=%s", treeHash)
+ 		var i int
+ 		for ; i < len(treeHashes); i++ {
+-			if treehash == treeHashes[i] {
++			if treeHash == treeHashes[i] {
++				log.Printf("treehash found at index %d", i)
+ 				break
+ 			}
+ 		}
+ 		if i == len(treeHashes) {
+ 			return errors.New("cannot find treehash in hashchain")
+ 		}
+-		if i < idx {
++		if i <= idx {
+ 			return errors.New("given treehash is already signed")
+ 		}
+ 		idx = i
+ 	}
+ 
++	if log.Std != nil {
++		log.Println("treeHashes :")
++		for _, h := range treeHashes {
++			log.Println(h)
++		}
++		log.Println("treeComments:")
++		for _, c := range treeComments {
++			log.Println(c)
++		}
++	}
++
+ 	// TODO: also show commits which have been signed, but not by this signer
+ 	// TODO: show changes in signers/sigctl!
+ 
+@@ -131,7 +133,13 @@ func review(c *hashchain.HashChain, secKeyFile, treehash string) error {
+ 	}
+ 
+ 	// sign patches and add to hash chain
+-	entry, err := c.Signature(c.LastEntryHash(), *secKey)
++	var linkHash [32]byte
++	if treeHash != "" {
++		linkHash = c.LinkHash(treeHash)
++	} else {
++		linkHash = c.LastEntryHash()
++	}
++	entry, err := c.Signature(linkHash, *secKey)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -168,9 +176,9 @@ func Review(argv0 string, args ...string) error {
+ 	if err := os.MkdirAll(treeDirB, 0755); err != nil {
+ 		return err
+ 	}
+-	var treehash string
++	var treeHash string
+ 	if fs.NArg() == 1 {
+-		treehash = fs.Arg(0)
++		treeHash = fs.Arg(0)
+ 	}
+ 	c, err := hashchain.Read(hashchainFile)
+ 	if err != nil {
+@@ -183,7 +191,7 @@ func Review(argv0 string, args ...string) error {
+ 	})
+ 	// run review
+ 	go func() {
+-		if err := review(c, *seckey, treehash); err != nil {
++		if err := review(c, *seckey, treeHash); err != nil {
+ 			interrupt.ShutdownChannel <- err
+ 			return
+ 		}
+diff --git a/.codechain/tree/a/hashchain/hashchain.go b/.codechain/tree/b/hashchain/hashchain.go
+index 47633e4..5c1c5ee 100644
+--- a/.codechain/tree/a/hashchain/hashchain.go
++++ b/.codechain/tree/b/hashchain/hashchain.go
+@@ -74,6 +74,11 @@ func (c *HashChain) SignerInfo(treeHash string) (string, string) {
+ 	return pubKey, c.state.SignerComment(pubKey)
+ }
+ 
++// LinkHash returns the link hash corresponding to given treeHash.
++func (c *HashChain) LinkHash(treeHash string) [32]byte {
++	return c.state.LinkHash(treeHash)
++}
++
+ // EntryHash returns the entry hash for the given treeHash.
+ func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
+ 	var h [32]byte
+diff --git a/.codechain/tree/a/hashchain/internal/state/state.go b/.codechain/tree/b/hashchain/internal/state/state.go
+index 5ac85a3..f154a0f 100644
+--- a/.codechain/tree/a/hashchain/internal/state/state.go
++++ b/.codechain/tree/b/hashchain/internal/state/state.go
+@@ -96,6 +96,17 @@ func (s *State) SourceLine(treeHash string) int {
+ 	return s.linkHashes[s.treeHashes[treeHash]]
+ }
+ 
++// LinkHash returns the link hash corresponding to given treeHash.
++func (s *State) LinkHash(treeHash string) [32]byte {
++	linkHash, err := hex.Decode(s.treeHashes[treeHash], 32)
++	if err != nil {
++		panic(err)
++	}
++	var lh [32]byte
++	copy(lh[:], linkHash)
++	return lh
++}
++
+ // HasSigner checks wether the state s contains a valid the signer with
+ // pubKey.
+ func (s *State) HasSigner(pubKey [32]byte) bool {

@@ -102,7 +102,7 @@ func KeyFile(argv0 string, args ...string) error {
 		}
 		fmt.Println("passphrase changed")
 	} else {
-		fmt.Println("public key with signature and optional comment")
+		fmt.Println("public key with signature and optional comment:")
 		fmt.Printf("%s %s", base64.Encode(sec[32:]), base64.Encode(sig[:]))
 		if len(comment) > 0 {
 			fmt.Printf(" '%s'", string(comment))

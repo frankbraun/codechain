@@ -52,12 +52,14 @@ func review(c *hashchain.HashChain, secKeyFile string) error {
 
 	for i := idx + 1; i < len(treeHashes); i++ {
 		// bring .codechain/tree/a in sync
+		log.Println("bring .codechain/tree/a in sync")
 		err = tree.Sync(treeDirA, treeHashes[i-1], patchDir, treeHashes, excludePaths, true)
 		if err != nil {
 			return err
 		}
 
 		// bring .codechain/tree/b in sync
+		log.Println("bring .codechain/tree/b in sync")
 		err = tree.Sync(treeDirB, treeHashes[i], patchDir, treeHashes, excludePaths, true)
 		if err != nil {
 			return err

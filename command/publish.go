@@ -19,7 +19,7 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
+func publish(c *hashchain.HashChain, secKeyFile string) error {
 	// load secret key
 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
 	if err != nil {
@@ -40,17 +40,13 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 	}
 
 	// bring .codechain/tree/a in sync with last published treehash
-	if verbose {
-		fmt.Println("sync tree/a")
-	}
+	log.Println("sync tree/a")
 	treeHashes := c.TreeHashes()
 	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, excludePaths, true)
 	if err != nil {
 		return err
 	}
-	if verbose {
-		fmt.Println("done")
-	}
+	log.Println("done")
 
 	// calculate current treehash
 	curHash, err := tree.Hash(".", excludePaths)
@@ -112,9 +108,7 @@ func publish(c *hashchain.HashChain, secKeyFile string, verbose bool) error {
 	if err := ioutil.WriteFile(patchFile, patch, 0644); err != nil {
 		return err
 	}
-	if verbose {
-		fmt.Printf("%s: written\n", patchFile)
-	}
+	log.Printf("%s: written\n", patchFile)
 
 	// sign patch and add to hash chain
 	entry, err := c.Source(*curHash, *secKey, comment)
@@ -169,7 +163,7 @@ func Publish(argv0 string, args ...string) error {
 	})
 	// run publish
 	go func() {
-		if err := publish(c, *seckey, *verbose); err != nil {
+		if err := publish(c, *seckey); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

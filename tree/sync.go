@@ -49,11 +49,15 @@ func Sync(
 			break
 		}
 	}
+	if idx == len(treeHashes) {
+		return fmt.Errorf("tree: could not find target hash: %s", targetHash)
+	}
 
 	// find start position
 	var i int
 	for ; i < idx; i++ {
 		if hashStr == treeHashes[i] {
+			log.Printf("start position %d found", i)
 			break
 		}
 	}
@@ -61,6 +65,7 @@ func Sync(
 		if !canRemoveDir {
 			return errors.New("tree: could not find a valid start to apply, try with empty dir")
 		}
+		log.Println("could not find a valid start to apply, trying with empty dir...")
 		if err := os.RemoveAll(treeDir); err != nil {
 			return err
 		}
@@ -69,7 +74,8 @@ func Sync(
 		}
 	}
 
-	for _, h := range treeHashes {
+	for ; i <= idx; i++ {
+		h := treeHashes[i]
 		log.Printf("apply patch: %s\n", h)
 
 		// verify previous patch

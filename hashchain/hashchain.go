@@ -113,6 +113,7 @@ func (c *HashChain) UnsignedInfo(pubkey, treeHash string, omitSource bool) ([]st
 	return c.state.UnsignedInfo(pubkey, treeHash, omitSource)
 }
 
+// SignerBarrier returns the signer barrier for pubKey.
 func (c *HashChain) SignerBarrier(pubKey string) int {
 	return c.state.SignerBarrier(pubKey)
 }

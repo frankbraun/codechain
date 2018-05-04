@@ -391,6 +391,7 @@ func (s *State) UnsignedInfo(pubKey, treeHash string, omitSource bool) ([]string
 	return infos, nil
 }
 
+// SignerBarrier returns the signer barrier for pubKey.
 func (s *State) SignerBarrier(pubKey string) int {
 	return s.signerBarriers[pubKey]
 }

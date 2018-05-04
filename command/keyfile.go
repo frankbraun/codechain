@@ -26,8 +26,6 @@ func changePassphrase(filename string, sec, sig *[64]byte, comment []byte) error
 	}
 	// move temp. file in place
 	return os.Rename(tmpfile, filename)
-
-	return nil
 }
 
 // KeyFile implements the 'keyfile' command.

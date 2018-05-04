@@ -1,4 +1,4 @@
-package file
+package file_test
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/frankbraun/codechain/tree"
+	"github.com/frankbraun/codechain/util/file"
 )
 
 func TestCopyDir(t *testing.T) {
@@ -17,7 +18,7 @@ func TestCopyDir(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpdir)
 	dst := filepath.Join(tmpdir, "dst")
-	if err := CopyDir("testdata", dst); err != nil {
+	if err := file.CopyDir("testdata", dst); err != nil {
 		t.Fatalf("CopyDir() failed: %v", err)
 	}
 	srcHash, err := tree.Hash("testdata", nil)

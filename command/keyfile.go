@@ -4,9 +4,31 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"syscall"
 
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/keyfile"
+	"github.com/frankbraun/codechain/util/bzero"
+	"github.com/frankbraun/codechain/util/terminal"
 )
+
+func changePassphrase(filename string, sec, sig *[64]byte, comment []byte) error {
+	pass, err := terminal.ReadPassphrase(syscall.Stdin, true)
+	if err != nil {
+		return err
+	}
+	defer bzero.Bytes(pass)
+	tmpfile := filename + ".new"
+	os.Remove(tmpfile) // ignore error
+	// create new keyfile
+	if err := keyfile.Create(tmpfile, pass, *sec, *sig, comment); err != nil {
+		return err
+	}
+	// move temp. file in place
+	return os.Rename(tmpfile, filename)
+
+	return nil
+}
 
 // KeyFile implements the 'keyfile' command.
 func KeyFile(argv0 string, args ...string) error {
@@ -21,10 +43,6 @@ func KeyFile(argv0 string, args ...string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if *change {
-		// TODO
-		return fmt.Errorf("%s: option -c not implemented yet", argv0)
-	}
 	if *seckey == "" {
 		return fmt.Errorf("%s: option -s is mandatory", argv0)
 	}
@@ -36,11 +54,19 @@ func KeyFile(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("public key with signature and optional comment")
-	fmt.Printf("%s %s", base64.Encode(sec[32:]), base64.Encode(sig[:]))
-	if len(comment) > 0 {
-		fmt.Printf(" '%s'", string(comment))
+	if *change {
+		fmt.Printf("%s read, please provide new ", *seckey)
+		if err := changePassphrase(*seckey, sec, sig, comment); err != nil {
+			return err
+		}
+		fmt.Println("passphrase changed")
+	} else {
+		fmt.Println("public key with signature and optional comment")
+		fmt.Printf("%s %s", base64.Encode(sec[32:]), base64.Encode(sig[:]))
+		if len(comment) > 0 {
+			fmt.Printf(" '%s'", string(comment))
+		}
+		fmt.Println("")
 	}
-	fmt.Println("")
 	return nil
 }

@@ -103,7 +103,7 @@ func KeyGen(argv0 string, args ...string) error {
 		fmt.Println("secret key file created:")
 		fmt.Println(filename)
 	}
-	fmt.Println("public key with signature and optional comment")
+	fmt.Println("public key with signature and optional comment:")
 	fmt.Printf("%s %s", pubEnc, base64.Encode(sig))
 	if len(comment) > 0 {
 		fmt.Printf(" '%s'", string(comment))

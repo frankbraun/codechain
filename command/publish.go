@@ -42,21 +42,21 @@ func publish(c *hashchain.HashChain, secKeyFile string) error {
 	// bring .codechain/tree/a in sync with last published treehash
 	log.Println("sync tree/a")
 	treeHashes := c.TreeHashes()
-	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, excludePaths, true)
+	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, ExcludePaths, true)
 	if err != nil {
 		return err
 	}
 	log.Println("done")
 
 	// calculate current treehash
-	curHash, err := tree.Hash(".", excludePaths)
+	curHash, err := tree.Hash(".", ExcludePaths)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("%x\n", curHash[:])
 
 	// bring .codechain/tree/b in sync with the tree hash to be published
-	tmpHash, err := tree.Hash(treeDirB, excludePaths)
+	tmpHash, err := tree.Hash(treeDirB, ExcludePaths)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func publish(c *hashchain.HashChain, secKeyFile string) error {
 		if err := os.RemoveAll(treeDirB); err != nil {
 			return err
 		}
-		if err := file.CopyDirExclude(".", treeDirB, excludePaths); err != nil {
+		if err := file.CopyDirExclude(".", treeDirB, ExcludePaths); err != nil {
 			return err
 		}
 	}

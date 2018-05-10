@@ -45,6 +45,8 @@ func (n *newlineWriteCloser) Close() error {
 	return nil
 }
 
+// Encode src to ascii85 with a newline every 80 encoded characters and return
+// the result and the number of encoded lines.
 func Encode(src []byte) ([]byte, int, error) {
 	var n newlineWriteCloser
 	a := ascii85.NewEncoder(&n)
@@ -60,6 +62,7 @@ func Encode(src []byte) ([]byte, int, error) {
 	return n.buf.Bytes(), n.lines, nil
 }
 
+// Decode ascii85 encoded src and return it.
 func Decode(src []byte) ([]byte, error) {
 	var dst bytes.Buffer
 	dec := ascii85.NewDecoder(bytes.NewBuffer(src))

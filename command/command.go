@@ -15,7 +15,8 @@ var (
 	treeDirA      = filepath.Join(treeDirRoot, "a")
 	treeDirB      = filepath.Join(treeDirRoot, "b")
 	patchDir      = filepath.Join(codechainDir, "patches")
-	excludePaths  = []string{
+	// ExcludePaths is the default list of paths not considered by Codechain.
+	ExcludePaths = []string{
 		codechainDir,
 		".git",
 		".gitignore",

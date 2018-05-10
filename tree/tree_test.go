@@ -14,12 +14,12 @@ func TestEmpty(t *testing.T) {
 		t.Fatalf("TempDir() failed: %v", err)
 	}
 	defer os.RemoveAll(tmpdir)
-	l, err := List(tmpdir, nil)
+	l, err := ListBytes(tmpdir, nil)
 	if err != nil {
-		t.Fatalf("List() should not fail: %v", err)
+		t.Fatalf("ListBytes() should not fail: %v", err)
 	}
 	if !bytes.Equal(l, []byte{}) {
-		t.Errorf("List() should return an empty list")
+		t.Errorf("ListBytes() should return an empty list")
 	}
 	h, err := Hash(tmpdir, nil)
 	if err != nil {
@@ -37,12 +37,12 @@ f b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c foo.txt
 const testdataHash = "6a311afb95a38e3de2cec9a8566d637198097abe734fef698d8032b80272dc1b"
 
 func TestTestdata(t *testing.T) {
-	l, err := List("testdata", nil)
+	l, err := ListBytes("testdata", nil)
 	if err != nil {
-		t.Errorf("List() should not fail: %v", err)
+		t.Errorf("ListBytes() should not fail: %v", err)
 	}
 	if !bytes.Equal(l, []byte(testdataList)) {
-		t.Errorf("List() should return testdataList")
+		t.Errorf("ListBytes() should return testdataList")
 	}
 	h, err := Hash("testdata", nil)
 	if err != nil {
@@ -59,12 +59,12 @@ const testdataHashExclude = "45e169478843023bb6d8c7fdcca1f1b199404975e2ebb09e76d
 
 func TestTestdataExclude(t *testing.T) {
 	excludePaths := []string{"foo.txt"}
-	l, err := List("testdata", excludePaths)
+	l, err := ListBytes("testdata", excludePaths)
 	if err != nil {
-		t.Fatalf("List() should not fail: %v", err)
+		t.Fatalf("ListBytes() should not fail: %v", err)
 	}
 	if !bytes.Equal(l, []byte(testdataListExclude)) {
-		t.Errorf("List() should return testdataListExclude")
+		t.Errorf("ListBytes() should return testdataListExclude")
 	}
 	h, err := Hash("testdata", excludePaths)
 	if err != nil {
@@ -79,12 +79,12 @@ func TestTestdataChdir(t *testing.T) {
 	if err := os.Chdir("testdata"); err != nil {
 		t.Fatalf("os.Chdir() should not fail: %v", err)
 	}
-	l, err := List(".", nil)
+	l, err := ListBytes(".", nil)
 	if err != nil {
-		t.Fatalf("List() should not fail: %v", err)
+		t.Fatalf("ListBytes() should not fail: %v", err)
 	}
 	if !bytes.Equal(l, []byte(testdataList)) {
-		t.Errorf("List() should return testdataList")
+		t.Errorf("ListBytes() should return testdataList")
 	}
 	h, err := Hash(".", nil)
 	if err != nil {

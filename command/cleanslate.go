@@ -20,9 +20,9 @@ func cleanSlate() error {
 	}
 outerA:
 	for _, fi := range files {
-		if excludePaths != nil {
+		if ExcludePaths != nil {
 			canonical := filepath.ToSlash(fi.Name())
-			for _, excludePath := range excludePaths {
+			for _, excludePath := range ExcludePaths {
 				if excludePath == canonical {
 					continue outerA
 				}
@@ -53,9 +53,9 @@ outerA:
 
 outerB:
 	for _, fi := range files {
-		if excludePaths != nil {
+		if ExcludePaths != nil {
 			canonical := filepath.ToSlash(fi.Name())
-			for _, excludePath := range excludePaths {
+			for _, excludePath := range ExcludePaths {
 				if excludePath == canonical {
 					continue outerB
 				}

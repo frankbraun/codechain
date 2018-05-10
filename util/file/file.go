@@ -8,7 +8,19 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 )
+
+// IsBinary returns true if filename is binary and false otherwise.
+// A binary file is defined as a file that doesn't consist entirely of valid
+// UTF-8-encoded runes
+func IsBinary(filename string) (bool, error) {
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return false, err
+	}
+	return !utf8.Valid(b), nil
+}
 
 // Exists checks if filename exists already.
 func Exists(filename string) (bool, error) {

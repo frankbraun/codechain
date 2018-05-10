@@ -22,7 +22,7 @@ func apply(c *hashchain.HashChain) error {
 
 	targetHash, _ := c.LastSignedTreeHash()
 	treeHashes := c.TreeHashes()
-	err = tree.Sync(".", targetHash, patchDir, treeHashes, excludePaths, false)
+	err = tree.Sync(".", targetHash, patchDir, treeHashes, ExcludePaths, false)
 	if err != nil {
 		return err
 	}

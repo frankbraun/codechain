@@ -25,13 +25,13 @@ func TreeHash(argv0 string, args ...string) error {
 		return flag.ErrHelp
 	}
 	if *list {
-		l, err := tree.List(".", excludePaths)
+		l, err := tree.ListBytes(".", ExcludePaths)
 		if err != nil {
 			return err
 		}
 		os.Stdout.Write(l)
 	} else {
-		hash, err := tree.Hash(".", excludePaths)
+		hash, err := tree.Hash(".", ExcludePaths)
 		if err != nil {
 			return err
 		}

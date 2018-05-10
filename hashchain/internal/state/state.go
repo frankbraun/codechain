@@ -8,6 +8,7 @@ import (
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/tree"
+	"github.com/frankbraun/codechain/util"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -135,6 +136,23 @@ func (s *State) NotSigner(pubKey [32]byte) error {
 	_, ok := s.signerWeights[pub]
 	if ok {
 		return errors.New("state: duplicate addkey (signed)")
+	}
+	return nil
+}
+
+// NotPublished makes sure that the given treeHash has not been published
+// before (unconfirmed or confirmed).
+func (s *State) NotPublished(treeHash string) error {
+	if util.ContainsString(s.signedTreeHashes, treeHash) {
+		return errors.New("state: duplicate treehash (signed)")
+	}
+	for i := s.signedLine + 1; i < len(s.unconfirmedOPs); i++ {
+		switch op := s.unconfirmedOPs[i].(type) {
+		case *sourceOP:
+			if op.treeHash == treeHash {
+				return errors.New("state: duplicate treehash (unsigned)")
+			}
+		}
 	}
 	return nil
 }

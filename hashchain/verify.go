@@ -99,6 +99,10 @@ func (c *HashChain) verifySourceType(i int, fields []string) error {
 	if !c.state.HasSigner(p) {
 		return fmt.Errorf("hashchain: not a valid signer: %s", pub)
 	}
+	// make sure treehash has not been published before
+	if err = c.state.NotPublished(tree); err != nil {
+		return err
+	}
 
 	// update state
 	var t [32]byte
@@ -188,8 +192,7 @@ func (c *HashChain) verifyAddKeyType(i int, fields []string) error {
 	if !ed25519.Verify(p[:], append(pubKey, comment...), sig) {
 		return ErrWrongSigAddKey
 	}
-	err = c.state.NotSigner(p)
-	if err != nil {
+	if err = c.state.NotSigner(p); err != nil {
 		return err
 	}
 

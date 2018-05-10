@@ -83,6 +83,7 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 		if err != nil {
 			return err
 		}
+		signed = true
 	}
 
 	// show commits which have been signed, but not by this signer
@@ -158,6 +159,7 @@ outer:
 		if err := terminal.Confirm("review patch (no aborts)?"); err != nil {
 			return err
 		}
+		signed = true
 
 		// display diff *pager
 		if err := git.DiffPager(treeDirA, treeDirB); err != nil {

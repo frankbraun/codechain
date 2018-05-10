@@ -10,7 +10,8 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/base64"
-	"github.com/frankbraun/codechain/tree"
+	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/util/git"
 	"github.com/frankbraun/codechain/util/interrupt"
 	"github.com/frankbraun/codechain/util/log"
@@ -132,14 +133,14 @@ outer:
 
 			// bring .codechain/tree/a in sync
 			log.Println("bring .codechain/tree/a in sync")
-			err = tree.Sync(treeDirA, treeHashes[i-1], patchDir, treeHashes, ExcludePaths, true)
+			err = sync.Dir(treeDirA, treeHashes[i-1], patchDir, treeHashes, def.ExcludePaths, true)
 			if err != nil {
 				return err
 			}
 
 			// bring .codechain/tree/b in sync
 			log.Println("bring .codechain/tree/b in sync")
-			err = tree.Sync(treeDirB, treeHashes[i], patchDir, treeHashes, ExcludePaths, true)
+			err = sync.Dir(treeDirB, treeHashes[i], patchDir, treeHashes, def.ExcludePaths, true)
 			if err != nil {
 				return err
 			}
@@ -154,14 +155,14 @@ outer:
 	for i := idx + 1; i < len(treeHashes); i++ {
 		// bring .codechain/tree/a in sync
 		log.Println("bring .codechain/tree/a in sync")
-		err = tree.Sync(treeDirA, treeHashes[i-1], patchDir, treeHashes, ExcludePaths, true)
+		err = sync.Dir(treeDirA, treeHashes[i-1], patchDir, treeHashes, def.ExcludePaths, true)
 		if err != nil {
 			return err
 		}
 
 		// bring .codechain/tree/b in sync
 		log.Println("bring .codechain/tree/b in sync")
-		err = tree.Sync(treeDirB, treeHashes[i], patchDir, treeHashes, ExcludePaths, true)
+		err = sync.Dir(treeDirB, treeHashes[i], patchDir, treeHashes, def.ExcludePaths, true)
 		if err != nil {
 			return err
 		}

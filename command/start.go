@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/file"
 )
 
@@ -28,7 +29,7 @@ func Start(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	if err := os.MkdirAll(codechainDir, 0755); err != nil {
+	if err := os.MkdirAll(def.CodechainDir, 0755); err != nil {
 		return err
 	}
 	exists, err := file.Exists(hashchainFile)

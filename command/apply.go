@@ -6,23 +6,15 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
-	"github.com/frankbraun/codechain/tree"
-	"github.com/frankbraun/codechain/util/git"
+	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/util/log"
 )
 
 func apply(c *hashchain.HashChain) error {
-	dir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	if err := git.EnsureRootGitDir(dir); err != nil {
-		return err
-	}
-
 	targetHash, _ := c.LastSignedTreeHash()
 	treeHashes := c.TreeHashes()
-	err = tree.Sync(".", targetHash, patchDir, treeHashes, ExcludePaths, false)
+	err := sync.Dir(".", targetHash, patchDir, treeHashes, def.ExcludePaths, false)
 	if err != nil {
 		return err
 	}

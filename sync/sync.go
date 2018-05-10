@@ -1,4 +1,5 @@
-package tree
+// Package sync implements directory syncing.
+package sync
 
 import (
 	"errors"
@@ -6,29 +7,30 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/patchfile"
+	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util"
-	"github.com/frankbraun/codechain/util/git"
 	"github.com/frankbraun/codechain/util/log"
 )
 
-// Sync treeDir to the state of treeHash with patches from patchDir.
-// Prints status info if verbose is true.
-func Sync(
+// Dir syncs treeDir to the state of treeHash with patches from patchDir.
+func Dir(
 	treeDir, targetHash, patchDir string,
 	treeHashes []string,
 	excludePaths []string,
 	canRemoveDir bool,
 ) error {
 	// argument checking
-	if treeHashes[0] != EmptyHash {
+	if treeHashes[0] != tree.EmptyHash {
 		return fmt.Errorf("tree: treeHashes doesn't start with EmptyHash")
 	}
 	if !util.ContainsString(treeHashes, targetHash) {
 		return fmt.Errorf("tree: targetHash unknown: %s", targetHash)
 	}
 
-	hash, err := Hash(treeDir, excludePaths)
+	hash, err := tree.Hash(treeDir, excludePaths)
 	if err != nil {
 		return err
 	}
@@ -79,7 +81,7 @@ func Sync(
 		log.Printf("apply patch: %s\n", h)
 
 		// verify previous patch
-		p, err := Hash(treeDir, excludePaths)
+		p, err := tree.Hash(treeDir, excludePaths)
 		if err != nil {
 			return err
 		}
@@ -100,7 +102,7 @@ func Sync(
 
 		// apply patch
 		log.Println("applying patch")
-		err = git.Apply(patch, 4, treeDir, true, false)
+		err = patchfile.Apply(treeDir, patch, def.ExcludePaths)
 		if err != nil {
 			patch.Close()
 			return err

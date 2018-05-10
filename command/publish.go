@@ -5,12 +5,14 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/patchfile"
+	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/git"
@@ -42,21 +44,21 @@ func publish(c *hashchain.HashChain, secKeyFile string) error {
 	// bring .codechain/tree/a in sync with last published treehash
 	log.Println("sync tree/a")
 	treeHashes := c.TreeHashes()
-	err = tree.Sync(treeDirA, treeHash, patchDir, treeHashes, ExcludePaths, true)
+	err = sync.Dir(treeDirA, treeHash, patchDir, treeHashes, def.ExcludePaths, true)
 	if err != nil {
 		return err
 	}
 	log.Println("done")
 
 	// calculate current treehash
-	curHash, err := tree.Hash(".", ExcludePaths)
+	curHash, err := tree.Hash(".", def.ExcludePaths)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("%x\n", curHash[:])
 
 	// bring .codechain/tree/b in sync with the tree hash to be published
-	tmpHash, err := tree.Hash(treeDirB, ExcludePaths)
+	tmpHash, err := tree.Hash(treeDirB, def.ExcludePaths)
 	if err != nil {
 		return err
 	}
@@ -64,7 +66,7 @@ func publish(c *hashchain.HashChain, secKeyFile string) error {
 		if err := os.RemoveAll(treeDirB); err != nil {
 			return err
 		}
-		if err := file.CopyDirExclude(".", treeDirB, ExcludePaths); err != nil {
+		if err := file.CopyDirExclude(".", treeDirB, def.ExcludePaths); err != nil {
 			return err
 		}
 	}
@@ -98,14 +100,18 @@ func publish(c *hashchain.HashChain, secKeyFile string) error {
 		return err
 	}
 
-	// get patch
-	patch, err := git.Diff(treeDirA, treeDirB)
+	// get and write patch
+	f, err := os.OpenFile(patchFile, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
 	if err != nil {
 		return err
 	}
-
-	// save patch
-	if err := ioutil.WriteFile(patchFile, patch, 0644); err != nil {
+	err = patchfile.Diff(f, treeDirA, treeDirB, def.ExcludePaths)
+	if err != nil {
+		f.Close()
+		os.Remove(f.Name())
+		return err
+	}
+	if err := f.Close(); err != nil {
 		return err
 	}
 	log.Printf("%s: written\n", patchFile)

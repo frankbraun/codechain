@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/frankbraun/codechain/command"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/patchfile"
 	"github.com/frankbraun/codechain/util"
 )
 
 func diff(a, b string) error {
-	return patchfile.Diff(os.Stdout, a, b, command.ExcludePaths)
+	return patchfile.Diff(os.Stdout, a, b, def.ExcludePaths)
 }
 
 func usage() {

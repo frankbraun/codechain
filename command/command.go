@@ -3,23 +3,14 @@ package command
 
 import (
 	"path/filepath"
-)
 
-const (
-	codechainDir = ".codechain"
+	"github.com/frankbraun/codechain/internal/def"
 )
 
 var (
-	hashchainFile = filepath.Join(codechainDir, "hashchain")
-	treeDirRoot   = filepath.Join(codechainDir, "tree")
+	hashchainFile = filepath.Join(def.CodechainDir, "hashchain")
+	treeDirRoot   = filepath.Join(def.CodechainDir, "tree")
 	treeDirA      = filepath.Join(treeDirRoot, "a")
 	treeDirB      = filepath.Join(treeDirRoot, "b")
-	patchDir      = filepath.Join(codechainDir, "patches")
-	// ExcludePaths is the default list of paths not considered by Codechain.
-	ExcludePaths = []string{
-		codechainDir,
-		".git",
-		".gitignore",
-		".travis.yml",
-	}
+	patchDir      = filepath.Join(def.CodechainDir, "patches")
 )

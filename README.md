@@ -28,8 +28,7 @@ go get -u -v github.com/frankbraun/codechain
 
 - [x] Minimal code base, Go only, cross-platform.
 
-Currently Codechain depends on the `git` binary (for `git diff` and
-`git apply`).
+Currently Codechain depends on the `git` binary (for `git diff`).
 
 ### Out of scope
 

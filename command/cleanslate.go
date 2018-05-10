@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
@@ -20,9 +21,9 @@ func cleanSlate() error {
 	}
 outerA:
 	for _, fi := range files {
-		if ExcludePaths != nil {
+		if def.ExcludePaths != nil {
 			canonical := filepath.ToSlash(fi.Name())
-			for _, excludePath := range ExcludePaths {
+			for _, excludePath := range def.ExcludePaths {
 				if excludePath == canonical {
 					continue outerA
 				}
@@ -53,9 +54,9 @@ outerA:
 
 outerB:
 	for _, fi := range files {
-		if ExcludePaths != nil {
+		if def.ExcludePaths != nil {
 			canonical := filepath.ToSlash(fi.Name())
-			for _, excludePath := range ExcludePaths {
+			for _, excludePath := range def.ExcludePaths {
 				if excludePath == canonical {
 					continue outerB
 				}

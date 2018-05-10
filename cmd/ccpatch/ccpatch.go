@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/frankbraun/codechain/command"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/patchfile"
 	"github.com/frankbraun/codechain/util"
 )
@@ -16,7 +16,7 @@ func patch(dir, filename string) error {
 		return err
 	}
 	defer f.Close()
-	return patchfile.Apply(dir, f, command.ExcludePaths)
+	return patchfile.Apply(dir, f, def.ExcludePaths)
 }
 
 func usage() {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/tree"
 )
 
@@ -25,13 +26,13 @@ func TreeHash(argv0 string, args ...string) error {
 		return flag.ErrHelp
 	}
 	if *list {
-		l, err := tree.ListBytes(".", ExcludePaths)
+		l, err := tree.ListBytes(".", def.ExcludePaths)
 		if err != nil {
 			return err
 		}
 		os.Stdout.Write(l)
 	} else {
-		hash, err := tree.Hash(".", ExcludePaths)
+		hash, err := tree.Hash(".", def.ExcludePaths)
 		if err != nil {
 			return err
 		}

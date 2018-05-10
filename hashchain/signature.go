@@ -64,31 +64,43 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte, detached bool)
 
 // DetachedSignature adds a detached signature entry for linkHash signed by
 // pubKey to the hash chain.
-func (c *HashChain) DetachedSignature(linkHash, pubKey [32]byte, signature [64]byte) (string, error) {
+func (c *HashChain) DetachedSignature(linkHash, pubKey, signature string) (string, error) {
+	// decode arguments
+	lh, err := hex.Decode(linkHash, 32)
+	if err != nil {
+		return "", err
+	}
+	pub, err := base64.Decode(pubKey, 32)
+	if err != nil {
+		return "", err
+	}
+	sig, err := base64.Decode(signature, 64)
+	if err != nil {
+		return "", err
+	}
+
 	// check arguments
 	// make sure link hash does exist
-	if !c.state.HasLinkHash(linkHash) {
-		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s",
-			hex.Encode(linkHash[:]))
+	var h [32]byte
+	copy(h[:], lh)
+	if !c.state.HasLinkHash(h) {
+		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s", linkHash)
 	}
 	// make sure secKey is a valid signer
-	if !c.state.HasSigner(pubKey) {
-		return "", fmt.Errorf("hashchain: not a valid signer: %s",
-			hex.Encode(pubKey[:]))
+	var p [32]byte
+	copy(p[:], pub)
+	if !c.state.HasSigner(p) {
+		return "", fmt.Errorf("hashchain: not a valid signer: %s", pubKey)
 	}
 	// TODO: similar checks as for Signature() refactor?
 
 	// verify signature
-	if !ed25519.Verify(pubKey[:], linkHash[:], signature[:]) {
+	if !ed25519.Verify(pub, lh, sig) {
 		return "", fmt.Errorf("signature does not verify")
 	}
 
 	// create entry
-	typeFields := []string{
-		hex.Encode(linkHash[:]),
-		base64.Encode(pubKey[:]),
-		base64.Encode(signature[:]),
-	}
+	typeFields := []string{linkHash, pubKey, signature}
 	l := &link{
 		previous:   c.LastEntryHash(),
 		datum:      time.Now(),

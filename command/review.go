@@ -176,14 +176,25 @@ outer:
 	return nil
 }
 
+func addDetached(c *hashchain.HashChain, linkHash, pubKey, signature string) error {
+	entry, err := c.DetachedSignature(linkHash, pubKey, signature)
+	if err != nil {
+		return err
+	}
+	fmt.Println(entry)
+	return nil
+}
+
 // Review implements the 'review' command.
 func Review(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [-s seckey.bin] [treehash]\n", argv0)
+		fmt.Fprintf(os.Stderr, "       %s -a linkhash pubkey signature\n", argv0)
 		fmt.Fprintf(os.Stderr, "Review code changes (all or up to treehash) and changes of signers and sigctl.\n")
 		fs.PrintDefaults()
 	}
+	add := fs.Bool("a", false, "Add detached signature")
 	detached := fs.Bool("d", false, "Create detached signature")
 	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
 	seckey := fs.String("s", "", "Secret key file")
@@ -197,9 +208,16 @@ func Review(argv0 string, args ...string) error {
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
 	}
-	if fs.NArg() != 0 && fs.NArg() != 1 {
-		fs.Usage()
-		return flag.ErrHelp
+	if *add {
+		if fs.NArg() != 3 {
+			fs.Usage()
+			return flag.ErrHelp
+		}
+	} else {
+		if fs.NArg() != 0 && fs.NArg() != 1 {
+			fs.Usage()
+			return flag.ErrHelp
+		}
 	}
 	if err := os.MkdirAll(treeDirA, 0755); err != nil {
 		return err
@@ -222,7 +240,13 @@ func Review(argv0 string, args ...string) error {
 	})
 	// run review
 	go func() {
-		if err := review(c, *seckey, treeHash, *detached, *useGit); err != nil {
+		var err error
+		if *add {
+			err = addDetached(c, fs.Arg(0), fs.Arg(1), fs.Arg(2))
+		} else {
+			err = review(c, *seckey, treeHash, *detached, *useGit)
+		}
+		if err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

@@ -96,7 +96,7 @@ func TestStartSourceSign(t *testing.T) {
 	fmt.Println(l)
 
 	// sign hello.go
-	l, err = c.Signature(c.LastEntryHash(), secA)
+	l, err = c.Signature(c.LastEntryHash(), secA, false)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
@@ -136,7 +136,7 @@ func TestStartAddKeySignSigCtlSign(t *testing.T) {
 	}
 
 	// sign other signer
-	l, err = c.Signature(c.LastEntryHash(), secA)
+	l, err = c.Signature(c.LastEntryHash(), secA, false)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
@@ -160,7 +160,7 @@ func TestStartAddKeySignSigCtlSign(t *testing.T) {
 	fmt.Println(l)
 
 	// sign sigctl
-	l, err = c.Signature(c.LastEntryHash(), secB)
+	l, err = c.Signature(c.LastEntryHash(), secB, false)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
@@ -200,7 +200,7 @@ func TestStartAddKeySignRemKeySign(t *testing.T) {
 	}
 
 	// sign other signer
-	l, err = c.Signature(c.LastEntryHash(), secA)
+	l, err = c.Signature(c.LastEntryHash(), secA, false)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
@@ -220,7 +220,7 @@ func TestStartAddKeySignRemKeySign(t *testing.T) {
 	fmt.Println(l)
 
 	// sign sigctl
-	l, err = c.Signature(c.LastEntryHash(), secB)
+	l, err = c.Signature(c.LastEntryHash(), secB, false)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}

@@ -56,7 +56,7 @@ func procDiff(i int, treeHashes []string, useGit bool) error {
 	return nil
 }
 
-func review(c *hashchain.HashChain, secKeyFile, treeHash string, useGit bool) error {
+func review(c *hashchain.HashChain, secKeyFile, treeHash string, detached, useGit bool) error {
 	// load secret key
 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
 	if err != nil {
@@ -168,7 +168,7 @@ outer:
 	} else {
 		linkHash = c.LastEntryHash()
 	}
-	entry, err := c.Signature(linkHash, *secKey)
+	entry, err := c.Signature(linkHash, *secKey, detached)
 	if err != nil {
 		return err
 	}
@@ -184,6 +184,7 @@ func Review(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Review code changes (all or up to treehash) and changes of signers and sigctl.\n")
 		fs.PrintDefaults()
 	}
+	detached := fs.Bool("d", false, "Create detached signature")
 	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
 	seckey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
@@ -221,7 +222,7 @@ func Review(argv0 string, args ...string) error {
 	})
 	// run review
 	go func() {
-		if err := review(c, *seckey, treeHash, *useGit); err != nil {
+		if err := review(c, *seckey, treeHash, *detached, *useGit); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

@@ -11,7 +11,8 @@ import (
 )
 
 // Signature adds a signature entry for entryHash signed by secKey to the hash chain.
-func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error) {
+// If detached it just returns the signature without adding it.
+func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte, detached bool) (string, error) {
 	// check arguments
 	// make sure link hash does exist
 	if !c.state.HasLinkHash(linkHash) {
@@ -47,6 +48,11 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error
 	// verify
 	if err := c.verify(); err != nil {
 		return "", err
+	}
+
+	// detached signature?
+	if detached {
+		return fmt.Sprintf("%s %s %s", typeFields[0], typeFields[1], typeFields[2]), nil
 	}
 
 	// save

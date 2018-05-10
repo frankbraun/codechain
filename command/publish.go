@@ -21,11 +21,17 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func publish(c *hashchain.HashChain, secKeyFile string) error {
+func publish(c *hashchain.HashChain, secKeyFile string, dryRun bool) error {
+	var (
+		secKey *[64]byte
+		err    error
+	)
 	// load secret key
-	secKey, _, _, err := seckeyLoad(c, secKeyFile)
-	if err != nil {
-		return err
+	if !dryRun {
+		secKey, _, _, err = seckeyLoad(c, secKeyFile)
+		if err != nil {
+			return err
+		}
 	}
 
 	// get last published treehash
@@ -55,7 +61,7 @@ func publish(c *hashchain.HashChain, secKeyFile string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%x\n", curHash[:])
+	log.Printf("%x\n", curHash[:])
 
 	// bring .codechain/tree/b in sync with the tree hash to be published
 	tmpHash, err := tree.Hash(treeDirB, def.ExcludePaths)
@@ -74,6 +80,9 @@ func publish(c *hashchain.HashChain, secKeyFile string) error {
 	// display diff pager
 	if err := git.DiffPager(treeDirA, treeDirB); err != nil {
 		return err
+	}
+	if dryRun {
+		return nil
 	}
 
 	// confirm patch
@@ -135,12 +144,15 @@ func Publish(argv0 string, args ...string) error {
 		fs.PrintDefaults()
 	}
 	seckey := fs.String("s", "", "Secret key file")
+	dryRun := fs.Bool("d", false, "Dry run, just show diff without signing anything")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if err := seckeyCheck(*seckey); err != nil {
-		return err
+	if !*dryRun {
+		if err := seckeyCheck(*seckey); err != nil {
+			return err
+		}
 	}
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
@@ -169,7 +181,7 @@ func Publish(argv0 string, args ...string) error {
 	})
 	// run publish
 	go func() {
-		if err := publish(c, *seckey); err != nil {
+		if err := publish(c, *seckey, *dryRun); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

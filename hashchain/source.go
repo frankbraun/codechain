@@ -48,9 +48,8 @@ func (c *HashChain) Source(treeHash [32]byte, secKey [64]byte, comment []byte) (
 	}
 
 	// save
-	entry := l.String()
-	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+	if _, err := fmt.Fprintln(c.fp, l.String()); err != nil {
 		return "", err
 	}
-	return entry, nil
+	return l.StringColor(), nil
 }

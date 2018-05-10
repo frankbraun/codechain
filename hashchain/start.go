@@ -74,10 +74,9 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 	}
 
 	// save
-	entry := l.String()
-	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+	if _, err := fmt.Fprintln(c.fp, l.String()); err != nil {
 		c.lock.Release()
 		return nil, "", err
 	}
-	return &c, entry, nil
+	return &c, l.StringColor(), nil
 }

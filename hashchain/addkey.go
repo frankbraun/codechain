@@ -40,9 +40,8 @@ func (c *HashChain) AddKey(weight int, pubKey [32]byte, signature [64]byte, comm
 	}
 
 	// save
-	entry := l.String()
-	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+	if _, err := fmt.Fprintln(c.fp, l.String()); err != nil {
 		return "", err
 	}
-	return entry, nil
+	return l.StringColor(), nil
 }

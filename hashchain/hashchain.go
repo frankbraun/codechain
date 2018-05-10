@@ -1,6 +1,7 @@
 package hashchain
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain/internal/state"
@@ -116,4 +117,11 @@ func (c *HashChain) UnsignedInfo(pubkey, treeHash string, omitSource bool) ([]st
 // SignerBarrier returns the signer barrier for pubKey.
 func (c *HashChain) SignerBarrier(pubKey string) int {
 	return c.state.SignerBarrier(pubKey)
+}
+
+// Print hash chain on stdout
+func (c *HashChain) Print() {
+	for _, l := range c.chain {
+		fmt.Println(l.StringColor())
+	}
 }

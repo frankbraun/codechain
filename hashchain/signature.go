@@ -50,11 +50,10 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte) (string, error
 	}
 
 	// save
-	entry := l.String()
-	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+	if _, err := fmt.Fprintln(c.fp, l.String()); err != nil {
 		return "", err
 	}
-	return entry, nil
+	return l.StringColor(), nil
 }
 
 // DetachedSignature adds a detached signature entry for linkHash signed by
@@ -98,9 +97,8 @@ func (c *HashChain) DetachedSignature(linkHash, pubKey [32]byte, signature [64]b
 	}
 
 	// save
-	entry := l.String()
-	if _, err := fmt.Fprintln(c.fp, entry); err != nil {
+	if _, err := fmt.Fprintln(c.fp, l.String()); err != nil {
 		return "", err
 	}
-	return entry, nil
+	return l.StringColor(), nil
 }

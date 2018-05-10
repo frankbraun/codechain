@@ -9,11 +9,13 @@ import (
 	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/lockfile"
+	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/time"
 )
 
 // Read hash chain from filename.
 func Read(filename string) (*HashChain, error) {
+	log.Printf("hashchain.Read(%s)", filename)
 	// check arguments
 	exists, err := file.Exists(filename)
 	if err != nil {
@@ -40,6 +42,7 @@ func Read(filename string) (*HashChain, error) {
 	for s.Scan() {
 		// the parsing is very basic, the actual verification is done in c.verify()
 		text := s.Text()
+		log.Println(text)
 		line := strings.SplitN(text, " ", 4)
 		previous, err := hex.Decode(line[0], 32)
 		if err != nil {

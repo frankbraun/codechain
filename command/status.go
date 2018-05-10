@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // TODO: move to hashchain?
@@ -68,8 +69,13 @@ func Status(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Show status of hashchain and tree.\n")
 		fs.PrintDefaults()
 	}
+	print := fs.Bool("p", false, "Print hashchain to stdout")
+	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
 	}
 	if fs.NArg() != 0 {
 		fs.Usage()
@@ -80,5 +86,9 @@ func Status(argv0 string, args ...string) error {
 		return err
 	}
 	defer c.Close()
+	if *print {
+		c.Print()
+		return nil
+	}
 	return status(c)
 }

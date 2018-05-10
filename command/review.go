@@ -16,6 +16,40 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
+func showPatchInfo(c *hashchain.HashChain, i, idx int, treeHashes, treeComments []string) {
+	pub, comment := c.SignerInfo(treeHashes[i])
+	fmt.Printf("patch %d/%d\n", i-idx, len(treeHashes)-idx-1)
+	if treeComments[i] != "" {
+		fmt.Println(treeComments[i])
+	}
+	fmt.Printf("developer: %s\n", pub)
+	if comment != "" {
+		fmt.Println(comment)
+	}
+}
+
+func procDiff(i int, treeHashes []string) error {
+	// bring .codechain/tree/a in sync
+	log.Println("bring .codechain/tree/a in sync")
+	err := sync.Dir(treeDirA, treeHashes[i-1], patchDir, treeHashes, def.ExcludePaths, true)
+	if err != nil {
+		return err
+	}
+
+	// bring .codechain/tree/b in sync
+	log.Println("bring .codechain/tree/b in sync")
+	err = sync.Dir(treeDirB, treeHashes[i], patchDir, treeHashes, def.ExcludePaths, true)
+	if err != nil {
+		return err
+	}
+
+	// display diff *pager
+	if err := git.DiffPager(treeDirA, treeDirB); err != nil {
+		return err
+	}
+	return nil
+}
+
 func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 	// load secret key
 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
@@ -25,12 +59,6 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 
 	// get last tree hashes
 	_, idx := c.LastSignedTreeHash()
-	/*
-		if signedTreeHash == c.LastTreeHash() {
-			fmt.Printf("%s: already signed\n", signedTreeHash)
-			return nil
-		}
-	*/
 	treeHashes := c.TreeHashes()
 	treeComments := c.TreeComments()
 	if len(treeHashes) != len(treeComments) {
@@ -88,20 +116,10 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 
 	// show commits which have been signed, but not by this signer
 	barrier := c.SignerBarrier(pubKey)
-	// TODO: deduplicate code
 outer:
 	for i := 1; i <= idx; i++ {
 		if c.SourceLine(treeHashes[i]) > barrier {
-			// show patche info
-			pub, comment := c.SignerInfo(treeHashes[i])
-			fmt.Printf("patch %d/%d\n", i-idx, len(treeHashes)-idx-1)
-			if treeComments[i] != "" {
-				fmt.Println(treeComments[i])
-			}
-			fmt.Printf("developer: %s\n", pub)
-			if comment != "" {
-				fmt.Println(comment)
-			}
+			showPatchInfo(c, i, idx, treeHashes, treeComments)
 			err := terminal.Confirm("review already signed patch (no continues)?")
 			if err != nil {
 				if err == terminal.ErrAbort {
@@ -109,67 +127,24 @@ outer:
 				}
 				return err
 			}
-
-			// bring .codechain/tree/a in sync
-			log.Println("bring .codechain/tree/a in sync")
-			err = sync.Dir(treeDirA, treeHashes[i-1], patchDir, treeHashes, def.ExcludePaths, true)
-			if err != nil {
-				return err
-			}
-
-			// bring .codechain/tree/b in sync
-			log.Println("bring .codechain/tree/b in sync")
-			err = sync.Dir(treeDirB, treeHashes[i], patchDir, treeHashes, def.ExcludePaths, true)
-			if err != nil {
-				return err
-			}
-
-			// display diff *pager
-			if err := git.DiffPager(treeDirA, treeDirB); err != nil {
+			if err := procDiff(i, treeHashes); err != nil {
 				return err
 			}
 		}
 	}
 
 	for i := idx + 1; i < len(treeHashes); i++ {
-		// bring .codechain/tree/a in sync
-		log.Println("bring .codechain/tree/a in sync")
-		err = sync.Dir(treeDirA, treeHashes[i-1], patchDir, treeHashes, def.ExcludePaths, true)
-		if err != nil {
-			return err
-		}
-
-		// bring .codechain/tree/b in sync
-		log.Println("bring .codechain/tree/b in sync")
-		err = sync.Dir(treeDirB, treeHashes[i], patchDir, treeHashes, def.ExcludePaths, true)
-		if err != nil {
-			return err
-		}
-
-		// show patche info
-		pub, comment := c.SignerInfo(treeHashes[i])
-		fmt.Printf("patch %d/%d\n", i-idx, len(treeHashes)-idx-1)
-		if treeComments[i] != "" {
-			fmt.Println(treeComments[i])
-		}
-		fmt.Printf("developer: %s\n", pub)
-		if comment != "" {
-			fmt.Println(comment)
-		}
+		showPatchInfo(c, i, idx, treeHashes, treeComments)
 		if err := terminal.Confirm("review patch (no aborts)?"); err != nil {
 			return err
 		}
-		signed = true
-
-		// display diff *pager
-		if err := git.DiffPager(treeDirA, treeDirB); err != nil {
+		if err := procDiff(i, treeHashes); err != nil {
 			return err
 		}
-
-		// confirm patch
 		if err := terminal.Confirm("sign patch?"); err != nil {
 			return err
 		}
+		signed = true
 	}
 
 	if !signed {

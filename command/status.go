@@ -10,7 +10,6 @@ import (
 	"github.com/frankbraun/codechain/util/log"
 )
 
-// TODO: move to hashchain?
 func showSigner(c *hashchain.HashChain) {
 	fmt.Printf("signers (%d-of-%d required):\n", c.M(), c.N())
 	var signer []string

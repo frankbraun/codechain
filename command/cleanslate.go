@@ -1,14 +1,11 @@
 package command
 
 import (
-	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/terminal"
@@ -36,20 +33,9 @@ outerA:
 		}
 	}
 
-	for {
-		fmt.Print("delete all files and directories listed above? [y/n]: ")
-		answer, err := terminal.ReadLine(os.Stdin)
-		if err != nil {
-			return err
-		}
-		a := string(bytes.ToLower(answer))
-		if strings.HasPrefix(a, "y") {
-			break
-		} else if strings.HasPrefix(a, "n") {
-			return errors.New("aborted")
-		} else {
-			fmt.Println("answer not recognized")
-		}
+	err = terminal.Confirm("delete all files and directories listed above?")
+	if err != nil {
+		return err
 	}
 
 outerB:

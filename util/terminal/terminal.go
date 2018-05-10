@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"syscall"
 
 	"github.com/frankbraun/codechain/util/bzero"
@@ -74,4 +75,23 @@ func ReadLine(r io.Reader) ([]byte, error) {
 		return nil, err
 	}
 	return bytes.TrimSpace(str), nil
+}
+
+// Confirm asks the user to confirm the question with yes or no.
+func Confirm(question string) error {
+	for {
+		fmt.Print(question + " [y/n]: ")
+		answer, err := ReadLine(os.Stdin)
+		if err != nil {
+			return err
+		}
+		a := string(bytes.ToLower(answer))
+		if strings.HasPrefix(a, "y") {
+			return nil
+		} else if strings.HasPrefix(a, "n") {
+			return ErrAbort
+		} else {
+			fmt.Println("answer not recognized")
+		}
+	}
 }

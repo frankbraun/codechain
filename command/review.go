@@ -1,12 +1,10 @@
 package command
 
 import (
-	"bytes"
 	"errors"
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/base64"
@@ -81,21 +79,9 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
 		for _, info := range infos {
 			fmt.Println(info)
 		}
-		for {
-			fmt.Print("confirm signer/sigctl changes? [y/n]: ")
-			answer, err := terminal.ReadLine(os.Stdin)
-			if err != nil {
-				return err
-			}
-			a := string(bytes.ToLower(answer))
-			if strings.HasPrefix(a, "y") {
-				signed = true
-				break
-			} else if strings.HasPrefix(a, "n") {
-				return errors.New("aborted")
-			} else {
-				fmt.Println("answer not recognized")
-			}
+		err := terminal.Confirm("confirm signer/sigctl changes?")
+		if err != nil {
+			return err
 		}
 	}
 
@@ -115,20 +101,12 @@ outer:
 			if comment != "" {
 				fmt.Println(comment)
 			}
-			for {
-				fmt.Print("review already signed patch (no continues)? [y/n]: ")
-				answer, err := terminal.ReadLine(os.Stdin)
-				if err != nil {
-					return err
-				}
-				a := string(bytes.ToLower(answer))
-				if strings.HasPrefix(a, "y") {
-					break
-				} else if strings.HasPrefix(a, "n") {
+			err := terminal.Confirm("review already signed patch (no continues)?")
+			if err != nil {
+				if err == terminal.ErrAbort {
 					continue outer
-				} else {
-					fmt.Println("answer not recognized")
 				}
+				return err
 			}
 
 			// bring .codechain/tree/a in sync
@@ -177,21 +155,8 @@ outer:
 		if comment != "" {
 			fmt.Println(comment)
 		}
-		for {
-			fmt.Print("review patch (no aborts)? [y/n]: ")
-			answer, err := terminal.ReadLine(os.Stdin)
-			if err != nil {
-				return err
-			}
-			a := string(bytes.ToLower(answer))
-			if strings.HasPrefix(a, "y") {
-				signed = true
-				break
-			} else if strings.HasPrefix(a, "n") {
-				return errors.New("aborted")
-			} else {
-				fmt.Println("answer not recognized")
-			}
+		if err := terminal.Confirm("review patch (no aborts)?"); err != nil {
+			return err
 		}
 
 		// display diff *pager
@@ -200,40 +165,16 @@ outer:
 		}
 
 		// confirm patch
-		for {
-			fmt.Print("sign patch? [y/n]: ")
-			answer, err := terminal.ReadLine(os.Stdin)
-			if err != nil {
-				return err
-			}
-			a := string(bytes.ToLower(answer))
-			if strings.HasPrefix(a, "y") {
-				break
-			} else if strings.HasPrefix(a, "n") {
-				return errors.New("aborted")
-			} else {
-				fmt.Println("answer not recognized")
-			}
+		if err := terminal.Confirm("sign patch?"); err != nil {
+			return err
 		}
 	}
 
 	if !signed {
-		for {
-			fmt.Println("no new signer/sigctl changes or source publications to sign")
-			fmt.Print("sign anyway? [y/n]: ")
-			answer, err := terminal.ReadLine(os.Stdin)
-			if err != nil {
-				return err
-			}
-			a := string(bytes.ToLower(answer))
-			if strings.HasPrefix(a, "y") {
-				signed = true
-				break
-			} else if strings.HasPrefix(a, "n") {
-				return errors.New("aborted")
-			} else {
-				fmt.Println("answer not recognized")
-			}
+		err := terminal.Confirm("no new signer/sigctl changes or source publications to sign\n" +
+			"sign anyway?")
+		if err != nil {
+			return err
 		}
 	}
 

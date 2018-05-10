@@ -2,12 +2,10 @@ package command
 
 import (
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
@@ -86,20 +84,8 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun bool) error {
 	}
 
 	// confirm patch
-	for {
-		fmt.Print("publish patch? [y/n]: ")
-		answer, err := terminal.ReadLine(os.Stdin)
-		if err != nil {
-			return err
-		}
-		a := string(bytes.ToLower(answer))
-		if strings.HasPrefix(a, "y") {
-			break
-		} else if strings.HasPrefix(a, "n") {
-			return errors.New("aborted")
-		} else {
-			fmt.Println("answer not recognized")
-		}
+	if err := terminal.Confirm("publish patch?"); err != nil {
+		return err
 	}
 
 	// read comment

@@ -19,7 +19,7 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func publish(c *hashchain.HashChain, secKeyFile string, dryRun bool) error {
+func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) error {
 	var (
 		secKey *[64]byte
 		err    error
@@ -75,9 +75,15 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun bool) error {
 		}
 	}
 
-	// display diff pager
-	if err := git.DiffPager(treeDirA, treeDirB); err != nil {
-		return err
+	if useGit {
+		// display diff pager
+		if err := git.DiffPager(treeDirA, treeDirB); err != nil {
+			return err
+		}
+	} else {
+		fmt.Println("the patch to publish is the diff between the following two directries:")
+		fmt.Println(treeDirA)
+		fmt.Println(treeDirB)
 	}
 	if dryRun {
 		return nil
@@ -129,8 +135,9 @@ func Publish(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Add signed changes in tree to .codechain ready for publication.\n")
 		fs.PrintDefaults()
 	}
-	seckey := fs.String("s", "", "Secret key file")
 	dryRun := fs.Bool("d", false, "Dry run, just show diff without signing anything")
+	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
+	seckey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -167,7 +174,7 @@ func Publish(argv0 string, args ...string) error {
 	})
 	// run publish
 	go func() {
-		if err := publish(c, *seckey, *dryRun); err != nil {
+		if err := publish(c, *seckey, *dryRun, *useGit); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

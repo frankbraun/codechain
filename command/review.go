@@ -28,7 +28,7 @@ func showPatchInfo(c *hashchain.HashChain, i, idx int, treeHashes, treeComments 
 	}
 }
 
-func procDiff(i int, treeHashes []string) error {
+func procDiff(i int, treeHashes []string, useGit bool) error {
 	// bring .codechain/tree/a in sync
 	log.Println("bring .codechain/tree/a in sync")
 	err := sync.Dir(treeDirA, treeHashes[i-1], patchDir, treeHashes, def.ExcludePaths, true)
@@ -43,14 +43,20 @@ func procDiff(i int, treeHashes []string) error {
 		return err
 	}
 
-	// display diff *pager
-	if err := git.DiffPager(treeDirA, treeDirB); err != nil {
-		return err
+	if useGit {
+		// display diff pager
+		if err := git.DiffPager(treeDirA, treeDirB); err != nil {
+			return err
+		}
+	} else {
+		fmt.Println("review diff between the following two directries:")
+		fmt.Println(treeDirA)
+		fmt.Println(treeDirB)
 	}
 	return nil
 }
 
-func review(c *hashchain.HashChain, secKeyFile, treeHash string) error {
+func review(c *hashchain.HashChain, secKeyFile, treeHash string, useGit bool) error {
 	// load secret key
 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
 	if err != nil {
@@ -127,7 +133,7 @@ outer:
 				}
 				return err
 			}
-			if err := procDiff(i, treeHashes); err != nil {
+			if err := procDiff(i, treeHashes, useGit); err != nil {
 				return err
 			}
 		}
@@ -138,7 +144,7 @@ outer:
 		if err := terminal.Confirm("review patch (no aborts)?"); err != nil {
 			return err
 		}
-		if err := procDiff(i, treeHashes); err != nil {
+		if err := procDiff(i, treeHashes, useGit); err != nil {
 			return err
 		}
 		if err := terminal.Confirm("sign patch?"); err != nil {
@@ -178,6 +184,7 @@ func Review(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Review code changes (all or up to treehash) and changes of signers and sigctl.\n")
 		fs.PrintDefaults()
 	}
+	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
 	seckey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
@@ -214,7 +221,7 @@ func Review(argv0 string, args ...string) error {
 	})
 	// run review
 	go func() {
-		if err := review(c, *seckey, treeHash); err != nil {
+		if err := review(c, *seckey, treeHash, *useGit); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

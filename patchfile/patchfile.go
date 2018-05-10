@@ -357,9 +357,12 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 		err          error
 	)
 	s := bufio.NewScanner(r)
+	buf := make([]byte, bufio.MaxScanTokenSize)
+	s.Buffer(buf, 64*1024*1024) // 64MB, entire files can be encoded as single lines
 	state := start
 	for s.Scan() {
 		line := s.Text()
+		//fmt.Println(line)
 		switch state {
 		case start:
 			state, err = procStart(line)
@@ -443,8 +446,14 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 			var lines []string
 			for i := 0; i < numLines; i++ {
 				if s.Scan() {
-					lines = append(lines, s.Text())
+					line := s.Text()
+					//fmt.Println(line)
+					lines = append(lines, line)
 				} else {
+					// check if we have a scanner error first
+					if err := s.Err(); err != nil {
+						return err
+					}
 					return ErrPrematureDiffEnd
 				}
 			}

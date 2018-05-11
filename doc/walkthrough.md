@@ -106,7 +106,7 @@ codechain review -a ...
 codechain status
 
 # let's remove the second reviewer again
-codechain sigctl -m 2
+codechain sigctl -m 1
 codechain remkey ...
 codechain review
 

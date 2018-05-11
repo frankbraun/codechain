@@ -78,7 +78,6 @@ func Dir(
 
 	for ; i <= idx; i++ {
 		h := treeHashes[i]
-		log.Printf("apply patch: %s\n", h)
 
 		// verify previous patch
 		p, err := tree.Hash(treeDir, excludePaths)
@@ -88,6 +87,7 @@ func Dir(
 		if hex.Encode(p[:]) != h {
 			return fmt.Errorf("tree: patch failed to create target: %s", h)
 		}
+		log.Printf("verified patch: %s\n", h)
 
 		// check if we are done
 		if h == targetHash {
@@ -101,7 +101,7 @@ func Dir(
 		}
 
 		// apply patch
-		log.Println("applying patch")
+		log.Printf("applying patch: %s\n", h)
 		err = patchfile.Apply(treeDir, patch, def.ExcludePaths)
 		if err != nil {
 			patch.Close()

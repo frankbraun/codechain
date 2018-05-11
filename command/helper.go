@@ -85,8 +85,7 @@ func seckeyLoad(c *hashchain.HashChain, filename string) (*[64]byte, *[64]byte, 
 	if filename != "" {
 		return seckeyRead(filename)
 	}
-	homeDir := home.AppDataDir("codechain", false)
-	homeDir = filepath.Join(homeDir, secretsDir)
+	homeDir := filepath.Join(codechainHomeDir(), secretsDir)
 	signer := c.Signer()
 
 	files, err := ioutil.ReadDir(homeDir)

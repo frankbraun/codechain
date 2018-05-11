@@ -24,10 +24,10 @@ func Dir(
 ) error {
 	// argument checking
 	if treeHashes[0] != tree.EmptyHash {
-		return fmt.Errorf("tree: treeHashes doesn't start with EmptyHash")
+		return fmt.Errorf("sync: treeHashes doesn't start with EmptyHash")
 	}
 	if !util.ContainsString(treeHashes, targetHash) {
-		return fmt.Errorf("tree: targetHash unknown: %s", targetHash)
+		return fmt.Errorf("sync: targetHash unknown: %s", targetHash)
 	}
 
 	hash, err := tree.Hash(treeDir, excludePaths)
@@ -52,7 +52,7 @@ func Dir(
 		}
 	}
 	if idx == len(treeHashes) {
-		return fmt.Errorf("tree: could not find target hash: %s", targetHash)
+		return fmt.Errorf("sync: could not find target hash: %s", targetHash)
 	}
 
 	// find start position
@@ -65,7 +65,7 @@ func Dir(
 	}
 	if i == idx {
 		if !canRemoveDir {
-			return errors.New("tree: could not find a valid start to apply, try with empty dir")
+			return errors.New("sync: could not find a valid start to apply, try with empty dir")
 		}
 		log.Println("could not find a valid start to apply, trying with empty dir...")
 		if err := os.RemoveAll(treeDir); err != nil {
@@ -86,7 +86,7 @@ func Dir(
 			return err
 		}
 		if hex.Encode(p[:]) != h {
-			return fmt.Errorf("tree: patch failed to create target: %s", h)
+			return fmt.Errorf("sync: patch failed to create target: %s", h)
 		}
 		log.Printf("verified patch: %s\n", h)
 

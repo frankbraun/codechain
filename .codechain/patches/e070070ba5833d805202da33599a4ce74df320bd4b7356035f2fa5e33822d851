@@ -1,0 +1,986 @@
+codechain patchfile version 1
+treehash e070070ba5833d805202da33599a4ce74df320bd4b7356035f2fa5e33822d851
+- f ea91aacbbfeb5f1b2d84ebb7f444a9c6263c676b1d51ce6d9ab03caf95f0b269 Gopkg.lock
++ f 701699a9323e7e6389d0ea4f7da73cbcf4884a78b5fb048151061bae73237873 Gopkg.lock
+dmppatch 9
+@@ -99,16 +99,459 @@
+ jects%5D%5D%0A
++  name = %22github.com/fatih/color%22%0A  packages = %5B%22.%22%5D%0A  revision = %22507f6050b8568533fb3f5504de8e5205fa62a114%22%0A  version = %22v1.6.0%22%0A%0A%5B%5Bprojects%5D%5D%0A  name = %22github.com/mattn/go-colorable%22%0A  packages = %5B%22.%22%5D%0A  revision = %22167de6bfdfba052fa6b2d3664c8f5272e23c9072%22%0A  version = %22v0.0.9%22%0A%0A%5B%5Bprojects%5D%5D%0A  name = %22github.com/mattn/go-isatty%22%0A  packages = %5B%22.%22%5D%0A  revision = %220360b2af4f38e8d38c7fce2a9f4e702702d73a39%22%0A  version = %22v0.0.3%22%0A%0A%5B%5Bprojects%5D%5D%0A
+   name =
+@@ -1225,93 +1225,93 @@
+ = 1%0A
+-  inputs-digest = %22ddb1cc487e72cb3c0167a509f3bd33a678e5f13e51b39e9e574c8e16ae5728a1%22%0A
++  inputs-digest = %22db38a8b17c792ec111ccd425ad5b41fb0ccd7f1da258868d8fee6879b19ed436%22%0A
+   so
+- f bf67bdef8f3126bb10d04baa161031f31024deee907e02dbe35a2496bd4c431b README.md
++ f 795b40fa6083dcece1223a1a034a5309ae56b262692327f9d27ca4977c8d924b README.md
+dmppatch 5
+@@ -1220,74 +1220,85 @@
+ m.%0A%0A
+-Currently Codechain depends on the %60git%60 binary (for %60git diff%60).%0A
++Codechain depends on the %60git%60 binary (for %60git diff%60), but that's optional.%0A
+ %0A###
++ f 2d244728a79c3c413672caeef5ed58321fba06f91f578992e7c1a29a217f970f archive/archive.go
+dmppatch 2
+@@ -0,0 +1,3844 @@
++// Package archive implements a simple archive format for %60codechain apply -f%60.%0Apackage archive%0A%0Aimport (%0A%09%22archive/tar%22%0A%09%22bytes%22%0A%09%22compress/gzip%22%0A%09%22fmt%22%0A%09%22io%22%0A%09%22io/ioutil%22%0A%09%22os%22%0A%09%22path%22%0A%09%22path/filepath%22%0A%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0Avar (%0A%09hashchainFile = path.Join(def.CodechainDir, %22hashchain%22)%0A%09patchDir      = path.Join(def.CodechainDir, %22patches%22)%0A)%0A%0A// Create a new archive for the given hash chain and write it to w.%0A// patchDir must contain all the necessary patch files.%0A// The validity of the patch files is not verified!%0Afunc Create(w io.Writer, c *hashchain.HashChain, patchDir string) error %7B%0A%09var buf bytes.Buffer%0A%09zw := gzip.NewWriter(w)%0A%09tw := tar.NewWriter(zw)%0A%0A%09// write hashchain file%0A%09c.Fprint(&buf)%0A%09hdr := &tar.Header%7B%0A%09%09Name: hashchainFile,%0A%09%09Mode: 0644,%0A%09%09Size: int64(buf.Len()),%0A%09%7D%0A%09log.Printf(%22archive: write %25s%22, hashchainFile)%0A%09if err := tw.WriteHeader(hdr); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if _, err := tw.Write(buf.Bytes()); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// write patch files%0A%09treeHashes := c.TreeHashes()%0A%09for i := 0; i %3C len(treeHashes)-1; i++ %7B%0A%09%09treeHash := treeHashes%5Bi%5D%0A%09%09patchFile := path.Join(patchDir, treeHash)%0A%09%09patch, err := ioutil.ReadFile(patchFile)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09hdr := &tar.Header%7B%0A%09%09%09Name: patchFile,%0A%09%09%09Mode: 0644,%0A%09%09%09Size: int64(len(patch)),%0A%09%09%7D%0A%09%09log.Printf(%22archive: write %25s%22, patchFile)%0A%09%09if err := tw.WriteHeader(hdr); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if _, err := tw.Write(patch); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%0A%09if err := tw.Close(); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09return zw.Close()%0A%7D%0A%0A// Apply the archive read from r to the given hashchainFile and patchDir.%0A// If the hashchainFile is already present it must be transformable by%0A// appending to the hashchain present in r, otherwise an error is returned.%0Afunc Apply(hashchainFile, patchDir string, r io.Reader) error %7B%0A%09zr, err := gzip.NewReader(r)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09tr := tar.NewReader(zr)%0A%0A%09for %7B%0A%09%09hdr, err := tr.Next()%0A%09%09if err != nil %7B%0A%09%09%09if err == io.EOF %7B%0A%09%09%09%09break // end of archive%0A%09%09%09%7D%0A%09%09%09return err%0A%09%09%7D%0A%09%09log.Printf(%22archive: read %25s%22, hdr.Name)%0A%09%09if hdr.Name == hashchainFile %7B%0A%09%09%09exists, err := file.Exists(def.HashchainFile)%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09if exists %7B%0A%09%09%09%09// try to merge hashchain files%0A%09%09%09%09c, err := hashchain.ReadFile(def.HashchainFile)%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09src, err := hashchain.Read(tr)%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09c.Close()%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09err = c.Merge(src)%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09c.Close()%0A%09%09%09%09%09return nil%0A%09%09%09%09%7D%0A%09%09%09%09if err := c.Close(); err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%7D else %7B%0A%09%09%09%09if err := os.MkdirAll(def.PatchDir, 0755); err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09// save new hashchain file%0A%09%09%09%09f, err := os.Create(def.HashchainFile)%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09if _, err := io.Copy(f, tr); err != nil %7B%0A%09%09%09%09%09f.Close()%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09if err := f.Close(); err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%7D%0A%09%09%7D else if path.Dir(hdr.Name) == patchDir %7B%0A%09%09%09patchFile := filepath.Join(def.PatchDir, path.Base(hdr.Name))%0A%09%09%09exists, err := file.Exists(patchFile)%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09if exists %7B%0A%09%09%09%09// we already have the patch file, skip it%0A%09%09%09%09if _, err := io.Copy(ioutil.Discard, tr); err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%7D else %7B%0A%09%09%09%09// save new patch file%0A%09%09%09%09f, err := os.Create(patchFile)%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09if _, err := io.Copy(f, tr); err != nil %7B%0A%09%09%09%09%09f.Close()%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09if err := f.Close(); err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%7D%0A%09%09%7D else %7B%0A%09%09%09return fmt.Errorf(%22contains unknown file '%25s', not a codechain archive?%22, hdr.Name)%0A%09%09%7D%0A%09%7D%0A%0A%09return zr.Close()%0A%7D%0A
+- f cb33a580a40921db766545df6f7f5967a9dfee7c41aee42d6d6076fc9c341a13 codechain.go
++ f c424211d57c6476b4dda9e972cb8933330b41513ce24159e65883c692cec3a05 codechain.go
+dmppatch 8
+@@ -768,32 +768,102 @@
+ ctl -m%5Cn%22, cmd)%0A
++%09fmt.Fprintf(os.Stderr, %22       %25s createdist -f dist.tar.gz%5Cn%22, cmd)%0A
+ %09fmt.Fprintf(os.
+@@ -1657,32 +1657,95 @@
+ argv0, args...)%0A
++%09case %22createdist%22:%0A%09%09err = command.CreateDist(argv0, args...)%0A
+ %09case %22apply%22:%0A%09
+- f 88394b05f5ece71b5308b8c791df4befec958f9fd8d3c30021fb21916a9483de command/addkey.go
++ f 0da26a2c79d63f2c9a518c3e602ca0084b44abc6b25859f4985cf59797b8f8ac command/addkey.go
+dmppatch 17
+@@ -137,16 +137,108 @@
+ base64%22%0A
++%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A
+ )%0A%0A// Ad
+@@ -560,16 +560,62 @@
+ ts()%0A%09%7D%0A
++%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A
+ %09w := fs
+@@ -698,24 +698,76 @@
+ %09return err%0A
++%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A
+ %09%7D%0A%09if *w %3C 
+@@ -1264,49 +1264,57 @@
+ %0A%09%7D%0A
+-%09c, err := hashchain.Read(hashchainFile)%0A
++%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
+ %09if 
+- f 9b7dddb28d139de6238be4dafc86fc38d3c93a74ffc66f83993f6f9bf493707b command/apply.go
++ f 8a2c78cbcc38e621c0c0efb4fccea23133d035a0911883ef46bf2efbdcc7b41f command/apply.go
+dmppatch 22
+@@ -41,16 +41,59 @@
+ %0A%09%22os%22%0A%0A
++%09%22github.com/frankbraun/codechain/archive%22%0A
+ %09%22github
+@@ -263,16 +263,248 @@
+ /log%22%0A)%0A
++%0Afunc applyDist(filename string) error %7B%0A%09f, err := os.Open(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer f.Close()%0A%09log.Printf(%22applying distribution '%25s'%22, filename)%0A%09return archive.Apply(def.HashchainFile, def.PatchDir, f)%0A%7D%0A
+ %0Afunc ap
+@@ -614,89 +614,93 @@
+ s()%0A
+-%09err := sync.Dir(%22.%22, targetHash, patchDir, treeHashes, def.ExcludePaths, false)%0A
++%09err := sync.Dir(%22.%22, targetHash, def.PatchDir, treeHashes, def.ExcludePaths, false)%0A
+ %09if 
+@@ -1063,16 +1063,69 @@
+ ts()%0A%09%7D%0A
++%09filename := fs.String(%22f%22, %22%22, %22Distribution file%22)%0A
+ %09verbose
+@@ -1333,49 +1333,147 @@
+ %0A%09%7D%0A
+-%09c, err := hashchain.Read(hashchainFile)%0A
++%09if *filename != %22%22 %7B%0A%09%09if err := applyDist(*filename); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
+ %09if 
+- f 1c68a980ff6e34be8c04a95fb1844645ec37079187709a60e0ff00bf604c606f command/cleanslate.go
++ f dd1f67283263977c5d6fd64f237772147c72f8834cd040c6e32e8252035800e2 command/cleanslate.go
+dmppatch 25
+@@ -23,27 +23,8 @@
+ t (%0A
+-%09%22bytes%22%0A%09%22errors%22%0A
+ %09%22fl
+@@ -74,19 +74,8 @@
+ th%22%0A
+-%09%22strings%22%0A
+ %0A%09%22g
+@@ -119,16 +119,60 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/util/log%22%0A
+ %09%22github
+@@ -639,372 +639,112 @@
+ %09%7D%0A%0A
+-%09for %7B%0A%09%09fmt.Print(%22delete all files and directories listed above? %5By/n%5D: %22)%0A%09%09answer, err := terminal.ReadLine(os.Stdin)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09a := string(bytes.ToLower(answer))%0A%09%09if strings.HasPrefix(a, %22y%22) %7B%0A%09%09%09break%0A%09%09%7D else if strings.HasPrefix(a, %22n%22) %7B%0A%09%09%09return errors.New(%22aborted%22)%0A%09%09%7D else %7B%0A%09%09%09fmt.Println(%22answer not recognized%22)%0A%09%09%7D%0A
++%09err = terminal.Confirm(%22delete all files and directories listed above?%22)%0A%09if err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%0A
+@@ -1415,24 +1415,70 @@
+ faults()%0A%09%7D%0A
++%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A
+ %09if err := f
+@@ -1518,16 +1518,68 @@
+ urn err%0A
++%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A
+ %09%7D%0A%09if f
+- f eaf16cbe1423e5eadd4d43d8db3eecc58e894a2b1491323e171d21e22fc32137 command/command.go
++ f 8a80c0e66c5177e562654fb585e67f354ceff45ba69fdf5d399fd38369d6e6d7 command/command.go
+dmppatch 5
+@@ -152,283 +152,155 @@
+ r (%0A
+-%09hashchainFile = filepath.Join(def.CodechainDir, %22hashchain%22)%0A%09treeDirRoot   = filepath.Join(def.CodechainDir, %22tree%22)%0A%09treeDirA      = filepath.Join(treeDirRoot, %22a%22)%0A%09treeDirB      = filepath.Join(treeDirRoot, %22b%22)%0A%09patchDir      = filepath.Join(def.CodechainDir, %22patches%22)%0A
++%09treeDirRoot = filepath.Join(def.CodechainDir, %22tree%22)%0A%09treeDirA    = filepath.Join(treeDirRoot, %22a%22)%0A%09treeDirB    = filepath.Join(treeDirRoot, %22b%22)%0A
+ )%0A
+- f 9ae32ce00285146275129dca8a026bda5b827ffa3f70bbe641a5b415885ab94f command/command_test.go
++ f d537166d95c83a528bd5ea21b14b7d68803481438e074e30a34227f91f5c346d command/command_test.go
+dmppatch 14
+@@ -75,16 +75,64 @@
+ sting%22%0A%0A
++%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22github
+@@ -1458,51 +1458,55 @@
+ %0A%09%7D%0A
+-%09exists, err := file.Exists(hashchainFile)%0A
++%09exists, err := file.Exists(def.HashchainFile)%0A
+ %09if 
+@@ -1583,61 +1583,65 @@
+ s %7B%0A
+-%09%09t.Errorf(%22file '%25s' doesn't exist%22, hashchainFile)%0A
++%09%09t.Errorf(%22file '%25s' doesn't exist%22, def.HashchainFile)%0A
+ %09%7D%0A%09
++ f b0201ca26f655466bfc119ec7e9e048bbd5fe400b186abb341e5cfb6271e7e2b command/createdist.go
+dmppatch 2
+@@ -0,0 +1,1507 @@
++package command%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/archive%22%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0Afunc createDist(c *hashchain.HashChain, filename string) error %7B%0A%09exists, err := file.Exists(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09return fmt.Errorf(%22distribution file '%25s' exists already%22, filename)%0A%09%7D%0A%09f, err := os.Create(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer f.Close()%0A%09log.Printf(%22creating distribution '%25s'%22, filename)%0A%09return archive.Create(f, c, def.PatchDir)%0A%7D%0A%0A// CreateDist implements the 'createdist' command.%0Afunc CreateDist(argv0 string, args ...string) error %7B%0A%09fs := flag.NewFlagSet(argv0, flag.ContinueOnError)%0A%09fs.Usage = func() %7B%0A%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s -f dist.tar.gz%5Cn%22, argv0)%0A%09%09fmt.Fprintf(os.Stderr, %22Create distribution file (for %60codechain apply -f%60).%5Cn%22)%0A%09%09fs.PrintDefaults()%0A%09%7D%0A%09filename := fs.String(%22f%22, %22%22, %22Distribution file%22)%0A%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A%09if err := fs.Parse(args); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A%09if *filename == %22%22 %7B%0A%09%09return fmt.Errorf(%22%25s: option -f is mandatory%22, argv0)%0A%09%7D%0A%09if fs.NArg() != 0 %7B%0A%09%09fs.Usage()%0A%09%09return flag.ErrHelp%0A%09%7D%0A%09c, err := hashchain.ReadFile(def.HashchainFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer c.Close()%0A%09return createDist(c, *filename)%0A%7D%0A
+- f 5e8d4344d63e003988d20c4da1b6780bcb295031a1467004cecffdea74f1b979 command/helper.go
++ f f364c0b366bc6907562d4d6363048ceba058f72553ff7d50975f472eb24b3c4f command/helper.go
+dmppatch 22
+@@ -39,16 +39,22 @@
+ ioutil%22%0A
++%09%22os%22%0A
+ %09%22path/f
+@@ -298,16 +298,60 @@
+ l/home%22%0A
++%09%22github.com/frankbraun/codechain/util/log%22%0A
+ %09%22github
+@@ -425,16 +425,280 @@
+ 519%22%0A)%0A%0A
++func codechainHomeDir() string %7B%0A%09if homeDir := os.Getenv(%22CODECHAINHOMEDIR%22); homeDir != %22%22 %7B%0A%09%09log.Printf(%22$CODECHAINHOMEDIR=%25s%22, homeDir)%0A%09%09return homeDir%0A%09%7D%0A%09homeDir := home.AppDataDir(%22codechain%22, false)%0A%09log.Printf(%22homeDir: %25s%22, homeDir)%0A%09return homeDir%0A%7D%0A%0A
+ func sec
+@@ -911,57 +911,40 @@
+ e %7B%0A
+-%09%09homeDir := home.AppDataDir(%22codechain%22, false)%0A
++%09%09homeDir := codechainHomeDir()%0A
+ %09%09ho
+@@ -2178,102 +2178,66 @@
+ %0A%09%7D%0A
+-%09homeDir := home.AppDataDir(%22codechain%22, false)%0A%09homeDir = filepath.Join(homeDir, secretsDir)%0A
++%09homeDir := filepath.Join(codechainHomeDir(), secretsDir)%0A
+ %09sig
+- f 57aab4eaf713eff6860a3d7de3090ed2302801696280c82a37ecdf6afc1971b2 command/keyfile.go
++ f b1f472951915f0bb81c251ab495ed5459593627f8e896fd24d714b75771e7290 command/keyfile.go
+dmppatch 18
+@@ -246,53 +246,52 @@
+ ro%22%0A
+-%09%22github.com/frankbraun/codechain/util/home%22%0A
++%09%22github.com/frankbraun/codechain/util/log%22%0A
+ %09%22gi
+@@ -816,102 +816,66 @@
+ r %7B%0A
+-%09homeDir := home.AppDataDir(%22codechain%22, false)%0A%09homeDir = filepath.Join(homeDir, secretsDir)%0A
++%09homeDir := filepath.Join(codechainHomeDir(), secretsDir)%0A
+ %09fil
+@@ -1829,16 +1829,62 @@
+  file%22)%0A
++%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A
+ %09if err 
+@@ -1920,32 +1920,84 @@
+  %7B%0A%09%09return err%0A
++%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A
+ %09%7D%0A%09if *change &
+- f ef5858881b16cce8624a71e88bde0da9a3b266963d9c249458f016514a342a80 command/keygen.go
++ f 6e23008251824079eb0761aaa3a4004a66302909560151230f30a412dd93766b command/keygen.go
+dmppatch 18
+@@ -273,53 +273,52 @@
+ le%22%0A
+-%09%22github.com/frankbraun/codechain/util/home%22%0A
++%09%22github.com/frankbraun/codechain/util/log%22%0A
+ %09%22gi
+@@ -964,16 +964,62 @@
+  file%22)%0A
++%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A
+ %09if err 
+@@ -1059,24 +1059,76 @@
+ %09return err%0A
++%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A
+ %09%7D%0A%09if fs.NA
+@@ -1361,103 +1361,66 @@
+ e %7B%0A
+-%09%09homeDir = home.AppDataDir(%22codechain%22, false)%0A%09%09homeDir = filepath.Join(homeDir, secretsDir)%0A
++%09%09homeDir = filepath.Join(codechainHomeDir(), secretsDir)%0A
+ %09%09if
+- f 0c8c14e4ad397df901eec37a92ab321d15c81685f424a28ddb11f681055d5d7d command/publish.go
++ f 86d6d49ee3155f51bf00ec00fe1e0329d03250f6b78d9033b812e71945dd04bd command/publish.go
+dmppatch 72
+@@ -32,18 +32,8 @@
+ es%22%0A
+-%09%22errors%22%0A
+ %09%22fl
+@@ -70,19 +70,8 @@
+ th%22%0A
+-%09%22strings%22%0A
+ %0A%09%22g
+@@ -160,16 +160,64 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/internal/hex%22%0A
+ %09%22github
+@@ -572,173 +572,137 @@
+ %0A)%0A%0A
+-func publish(c *hashchain.HashChain, secKeyFile string) error %7B%0A%09// load secret key%0A%09secKey, _, _, err := seckeyLoad(c, secKeyFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A
++func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) error %7B%0A%09var (%0A%09%09secKey *%5B64%5Dbyte%0A%09%09err    error%0A%09)%0A
+ %0A%09//
+@@ -823,56 +823,60 @@
+ ash%0A
+-%09patchFile := filepath.Join(patchDir, treeHash)%0A
++%09patchFile := filepath.Join(def.PatchDir, treeHash)%0A
+ %09exi
+@@ -1020,24 +1020,471 @@
+ chFile)%0A%09%7D%0A%0A
++%09// calculate current treehash%0A%09curHash, err := tree.Hash(%22.%22, def.ExcludePaths)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09curHashStr := hex.Encode(curHash%5B:%5D)%0A%09log.Printf(%22current tree hash: %25s%22, curHashStr)%0A%0A%09// make sure the tree is dirty%0A%09if curHashStr == treeHash %7B%0A%09%09return fmt.Errorf(%22tree not dirty, nothing to publish%22)%0A%09%7D%0A%0A%09// load secret key%0A%09if !dryRun %7B%0A%09%09secKey, _, _, err = seckeyLoad(c, secKeyFile)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%0A
+ %09// bring .c
+@@ -1598,90 +1598,94 @@
+ s()%0A
+-%09err = sync.Dir(treeDirA, treeHash, patchDir, treeHashes, def.ExcludePaths, true)%0A
++%09err = sync.Dir(treeDirA, treeHash, def.PatchDir, treeHashes, def.ExcludePaths, true)%0A
+ %09if 
+@@ -1738,155 +1738,8 @@
+ e%22)%0A
+-%0A%09// calculate current treehash%0A%09curHash, err := tree.Hash(%22.%22, def.ExcludePaths)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09fmt.Printf(%22%25x%5Cn%22, curHash%5B:%5D)%0A
+ %0A%09//
+@@ -2109,103 +2109,298 @@
+ %09%7D%0A%0A
+-%09// display diff pager%0A%09if err := git.DiffPager(treeDirA, treeDirB); err != nil %7B%0A%09%09return err%0A
++%09if useGit %7B%0A%09%09// display diff pager%0A%09%09if err := git.DiffPager(treeDirA, treeDirB); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D else %7B%0A%09%09fmt.Println(%22the patch to publish is the diff between the following two directries:%22)%0A%09%09fmt.Println(treeDirA)%0A%09%09fmt.Println(treeDirB)%0A%09%7D%0A%09if dryRun %7B%0A%09%09return nil%0A
+ %09%7D%0A%0A
+@@ -2421,340 +2421,81 @@
+ tch%0A
+-%09for %7B%0A%09%09fmt.Print(%22publish patch? %5By/n%5D: %22)%0A%09%09answer, err := terminal.ReadLine(os.Stdin)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09a := string(bytes.ToLower(answer))%0A%09%09if strings.HasPrefix(a, %22y%22) %7B%0A%09%09%09break%0A%09%09%7D else if strings.HasPrefix(a, %22n%22) %7B%0A%09%09%09return errors.New(%22aborted%22)%0A%09%09%7D else %7B%0A%09%09%09fmt.Println(%22answer not recognized%22)%0A%09%09%7D%0A
++%09if err := terminal.Confirm(%22publish patch?%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%0A
+@@ -3515,16 +3515,161 @@
+ ts()%0A%09%7D%0A
++%09dryRun := fs.Bool(%22d%22, false, %22Dry run, just show diff without signing anything%22)%0A%09useGit := fs.Bool(%22git%22, true, %22Use git-diff to show diffs%22)%0A
+ %09seckey 
+@@ -3815,70 +3815,8 @@
+ %0A%09%7D%0A
+-%09if err := seckeyCheck(*seckey); err != nil %7B%0A%09%09return err%0A%09%7D%0A
+ %09if 
+@@ -3859,24 +3859,107 @@
+ .Stdout)%0A%09%7D%0A
++%09if !*dryRun %7B%0A%09%09if err := seckeyCheck(*seckey); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A
+ %09if fs.NArg(
+@@ -4147,61 +4147,65 @@
+ %0A%09%7D%0A
+-%09if err := os.MkdirAll(patchDir, 0755); err != nil %7B%0A
++%09if err := os.MkdirAll(def.PatchDir, 0755); err != nil %7B%0A
+ %09%09re
+@@ -4220,49 +4220,57 @@
+ %0A%09%7D%0A
+-%09c, err := hashchain.Read(hashchainFile)%0A
++%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
+ %09if 
+@@ -4430,54 +4430,72 @@
+ ) %7B%0A
+-%09%09if err := publish(c, *seckey); err != nil %7B%0A
++%09%09if err := publish(c, *seckey, *dryRun, *useGit); err != nil %7B%0A
+ %09%09%09i
+- f 24eb5615753b39e65c55be38eb54e2af0f0851f208b9ac1eb2209b65e2a866d5 command/remkey.go
++ f 6b9f6ed76f6d779631b8a421acbb6b5b3a7b0936ff30b2589d8988b4ee68b914 command/remkey.go
+dmppatch 17
+@@ -137,16 +137,108 @@
+ base64%22%0A
++%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A
+ )%0A%0A// Re
+@@ -541,24 +541,70 @@
+ faults()%0A%09%7D%0A
++%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A
+ %09if err := f
+@@ -647,16 +647,68 @@
+  err%0A%09%7D%0A
++%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A
+ %09if fs.N
+@@ -895,49 +895,57 @@
+ %0A%09%7D%0A
+-%09c, err := hashchain.Read(hashchainFile)%0A
++%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
+ %09if 
+- f 11c15d4b0158e389b5388280a98816bd19cfac6089031ff8dd8903d243153d67 command/review.go
++ f 393441eba75222e9d4a4b7987d8bcd79e36a8e4159708a4bd49369eb206e32dd command/review.go
+dmppatch 101
+@@ -23,17 +23,8 @@
+ t (%0A
+-%09%22bytes%22%0A
+ %09%22er
+@@ -54,19 +54,8 @@
+ os%22%0A
+-%09%22strings%22%0A
+ %0A%09%22g
+@@ -429,81 +429,1189 @@
+ %0A)%0A%0A
+-func review(c *hashchain.HashChain, secKeyFile, treeHash string) error %7B%0A
++func showPatchInfo(c *hashchain.HashChain, i, idx int, treeHashes, treeComments %5B%5Dstring) %7B%0A%09pub, comment := c.SignerInfo(treeHashes%5Bi%5D)%0A%09fmt.Printf(%22patch %25d/%25d%5Cn%22, i-idx, len(treeHashes)-idx-1)%0A%09if treeComments%5Bi%5D != %22%22 %7B%0A%09%09fmt.Println(treeComments%5Bi%5D)%0A%09%7D%0A%09fmt.Printf(%22developer: %25s%5Cn%22, pub)%0A%09if comment != %22%22 %7B%0A%09%09fmt.Println(comment)%0A%09%7D%0A%7D%0A%0Afunc procDiff(i int, treeHashes %5B%5Dstring, useGit bool) error %7B%0A%09// bring .codechain/tree/a in sync%0A%09log.Println(%22bring .codechain/tree/a in sync%22)%0A%09err := sync.Dir(treeDirA, treeHashes%5Bi-1%5D, def.PatchDir, treeHashes, def.ExcludePaths, true)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// bring .codechain/tree/b in sync%0A%09log.Println(%22bring .codechain/tree/b in sync%22)%0A%09err = sync.Dir(treeDirB, treeHashes%5Bi%5D, def.PatchDir, treeHashes, def.ExcludePaths, true)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09if useGit %7B%0A%09%09// display diff pager%0A%09%09if err := git.DiffPager(treeDirA, treeDirB); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D else %7B%0A%09%09fmt.Println(%22review diff between the following two directries:%22)%0A%09%09fmt.Println(treeDirA)%0A%09%09fmt.Println(treeDirB)%0A%09%7D%0A%09return nil%0A%7D%0A%0Afunc review(c *hashchain.HashChain, secKeyFile, treeHash string, detached, useGit bool) error %7B%0A
+ %09// 
+@@ -1771,130 +1771,8 @@
+ h()%0A
+-%09/*%0A%09%09if signedTreeHash == c.LastTreeHash() %7B%0A%09%09%09fmt.Printf(%22%25s: already signed%5Cn%22, signedTreeHash)%0A%09%09%09return nil%0A%09%09%7D%0A%09*/%0A
+ %09tre
+@@ -2872,392 +2872,120 @@
+ %09%09%7D%0A
+-%09%09for %7B%0A%09%09%09fmt.Print(%22confirm signer/sigctl changes? %5By/n%5D: %22)%0A%09%09%09answer, err := terminal.ReadLine(os.Stdin)%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09a := string(bytes.ToLower(answer))%0A%09%09%09if strings.HasPrefix(a, %22y%22) %7B%0A%09%09%09%09signed = true%0A%09%09%09%09break%0A%09%09%09%7D else if strings.HasPrefix(a, %22n%22) %7B%0A%09%09%09%09return errors.New(%22aborted%22)%0A%09%09%09%7D else %7B%0A%09%09%09%09fmt.Println(%22answer not recognized%22)%0A%09%09%09%7D%0A
++%09%09err := terminal.Confirm(%22confirm signer/sigctl changes?%22)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A
+ %09%09%7D%0A
++%09%09signed = true%0A
+ %09%7D%0A%0A
+@@ -3088,35 +3088,8 @@
+ ey)%0A
+-%09// TODO: deduplicate code%0A
+ oute
+@@ -3169,591 +3169,189 @@
+ r %7B%0A
+-%09%09%09// show patche info%0A%09%09%09pub, comment := c.SignerInfo(treeHashes%5Bi%5D)%0A%09%09%09fmt.Printf(%22patch %25d/%25d%5Cn%22, i-idx, len(treeHashes)-idx-1)%0A%09%09%09if treeComments%5Bi%5D != %22%22 %7B%0A%09%09%09%09fmt.Println(treeComments%5Bi%5D)%0A%09%09%09%7D%0A%09%09%09fmt.Printf(%22developer: %25s%5Cn%22, pub)%0A%09%09%09if comment != %22%22 %7B%0A%09%09%09%09fmt.Println(comment)%0A%09%09%09%7D%0A%09%09%09for %7B%0A%09%09%09%09fmt.Print(%22review already signed patch (no continues)? %5By/n%5D: %22)%0A%09%09%09%09answer, err := terminal.ReadLine(os.Stdin)%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09a := string(bytes.ToLower(answer))%0A%09%09%09%09if strings.HasPrefix(a, %22y%22) %7B%0A%09%09%09%09%09break%0A%09%09%09%09%7D else if strings.HasPrefix(a, %22n%22) %7B%0A
++%09%09%09showPatchInfo(c, i, idx, treeHashes, treeComments)%0A%09%09%09err := terminal.Confirm(%22review already signed patch (no continues)?%22)%0A%09%09%09if err != nil %7B%0A%09%09%09%09if err == terminal.ErrAbort %7B%0A
+ %09%09%09%09
+@@ -3370,273 +3370,14 @@
+ ter%0A
+-%09%09%09%09%7D else %7B%0A%09%09%09%09%09fmt.Println(%22answer not recognized%22)%0A
+ %09%09%09%09%7D%0A
+-%09%09%09%7D%0A%0A%09%09%09// bring .codechain/tree/a in sync%0A%09%09%09log.Println(%22bring .codechain/tree/a in sync%22)%0A%09%09%09err = sync.Dir(treeDirA, treeHashes%5Bi-1%5D, patchDir, treeHashes, def.ExcludePaths, true)%0A%09%09%09if err != nil %7B%0A
+ %09%09%09%09
+@@ -3396,313 +3396,67 @@
+ %09%09%7D%0A
+-%0A%09%09%09// bring .codechain/tree/b in sync%0A%09%09%09log.Println(%22bring .codechain/tree/b in sync%22)%0A%09%09%09err = sync.Dir(treeDirB, treeHashes%5Bi%5D, patchDir, treeHashes, def.ExcludePaths, true)%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%0A%09%09%09// display diff *pager%0A%09%09%09if err := git.DiffPager(treeDirA, treeDirB); err != nil %7B%0A
++%09%09%09if err := procDiff(i, treeHashes, useGit); err != nil %7B%0A
+ %09%09%09%09
+@@ -3529,202 +3529,133 @@
+ + %7B%0A
+-%09%09// bring .codechain/tree/a in sync%0A%09%09log.Println(%22bring .codechain/tree/a in sync%22)%0A%09%09err = sync.Dir(treeDirA, treeHashes%5Bi-1%5D, patchDir, treeHashes, def.ExcludePaths, true)%0A%09%09if err != nil %7B%0A
++%09%09showPatchInfo(c, i, idx, treeHashes, treeComments)%0A%09%09if err := terminal.Confirm(%22review patch (no aborts)?%22); err != nil %7B%0A
+ %09%09%09r
+@@ -3672,201 +3672,66 @@
+ %09%09%7D%0A
+-%0A%09%09// bring .codechain/tree/b in sync%0A%09%09log.Println(%22bring .codechain/tree/b in sync%22)%0A%09%09err = sync.Dir(treeDirB, treeHashes%5Bi%5D, patchDir, treeHashes, def.ExcludePaths, true)%0A%09%09if err != nil %7B%0A
++%09%09if err := procDiff(i, treeHashes, useGit); err != nil %7B%0A
+ %09%09%09r
+@@ -3748,753 +3748,66 @@
+ %09%09%7D%0A
+-%0A%09%09// show patche info%0A%09%09pub, comment := c.SignerInfo(treeHashes%5Bi%5D)%0A%09%09fmt.Printf(%22patch %25d/%25d%5Cn%22, i-idx, len(treeHashes)-idx-1)%0A%09%09if treeComments%5Bi%5D != %22%22 %7B%0A%09%09%09fmt.Println(treeComments%5Bi%5D)%0A%09%09%7D%0A%09%09fmt.Printf(%22developer: %25s%5Cn%22, pub)%0A%09%09if comment != %22%22 %7B%0A%09%09%09fmt.Println(comment)%0A%09%09%7D%0A%09%09for %7B%0A%09%09%09fmt.Print(%22review patch (no aborts)? %5By/n%5D: %22)%0A%09%09%09answer, err := terminal.ReadLine(os.Stdin)%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09a := string(bytes.ToLower(answer))%0A%09%09%09if strings.HasPrefix(a, %22y%22) %7B%0A%09%09%09%09signed = true%0A%09%09%09%09break%0A%09%09%09%7D else if strings.HasPrefix(a, %22n%22) %7B%0A%09%09%09%09return errors.New(%22aborted%22)%0A%09%09%09%7D else %7B%0A%09%09%09%09fmt.Println(%22answer not recognized%22)%0A%09%09%09%7D%0A%09%09%7D%0A%0A%09%09// display diff *pager%0A%09%09if err := git.DiffPager(treeDirA, treeDirB); err != nil %7B%0A
++%09%09if err := terminal.Confirm(%22sign patch?%22); err != nil %7B%0A
+ %09%09%09r
+@@ -3824,375 +3824,24 @@
+ %09%09%7D%0A
+-%0A%09%09// confirm patch%0A%09%09for %7B%0A%09%09%09fmt.Print(%22sign patch? %5By/n%5D: %22)%0A%09%09%09answer, err := terminal.ReadLine(os.Stdin)%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09a := string(bytes.ToLower(answer))%0A%09%09%09if strings.HasPrefix(a, %22y%22) %7B%0A%09%09%09%09break%0A%09%09%09%7D else if strings.HasPrefix(a, %22n%22) %7B%0A%09%09%09%09return errors.New(%22aborted%22)%0A%09%09%09%7D else %7B%0A%09%09%09%09fmt.Println(%22answer not recognized%22)%0A%09%09%09%7D%0A%09%09%7D%0A
++%09%09signed = true%0A
+ %09%7D%0A%0A
+@@ -3858,448 +3858,151 @@
+ d %7B%0A
+-%09%09for %7B%0A%09%09%09fmt.Println(%22no new signer/sigctl changes or source publications to sign%22)%0A%09%09%09fmt.Print(%22sign anyway? %5By/n%5D: %22)%0A%09%09%09answer, err := terminal.ReadLine(os.Stdin)%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09a := string(bytes.ToLower(answer))%0A%09%09%09if strings.HasPrefix(a, %22y%22) %7B%0A%09%09%09%09signed = true%0A%09%09%09%09break%0A%09%09%09%7D else if strings.HasPrefix(a, %22n%22) %7B%0A%09%09%09%09return errors.New(%22aborted%22)%0A%09%09%09%7D else %7B%0A%09%09%09%09fmt.Println(%22answer not recognized%22)%0A%09%09%09%7D%0A
++%09%09err := terminal.Confirm(%22no new signer/sigctl changes or source publications to sign%5Cn%22 +%0A%09%09%09%22sign anyway?%22)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A
+ %09%09%7D%0A
+@@ -4170,54 +4170,281 @@
+ %0A%09%7D%0A
+-%09entry, err := c.Signature(linkHash, *secKey)%0A
++%09entry, err := c.Signature(linkHash, *secKey, detached)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09fmt.Println(entry)%0A%09return nil%0A%7D%0A%0Afunc addDetached(c *hashchain.HashChain, linkHash, pubKey, signature string) error %7B%0A%09entry, err := c.DetachedSignature(linkHash, pubKey, signature)%0A
+ %09if 
+@@ -4747,16 +4747,92 @@
+  argv0)%0A
++%09%09fmt.Fprintf(os.Stderr, %22       %25s -a linkhash pubkey signature%5Cn%22, argv0)%0A
+ %09%09fmt.Fp
+@@ -4956,16 +4956,194 @@
+ ts()%0A%09%7D%0A
++%09add := fs.Bool(%22a%22, false, %22Add detached signature%22)%0A%09detached := fs.Bool(%22d%22, false, %22Create detached signature%22)%0A%09useGit := fs.Bool(%22git%22, true, %22Use git-diff to show diffs%22)%0A
+ %09seckey 
+@@ -5277,32 +5277,84 @@
+ %09%09return err%0A%09%7D%0A
++%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A
+ %09if err := secke
+@@ -5403,134 +5403,173 @@
+ %0A%09%7D%0A
+-%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A%09if fs.NArg() != 0 && fs.NArg() != 1 %7B%0A%09%09fs.Usage()%0A%09%09return flag.ErrHelp%0A
++%09if *add %7B%0A%09%09if fs.NArg() != 3 %7B%0A%09%09%09fs.Usage()%0A%09%09%09return flag.ErrHelp%0A%09%09%7D%0A%09%7D else %7B%0A%09%09if fs.NArg() != 0 && fs.NArg() != 1 %7B%0A%09%09%09fs.Usage()%0A%09%09%09return flag.ErrHelp%0A%09%09%7D%0A
+ %09%7D%0A%09
+@@ -5777,49 +5777,57 @@
+ %0A%09%7D%0A
+-%09c, err := hashchain.Read(hashchainFile)%0A
++%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
+ %09if 
+@@ -5986,63 +5986,184 @@
+ ) %7B%0A
+-%09%09if err := review(c, *seckey, treeHash); err != nil %7B%0A
++%09%09var err error%0A%09%09if *add %7B%0A%09%09%09err = addDetached(c, fs.Arg(0), fs.Arg(1), fs.Arg(2))%0A%09%09%7D else %7B%0A%09%09%09err = review(c, *seckey, treeHash, *detached, *useGit)%0A%09%09%7D%0A%09%09if err != nil %7B%0A
+ %09%09%09i
+- f f0ae88f69a8a74c5a345d377f4ddf76111db441e369473d7a0af9d0800da1c74 command/sigctl.go
++ f 1b0298bcb535209f6379c23134fde7a7a0811d9d1993096ec9f89ae9c66cb33f command/sigctl.go
+dmppatch 17
+@@ -86,16 +86,108 @@
+ hchain%22%0A
++%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A
+ )%0A%0A// Si
+@@ -530,16 +530,62 @@
+ old M%22)%0A
++%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A
+ %09if err 
+@@ -628,24 +628,76 @@
+ turn err%0A%09%7D%0A
++%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A
+ %09if *m == -1
+@@ -895,49 +895,57 @@
+ %0A%09%7D%0A
+-%09c, err := hashchain.Read(hashchainFile)%0A
++%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
+ %09if 
+- f c5cd4d44efc3311ec4cf94c721f9525edfef0b992883e8cb6f78065a801c07f8 command/start.go
++ f a3560630ec3e64b699619a02628cd37ee30a386c52039ac7a25b093b60a20892 command/start.go
+dmppatch 27
+@@ -179,16 +179,60 @@
+ l/file%22%0A
++%09%22github.com/frankbraun/codechain/util/log%22%0A
+ )%0A%0A// St
+@@ -612,16 +612,62 @@
+  file%22)%0A
++%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A
+ %09if err 
+@@ -710,24 +710,76 @@
+ turn err%0A%09%7D%0A
++%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A
+ %09if *seckey 
+@@ -986,51 +986,55 @@
+ %0A%09%7D%0A
+-%09exists, err := file.Exists(hashchainFile)%0A
++%09exists, err := file.Exists(def.HashchainFile)%0A
+ %09if 
+@@ -1079,82 +1079,86 @@
+ s %7B%0A
+-%09%09return fmt.Errorf(%22%25s: file '%25s' exists already%22, argv0, hashchainFile)%0A
++%09%09return fmt.Errorf(%22%25s: file '%25s' exists already%22, argv0, def.HashchainFile)%0A
+ %09%7D%0A%09
+@@ -1238,72 +1238,76 @@
+ %0A%09%7D%0A
+-%09c, entry, err := hashchain.Start(hashchainFile, *sec, comment)%0A
++%09c, entry, err := hashchain.Start(def.HashchainFile, *sec, comment)%0A
+ %09if 
+- f 7daa6d36713078531aba860827a48353b979084d50f344bb73519e5fb780f60d command/status.go
++ f 1debe4e75a78f1a82474bffa2e932b8a2223fbb7de138c3310a60600357ef1b3 command/status.go
+dmppatch 32
+@@ -98,39 +98,231 @@
+ in%22%0A
++%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/internal/hex%22%0A%09%22github.com/frankbraun/codechain/tree%22%0A%09%22github.com/frankbraun/codechain/util%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A
+ )%0A%0A
+-// TODO: move to hashchain?%0A
+ func
+@@ -1266,24 +1266,359 @@
+ turn nil%0A%7D%0A%0A
++func showTreeStatus(c *hashchain.HashChain) error %7B%0A%09treeHash, err := tree.Hash(%22.%22, def.ExcludePaths)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09treeHashes := c.TreeHashes()%0A%09if util.ContainsString(treeHashes, hex.Encode(treeHash%5B:%5D)) %7B%0A%09%09fmt.Printf(%22tree matches %25x%5Cn%22, treeHash%5B:%5D)%0A%09%7D else %7B%0A%09%09fmt.Println(%22tree is dirty%22)%0A%09%7D%0A%09return nil%0A%7D%0A%0A
+ func status(
+@@ -1721,32 +1721,106 @@
+ n()%0A
+-%09return showUnsigned(c)%0A
++%09if err := showUnsigned(c); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09fmt.Println()%0A%09return showTreeStatus(c)%0A
+ %7D%0A%0A/
+@@ -2115,24 +2115,225 @@
+ faults()%0A%09%7D%0A
++%09deepVerify := fs.Bool(%22deep-verify%22, false, %22Verify all patch files match hash chain entries%22)%0A%09print := fs.Bool(%22p%22, false, %22Print hashchain to stdout%22)%0A%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A
+ %09if err := f
+@@ -2372,24 +2372,76 @@
+ turn err%0A%09%7D%0A
++%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A
+ %09if fs.NArg(
+@@ -2491,49 +2491,57 @@
+ %0A%09%7D%0A
+-%09c, err := hashchain.Read(hashchainFile)%0A
++%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
+ %09if 
+@@ -2586,16 +2586,178 @@
+ Close()%0A
++%09if *deepVerify %7B%0A%09%09err := c.DeepVerify(treeDirA, def.PatchDir, def.ExcludePaths)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%09if *print %7B%0A%09%09c.Print()%0A%09%09return nil%0A%09%7D%0A
+ %09return 
++ f ab81f3080f71a034c90dc0ca64b62295d3a75a23ec1b0f498dfda4a34325ae3a doc/helloproject/README.md
+dmppatch 2
+@@ -0,0 +1,45 @@
++## Example project for Codechain walkthrough%0A
++ f ad125cc5c1fb680be130908a0838ca2235db04285bcdd29e8e25087927e7dd0d doc/helloproject/hello.go
+dmppatch 2
+@@ -0,0 +1,78 @@
++package main%0A%0Aimport (%0A%09%22fmt%22%0A)%0A%0Afunc main() %7B%0A%09fmt.Println(%22hello world!%22)%0A%7D%0A
++ f b4132dd9e8dd8c4d670b94870829147645e2987d010a37f6325f4cf4e92fd204 doc/walkthrough.md
+dmppatch 2
+@@ -0,0 +1,2736 @@
++## Codechain walkthrough%0A%0A%60%60%60%0A# %5Bsingle tmux window%5D%0A# let's assume you have %60go%60 installed and $GOPATH set%0A# otherwise go to https://golang.org/dl/%0A%0A# get Codechain repository from GitHub%0Ago get -u -v github.com/frankbraun/codechain%0A%0A# change to Codechain directory%0Acd $GOPATH/src/github.com/frankbraun/codechain%0A%0A# use Codechain to verify Codechain code and switch to latest published version%0Acodechain cleanslate%0Acodechain apply%0Ago install github.com/frankbraun/codechain%0A%0A# start Codechain walkthrough with example project%0Acd doc/hellproject%0Als%0Acat README.md%0Acat hello.go%0A%0A# Codechain has various commands%0Acodechain -h%0A%0A# %60codechain treehash%60 computes the hash of a directory tree%0Acodechain treehash%0A%0A# the hash is computed by hashing a deterministic tree list%0Acodechain treehash -l%0Acodechain treehash -l %7C sha256sum%0A%0A# let's generate a key pair%0Acodechain keygen%0A%0A# let's start using Codechain for our example project%0Acodechain start -s ~/.config/codechain/secrets/...%0A%0A# this started the hash chain%0Acat .codechain/hashchain%0A%0A# also:%0Acodechain status -p%0A%0A# see current status of project%0Acodechain status%0A%0A# let's publish our first release%0Acodechain publish%0A%0A# the first release has been published, but is not signed yet%0Acodechain status%0A%0A# let's review and sign it%0Acodechain review%0A%0A# now we have our first signed release%0Acodechain status%0A%0A# let's bring a second reviewer on board%0A# %5Bswitch tmux window ctrl+b n%5D%0A# the reviewer already has Codechain installed%0A# generate a key%0Acodechain keygen%0A%0A# %5Bswitch tmux window ctrl+b n%5D%0A# add second signer%0Acodechain addkey ...%0A%0A# increase number of necessary signers%0Acodechain sigctl -m 2%0Acodechain status%0A%0A# sign-off on second signer%0Acodechain review%0Acodechain status%0A%0A# add UNLICENSE to project%0Acp ../../UNLICENSE .%0A%0A# publish new version%0Acodechain publish%0Acodechain status%0A%0A# sign new release%0Acodechain review%0Acodechain status%0A%0A# we still need the second signature, create distribution%0Acodechain createdist -f /tmp/dist.tar.gz%0A%0A# %5Bswitch tmux window%5D%0A# apply new distribution%0Acodechain apply -f /tmp/dist.tar.gz%0A%0A# create detached signature and send it to John%0Acodechain review -d%0A%0A# %5Bswitch tmux window%5D%0A# add detached signature%0Acodechain review -a ...%0A%0A# now we a new signed release%0Acodechain status%0A%0A# let's remove the second reviewer again%0Acodechain sigctl -m 1%0Acodechain remkey ...%0Acodechain review%0A%0A# of course, Jane has to sign off on it%0Acodechain status%0Acodechain createdist -f /tmp/dist2.tar.gz%0A%0A# %5Bswitch tmux window%5D%0A# apply new distribution%0Acodechain apply -f /tmp/dist.tar.gz%0A%0A# create detached signature and send it to John%0Acodechain review -d%0A%0A# %5Bswitch tmux window%5D%0A# add detached signature%0Acodechain review -a ...%0A%0A# now we are back to one reviewer%0Acodechain status%0A%0A%60%60%60%0A
+- f 03e3acc8c5a3eb5006a3c325f3f4ece6d5d635c7c9fa981b6d27d74688d20eff hashchain/addkey.go
++ f 99ee6ee5405ce1ae732c9eea249a181a3d91bf1036d6e610d6eae1f79e0a29a2 hashchain/addkey.go
+dmppatch 10
+@@ -1011,83 +1011,67 @@
+ ave%0A
+-%09entry := l.String()%0A%09if _, err := fmt.Fprintln(c.fp, entry); err != nil %7B%0A
++%09if _, err := fmt.Fprintln(c.fp, l.String()); err != nil %7B%0A
+ %09%09re
+@@ -1090,25 +1090,35 @@
+ %0A%09%7D%0A
+-%09return entry, nil%0A
++%09return l.StringColor(), nil%0A
+ %7D%0A
++ f 523933525690007979d4941f0d577076f49360a76e6e6345a81a0ca7ce62bd22 hashchain/deepverify.go
+dmppatch 2
+@@ -0,0 +1,803 @@
++package hashchain%0A%0Aimport (%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/sync%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0A// DeepVerify hash chain. Use directory treeDir to apply patches from patchDir%0A// one after another and verify that they reflect the treehashes recorded in%0A// the hash chain.%0Afunc (c *HashChain) DeepVerify(treeDir, patchDir string, excludePaths %5B%5Dstring) error %7B%0A%09treeHashes := c.state.TreeHashes()%0A%0A%09// remove treeDir first%0A%09log.Printf(%22rm -rf %25s%22, treeDir)%0A%09if err := os.RemoveAll(treeDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09log.Printf(%22mkdir %25s%22, treeDir)%0A%09if err := os.Mkdir(treeDir, 0755); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// sync takes care of the rest%0A%09targetHash := treeHashes%5Blen(treeHashes)-1%5D%0A%09return sync.Dir(treeDir, targetHash, patchDir, treeHashes, excludePaths, false)%0A%7D%0A
+- f d55abbea0146229cc312c389103be3ae5fde5a0e5e5b748535e30b468a28f5eb hashchain/hashchain.go
++ f 1a214ca211308de1cedc61c280ac0e09a11c1c9cfdc0a6b474244cbaaecec3b2 hashchain/hashchain.go
+dmppatch 7
+@@ -21,16 +21,29 @@
+ mport (%0A
++%09%22fmt%22%0A%09%22io%22%0A
+ %09%22os%22%0A%0A%09
+@@ -3317,16 +3317,287 @@
+ rrier(pubKey)%0A%7D%0A
++%0A// Print colorized hash chain on stdout.%0Afunc (c *HashChain) Print() %7B%0A%09for _, l := range c.chain %7B%0A%09%09fmt.Println(l.StringColor())%0A%09%7D%0A%7D%0A%0A// Fprint hash chain to w.%0Afunc (c *HashChain) Fprint(w io.Writer) %7B%0A%09for _, l := range c.chain %7B%0A%09%09fmt.Fprintln(w, l.String())%0A%09%7D%0A%7D%0A
+- f f0c60b4b312dd405fe1d3aeaf7643c2d9c2d3e1361b8d84609dec87b5db80e7d hashchain/hashchain_test.go
++ f 4b1b8ee3553d21bff62d65c78329310c0c8f74d78c3aef85616c762c8f03fe5a hashchain/hashchain_test.go
+dmppatch 55
+@@ -1119,33 +1119,37 @@
+ l)%0A%0A
+-%09_, err = Read(filename)%0A
++%09_, err = ReadFile(filename)%0A
+ %09if 
+@@ -1165,51 +1165,55 @@
+ l %7B%0A
+-%09%09t.Error(%22Read() should fail (lockfile)%22)%0A
++%09%09t.Error(%22ReadFile() should fail (lockfile)%22)%0A
+ %09%7D%0A%09
+@@ -1292,35 +1292,39 @@
+ %0A%09%7D%0A
+-%09c2, err := Read(filename)%0A
++%09c2, err := ReadFile(filename)%0A
+ %09if 
+@@ -1340,47 +1340,51 @@
+ l %7B%0A
+-%09%09t.Fatalf(%22Read() 2 failed: %25v%22, err)%0A
++%09%09t.Fatalf(%22ReadFile() 2 failed: %25v%22, err)%0A
+ %09%7D%0A%09
+@@ -1987,55 +1987,62 @@
+ .go%0A
+-%09l, err = c.Signature(c.LastEntryHash(), secA)%0A
++%09l, err = c.Signature(c.LastEntryHash(), secA, false)%0A
+ %09if 
+@@ -2966,55 +2966,62 @@
+ ner%0A
+-%09l, err = c.Signature(c.LastEntryHash(), secA)%0A
++%09l, err = c.Signature(c.LastEntryHash(), secA, false)%0A
+ %09if 
+@@ -3489,55 +3489,62 @@
+ ctl%0A
+-%09l, err = c.Signature(c.LastEntryHash(), secB)%0A
++%09l, err = c.Signature(c.LastEntryHash(), secB, false)%0A
+ %09if 
+@@ -4468,55 +4468,62 @@
+ ner%0A
+-%09l, err = c.Signature(c.LastEntryHash(), secA)%0A
++%09l, err = c.Signature(c.LastEntryHash(), secA, false)%0A
+ %09if 
+@@ -4882,55 +4882,62 @@
+ ctl%0A
+-%09l, err = c.Signature(c.LastEntryHash(), secB)%0A
++%09l, err = c.Signature(c.LastEntryHash(), secB, false)%0A
+ %09if 
+@@ -5103,35 +5103,39 @@
+ %0A%09%7D%0A
+-%09c2, err := Read(filename)%0A
++%09c2, err := ReadFile(filename)%0A
+ %09if 
+@@ -5151,47 +5151,51 @@
+ l %7B%0A
+-%09%09t.Fatalf(%22Read() 2 failed: %25v%22, err)%0A
++%09%09t.Fatalf(%22ReadFile() 2 failed: %25v%22, err)%0A
+ %09%7D%0A%09
+- f 6c0b0a6d37424d7864e37651f700f6fa1275e356a39782418c841c8c75ce0c64 hashchain/internal/state/state.go
++ f 3c330182678629c65b451adb1eb15db33a773fb397c3a190dcd2da2720c8c972 hashchain/internal/state/state.go
+dmppatch 8
+@@ -228,16 +228,56 @@
+ n/tree%22%0A
++%09%22github.com/frankbraun/codechain/util%22%0A
+ %09%22github
+@@ -4162,16 +4162,543 @@
+ gned)%22)%0A
++%09%7D%0A%09return nil%0A%7D%0A%0A// NotPublished makes sure that the given treeHash has not been published%0A// before (unconfirmed or confirmed).%0Afunc (s *State) NotPublished(treeHash string) error %7B%0A%09if util.ContainsString(s.signedTreeHashes, treeHash) %7B%0A%09%09return errors.New(%22state: duplicate treehash (signed)%22)%0A%09%7D%0A%09for i := s.signedLine + 1; i %3C len(s.unconfirmedOPs); i++ %7B%0A%09%09switch op := s.unconfirmedOPs%5Bi%5D.(type) %7B%0A%09%09case *sourceOP:%0A%09%09%09if op.treeHash == treeHash %7B%0A%09%09%09%09return errors.New(%22state: duplicate treehash (unsigned)%22)%0A%09%09%09%7D%0A%09%09%7D%0A
+ %09%7D%0A%09retu
+- f a3985df67f5bccfa14899ecfabaa6ecea50127305d4dc0021c7a0041e413ccbe hashchain/link.go
++ f 1a8af52000f9735020acf6e6611b26600382f1a45920e6e634fe962c2a050526 hashchain/link.go
+dmppatch 16
+@@ -21,16 +21,25 @@
+ mport (%0A
++%09%22bytes%22%0A
+ %09%22crypto
+@@ -66,16 +66,42 @@
+ rings%22%0A%0A
++%09%22github.com/fatih/color%22%0A
+ %09%22github
+@@ -538,24 +538,389 @@
+ elds ...%0A%7D%0A%0A
++func linkEqual(a, b *link) bool %7B%0A%09if !bytes.Equal(a.previous%5B:%5D, b.previous%5B:%5D) %7B%0A%09%09return false%0A%09%7D%0A%09if a.datum != b.datum %7B%0A%09%09return false%0A%09%7D%0A%09if a.linkType != b.linkType %7B%0A%09%09return false%0A%09%7D%0A%09if len(a.typeFields) != len(b.typeFields) %7B%0A%09%09return false%0A%09%7D%0A%09for i, field := range a.typeFields %7B%0A%09%09if field != b.typeFields%5Bi%5D %7B%0A%09%09%09return false%0A%09%09%7D%0A%09%7D%0A%09return true%0A%7D%0A%0A
+ func (l *lin
+@@ -1062,16 +1062,1417 @@
+ , %22 %22))%0A
++%7D%0A%0Afunc (l *link) StringColor() string %7B%0A%09// hash-of-previous / hash-of-chain-entry: green%0A%09// current-time: white%0A%09// type: black%0A%09// pubkey: red%0A%09// nonce: magenta%0A%09// signature: blue%0A%09// source-hash: cyan%0A%09// w/m: HiRed%0A%09// comment: yellow%0A%09s := color.GreenString(%22%25x%22, l.previous) + %22 %22 +%0A%09%09color.WhiteString(time.Format(l.datum)) + %22 %22 +%0A%09%09l.linkType + %22 %22%0A%09switch l.linkType %7B%0A%09case %22cstart%22:%0A%09%09s += color.RedString(l.typeFields%5B0%5D) + %22 %22 +%0A%09%09%09color.MagentaString(l.typeFields%5B1%5D) + %22 %22 +%0A%09%09%09color.BlueString(l.typeFields%5B2%5D)%0A%09%09if len(l.typeFields) == 4 %7B%0A%09%09%09s += %22 %22 + color.YellowString(l.typeFields%5B3%5D)%0A%09%09%7D%0A%09case %22source%22:%0A%09%09s += color.CyanString(l.typeFields%5B0%5D) + %22 %22 +%0A%09%09%09color.RedString(l.typeFields%5B1%5D) + %22 %22 +%0A%09%09%09color.BlueString(l.typeFields%5B2%5D)%0A%09%09if len(l.typeFields) == 4 %7B%0A%09%09%09s += %22 %22 + color.YellowString(l.typeFields%5B3%5D)%0A%09%09%7D%0A%09case %22signtr%22:%0A%09%09s += color.GreenString(l.typeFields%5B0%5D) + %22 %22 +%0A%09%09%09color.RedString(l.typeFields%5B1%5D) + %22 %22 +%0A%09%09%09color.BlueString(l.typeFields%5B2%5D)%0A%09case %22addkey%22:%0A%09%09s += color.HiRedString(l.typeFields%5B0%5D) + %22 %22 +%0A%09%09%09color.RedString(l.typeFields%5B1%5D) + %22 %22 +%0A%09%09%09color.BlueString(l.typeFields%5B2%5D)%0A%09%09if len(l.typeFields) == 4 %7B%0A%09%09%09s += %22 %22 + color.YellowString(l.typeFields%5B3%5D)%0A%09%09%7D%0A%09case %22remkey%22:%0A%09%09s += color.RedString(l.typeFields%5B0%5D)%0A%09case %22sigctl%22:%0A%09%09s += color.HiRedString(l.typeFields%5B0%5D)%0A%09default:%0A%09%09panic(%22hashchain: unknown link type%22)%0A%09%7D%0A%09return s%0A
+ %7D%0A%0Afunc 
++ f ac76496bb39c7bf3645b8ac9a9451d5b73a85916bf0a3b2e0797523e0f7b903f hashchain/merge.go
+dmppatch 2
+@@ -0,0 +1,793 @@
++package hashchain%0A%0Aimport (%0A%09%22errors%22%0A%09%22fmt%22%0A)%0A%0A// Merge hashchain src into c.%0Afunc (c *HashChain) Merge(src *HashChain) error %7B%0A%09i := 0%0A%09for ; i %3C len(c.chain) && i %3C len(src.chain); i++ %7B%0A%09%09if !linkEqual(c.chain%5Bi%5D, src.chain%5Bi%5D) %7B%0A%09%09%09return errors.New(%22hashchain: cannot merge%22)%0A%09%09%7D%0A%09%7D%0A%09if len(src.chain) %3C len(c.chain) %7B%0A%09%09return errors.New(%22hashchain: nothing to merge%22)%0A%09%7D%0A%09for ; i %3C len(src.chain); i++ %7B%0A%09%09var l link%0A%09%09l = *src.chain%5Bi%5D%0A%09%09c.chain = append(c.chain, &l)%0A%09%09// Verifiying the entire chain after every entry is a bit excessive,%0A%09%09// especially because src is already verified.%0A%09%09// But better be safe than sorry.%0A%09%09if err := c.verify(); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09// save%0A%09%09if _, err := fmt.Fprintln(c.fp, l.String()); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%09return nil%0A%7D%0A
+- f 35be7302a58e2b7ca876ca7f8f814bf63090376623c5f4bca9afe55ec6f6869c hashchain/read.go
++ f c43548cf21a56aca643fedaa9688ce976f2de5ce385ac3e4d1ea2d49d905bc70 hashchain/read.go
+dmppatch 53
+@@ -37,16 +37,22 @@
+ %0A%09%22fmt%22%0A
++%09%22io%22%0A
+ %09%22os%22%0A%09%22
+@@ -199,24 +199,68 @@
+ l/lockfile%22%0A
++%09%22github.com/frankbraun/codechain/util/log%22%0A
+ %09%22github.com
+@@ -299,505 +299,54 @@
+ %0A)%0A%0A
+-// Read hash chain from filename.%0Afunc Read(filename string) (*HashChain, error) %7B%0A%09// check arguments%0A%09exists, err := file.Exists(filename)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09if !exists %7B%0A%09%09return nil, fmt.Errorf(%22hashchain: file '%25s' doesn't exist%22, filename)%0A%09%7D%0A%0A%09// init%0A%09var c HashChain%0A%09c.lock, err = lockfile.Create(filename)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09c.fp, err = os.OpenFile(filename, os.O_RDWR%7Cos.O_APPEND, 0644)%0A%09if err != nil %7B%0A%09%09c.lock.Release()%0A%09%09return nil, err%0A%09%7D%0A%0A
++func (c *HashChain) read(r io.Reader) error %7B%0A
+ %09// 
+@@ -365,37 +365,34 @@
+ ain%0A
+-%09s := bufio.NewScanner(c.fp)%0A
++%09s := bufio.NewScanner(r)%0A
+ %09for
+@@ -500,16 +500,36 @@
+ .Text()%0A
++%09%09log.Println(text)%0A
+ %09%09line :
+@@ -624,47 +624,22 @@
+ l %7B%0A
+-%09%09%09c.lock.Release()%0A%09%09%09return nil, err%0A
++%09%09%09return err%0A
+ %09%09%7D%0A
+@@ -738,109 +738,84 @@
+ l %7B%0A
+-%09%09%09c.lock.Release()%0A%09%09%09return nil, fmt.Errorf(%22hashchain: cannot parse time '%25s': %25s%22, line%5B1%5D, err)%0A
++%09%09%09return fmt.Errorf(%22hashchain: cannot parse time '%25s': %25s%22, line%5B1%5D, err)%0A
+ %09%09%7D%0A
+@@ -973,101 +973,76 @@
+ t %7B%0A
+-%09%09%09c.lock.Release()%0A%09%09%09return nil, fmt.Errorf(%22hashchain: cannot reproduce line:%5Cn%25s%22, text)%0A
++%09%09%09return fmt.Errorf(%22hashchain: cannot reproduce line:%5Cn%25s%22, text)%0A
+ %09%09%7D%0A
+@@ -1108,35 +1108,236 @@
+ = nil %7B%0A
+-%09%09c.lock.Release()%0A
++%09%09return err%0A%09%7D%0A%0A%09// verify%0A%09return c.verify()%0A%7D%0A%0A// Read hash chain from r and verify it.%0Afunc Read(r io.Reader) (*HashChain, error) %7B%0A%09log.Printf(%22hashchain.Read()%22)%0A%09var c HashChain%0A%09if err := c.read(r); err != nil %7B%0A
+ %09%09return
+@@ -1353,56 +1353,561 @@
+ %0A%09%7D%0A
++%09return &c, nil%0A%7D%0A
+ %0A
+-%09// verify%0A%09if err := c.verify(); err != nil %7B%0A
++// ReadFile reads hash chain from filename and verifies it.%0Afunc ReadFile(filename string) (*HashChain, error) %7B%0A%09log.Printf(%22hashchain.ReadFile(%25s)%22, filename)%0A%09// check arguments%0A%09exists, err := file.Exists(filename)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09if !exists %7B%0A%09%09return nil, fmt.Errorf(%22hashchain: file '%25s' doesn't exist%22, filename)%0A%09%7D%0A%0A%09// init%0A%09var c HashChain%0A%09c.lock, err = lockfile.Create(filename)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09c.fp, err = os.OpenFile(filename, os.O_RDWR%7Cos.O_APPEND, 0644)%0A%09if err != nil %7B%0A
+ %09%09c.
+@@ -1934,32 +1934,105 @@
+ urn nil, err%0A%09%7D%0A
++%0A%09if err := c.read(c.fp); err != nil %7B%0A%09%09c.Close()%0A%09%09return nil, err%0A%09%7D%0A%0A
+ %09return &c, nil%0A
+- f 50ba5ed8cd72e6f85c04b9400d178ccf9360e4ed759c8cdf2d8bbbbbfa66f6c9 hashchain/remkey.go
++ f 4851dd93c39c3145f161d0552945d16157af80d74c0e4dd126252dba164dad4d hashchain/remkey.go
+dmppatch 10
+@@ -731,83 +731,67 @@
+ ave%0A
+-%09entry := l.String()%0A%09if _, err := fmt.Fprintln(c.fp, entry); err != nil %7B%0A
++%09if _, err := fmt.Fprintln(c.fp, l.String()); err != nil %7B%0A
+ %09%09re
+@@ -810,25 +810,35 @@
+ %0A%09%7D%0A
+-%09return entry, nil%0A
++%09return l.StringColor(), nil%0A
+ %7D%0A
+- f 0d953d495d7083e7ec0c461ead3a6e9e2a1ccde78a380dcd079680e065d7f948 hashchain/sigctl.go
++ f 59f2c47d74a53c7f711a4a5b3004787273e6a4c17e77a101dd169f83b520613d hashchain/sigctl.go
+dmppatch 10
+@@ -700,83 +700,67 @@
+ ave%0A
+-%09entry := l.String()%0A%09if _, err := fmt.Fprintln(c.fp, entry); err != nil %7B%0A
++%09if _, err := fmt.Fprintln(c.fp, l.String()); err != nil %7B%0A
+ %09%09re
+@@ -779,25 +779,35 @@
+ %0A%09%7D%0A
+-%09return entry, nil%0A
++%09return l.StringColor(), nil%0A
+ %7D%0A
+- f 889de88aa2bf8c355210787596ee4408d0308587e24bab5fbc2810d3b8fb5c90 hashchain/signature.go
++ f 01dcd90450c5df692c0fea53f382673a600a52eb49b02a69754073d6eadd142b hashchain/signature.go
+dmppatch 54
+@@ -351,92 +351,171 @@
+ in.%0A
+-func (c *HashChain) Signature(linkHash %5B32%5Dbyte, secKey %5B64%5Dbyte) (string, error) %7B%0A
++// If detached it just returns the signature without adding it.%0Afunc (c *HashChain) Signature(linkHash %5B32%5Dbyte, secKey %5B64%5Dbyte, detached bool) (string, error) %7B%0A
+ %09// 
+@@ -1371,32 +1371,158 @@
+ urn %22%22, err%0A%09%7D%0A%0A
++%09// detached signature?%0A%09if detached %7B%0A%09%09return fmt.Sprintf(%22%25s %25s %25s%22, typeFields%5B0%5D, typeFields%5B1%5D, typeFields%5B2%5D), nil%0A%09%7D%0A%0A
+ %09// save%0A%09entry 
+@@ -1518,83 +1518,67 @@
+ ave%0A
+-%09entry := l.String()%0A%09if _, err := fmt.Fprintln(c.fp, entry); err != nil %7B%0A
++%09if _, err := fmt.Fprintln(c.fp, l.String()); err != nil %7B%0A
+ %09%09re
+@@ -1593,35 +1593,45 @@
+  err%0A%09%7D%0A
+-%09return entry, nil%0A
++%09return l.StringColor(), nil%0A
+ %7D%0A%0A// De
+@@ -1734,111 +1734,351 @@
+ in.%0A
+-func (c *HashChain) DetachedSignature(linkHash, pubKey %5B32%5Dbyte, signature %5B64%5Dbyte) (string, error) %7B%0A
++func (c *HashChain) DetachedSignature(linkHash, pubKey, signature string) (string, error) %7B%0A%09// decode arguments%0A%09lh, err := hex.Decode(linkHash, 32)%0A%09if err != nil %7B%0A%09%09return %22%22, err%0A%09%7D%0A%09pub, err := base64.Decode(pubKey, 32)%0A%09if err != nil %7B%0A%09%09return %22%22, err%0A%09%7D%0A%09sig, err := base64.Decode(signature, 64)%0A%09if err != nil %7B%0A%09%09return %22%22, err%0A%09%7D%0A%0A
+ %09// 
+@@ -2132,139 +2132,146 @@
+ ist%0A
+-%09if !c.state.HasLinkHash(linkHash) %7B%0A%09%09return %22%22, fmt.Errorf(%22hashchain: link hash doesn't exist: %25s%22,%0A%09%09%09hex.Encode(linkHash%5B:%5D))%0A
++%09var h %5B32%5Dbyte%0A%09copy(h%5B:%5D, lh)%0A%09if !c.state.HasLinkHash(h) %7B%0A%09%09return %22%22, fmt.Errorf(%22hashchain: link hash doesn't exist: %25s%22, linkHash)%0A
+ %09%7D%0A%09
+@@ -2312,128 +2312,138 @@
+ ner%0A
+-%09if !c.state.HasSigner(pubKey) %7B%0A%09%09return %22%22, fmt.Errorf(%22hashchain: not a valid signer: %25s%22,%0A%09%09%09hex.Encode(pubKey%5B:%5D))%0A
++%09var p %5B32%5Dbyte%0A%09copy(p%5B:%5D, pub)%0A%09if !c.state.HasSigner(p) %7B%0A%09%09return %22%22, fmt.Errorf(%22hashchain: not a valid signer: %25s%22, pubKey)%0A
+ %09%7D%0A%09
+@@ -2521,68 +2521,44 @@
+ ure%0A
+-%09if !ed25519.Verify(pubKey%5B:%5D, linkHash%5B:%5D, signature%5B:%5D) %7B%0A
++%09if !ed25519.Verify(pub, lh, sig) %7B%0A
+ %09%09re
+@@ -2631,122 +2631,61 @@
+ try%0A
+-%09typeFields := %5B%5Dstring%7B%0A%09%09hex.Encode(linkHash%5B:%5D),%0A%09%09base64.Encode(pubKey%5B:%5D),%0A%09%09base64.Encode(signature%5B:%5D),%0A%09%7D%0A
++%09typeFields := %5B%5Dstring%7BlinkHash, pubKey, signature%7D%0A
+ %09l :
+@@ -2927,83 +2927,67 @@
+ ave%0A
+-%09entry := l.String()%0A%09if _, err := fmt.Fprintln(c.fp, entry); err != nil %7B%0A
++%09if _, err := fmt.Fprintln(c.fp, l.String()); err != nil %7B%0A
+ %09%09re
+@@ -3006,25 +3006,35 @@
+ %0A%09%7D%0A
+-%09return entry, nil%0A
++%09return l.StringColor(), nil%0A
+ %7D%0A
+- f 08a5d9c4807c79de09860e2cd8f814ba837d11cb554f9be54a8b10d3d8205202 hashchain/source.go
++ f 72da2ad5cc80908a3495758e6438e66060c54be52c75a54ad964aced6a4c2c30 hashchain/source.go
+dmppatch 10
+@@ -1112,83 +1112,67 @@
+ ave%0A
+-%09entry := l.String()%0A%09if _, err := fmt.Fprintln(c.fp, entry); err != nil %7B%0A
++%09if _, err := fmt.Fprintln(c.fp, l.String()); err != nil %7B%0A
+ %09%09re
+@@ -1191,25 +1191,35 @@
+ %0A%09%7D%0A
+-%09return entry, nil%0A
++%09return l.StringColor(), nil%0A
+ %7D%0A
+- f d1c751ca3605f5f36987288282e6f5a062871df20f6a89e6cf7bc2616b13b48a hashchain/start.go
++ f a5c5f61ab388e11eb3329041220e1075ecb10919bcfebc31a345976ae713adcb hashchain/start.go
+dmppatch 10
+@@ -1646,83 +1646,67 @@
+ ave%0A
+-%09entry := l.String()%0A%09if _, err := fmt.Fprintln(c.fp, entry); err != nil %7B%0A
++%09if _, err := fmt.Fprintln(c.fp, l.String()); err != nil %7B%0A
+ %09%09c.
+@@ -1749,29 +1749,39 @@
+ %0A%09%7D%0A
+-%09return &c, entry, nil%0A
++%09return &c, l.StringColor(), nil%0A
+ %7D%0A
+- f c51446860473bc391230c95e0500793b8c81a0187f65a5faaa31dc693464d4da hashchain/verify.go
++ f 725c6ca56417ef8b52cd9b6709c97315de33d5ed609a685dcc1395b6a19a0871 hashchain/verify.go
+dmppatch 9
+@@ -2206,24 +2206,144 @@
+ s%22, pub)%0A%09%7D%0A
++%09// make sure treehash has not been published before%0A%09if err = c.state.NotPublished(tree); err != nil %7B%0A%09%09return err%0A%09%7D%0A
+ %0A%09// update 
+@@ -4266,53 +4266,53 @@
+ %0A%09%7D%0A
+-%09err = c.state.NotSigner(p)%0A%09if err != nil %7B%0A
++%09if err = c.state.NotSigner(p); err != nil %7B%0A
+ %09%09re
+- f 7a424aafadca630795bfa36ed28c6501a92ccf32824567e7c42bec4a0240d491 internal/def/def.go
++ f 32b097b04f886f85ea9f9f28417c28daea075076fdb1edd07da0c35345f58156 internal/def/def.go
+dmppatch 7
+@@ -63,16 +63,45 @@
+ ge def%0A%0A
++import (%0A%09%22path/filepath%22%0A)%0A%0A
+ // Codec
+@@ -362,8 +362,246 @@
+ yml%22,%0A%7D%0A
++%0A// HashchainFile is the default name of the hashchain file.%0Avar HashchainFile = filepath.Join(CodechainDir, %22hashchain%22)%0A%0A// PatchDir is the default name of the patch file directory.%0Avar PatchDir = filepath.Join(CodechainDir, %22patches%22)%0A
+- f e76aebef58b8fa22610eb31200ead6ac68e885572f2f654b084b68184a80d3f8 patchfile/patchfile.go
++ f a2e04daf618c7421e496f7783a8447497aae1c64a940bd3343be1ec628ff3d85 patchfile/patchfile.go
+dmppatch 17
+@@ -8195,16 +8195,143 @@
+ nner(r)%0A
++%09buf := make(%5B%5Dbyte, bufio.MaxScanTokenSize)%0A%09s.Buffer(buf, 64*1024*1024) // 64MB, entire files can be encoded as single lines%0A
+ %09state :
+@@ -8373,16 +8373,38 @@
+ .Text()%0A
++%09%09//fmt.Println(line)%0A
+ %09%09switch
+@@ -10338,45 +10338,88 @@
+ ) %7B%0A
+-%09%09%09%09%09lines = append(lines, s.Text())%0A
++%09%09%09%09%09line := s.Text()%0A%09%09%09%09%09//fmt.Println(line)%0A%09%09%09%09%09lines = append(lines, line)%0A
+ %09%09%09%09
+@@ -10423,24 +10423,132 @@
+ %09%09%09%7D else %7B%0A
++%09%09%09%09%09// check if we have a scanner error first%0A%09%09%09%09%09if err := s.Err(); err != nil %7B%0A%09%09%09%09%09%09return err%0A%09%09%09%09%09%7D%0A
+ %09%09%09%09%09return 
+- f a9e11c12d9916a3edd125e71b59f35b27758bf0ce33d0f5bb4fafc90af572604 sync/sync.go
++ f c8df49e9a83f2735bd7b172451085bac94ddfb5256986376ce0c6ef42a8b792c sync/sync.go
+dmppatch 40
+@@ -634,77 +634,77 @@
+ h %7B%0A
+-%09%09return fmt.Errorf(%22tree: treeHashes doesn't start with EmptyHash%22)%0A
++%09%09return fmt.Errorf(%22sync: treeHashes doesn't start with EmptyHash%22)%0A
+ %09%7D%0A%09
+@@ -757,72 +757,72 @@
+ ) %7B%0A
+-%09%09return fmt.Errorf(%22tree: targetHash unknown: %25s%22, targetHash)%0A
++%09%09return fmt.Errorf(%22sync: targetHash unknown: %25s%22, targetHash)%0A
+ %09%7D%0A%0A
+@@ -1305,80 +1305,80 @@
+ ) %7B%0A
+-%09%09return fmt.Errorf(%22tree: could not find target hash: %25s%22, targetHash)%0A
++%09%09return fmt.Errorf(%22sync: could not find target hash: %25s%22, targetHash)%0A
+ %09%7D%0A%0A
+@@ -1566,96 +1566,96 @@
+ r %7B%0A
+-%09%09%09return errors.New(%22tree: could not find a valid start to apply, try with empty dir%22)%0A
++%09%09%09return errors.New(%22sync: could not find a valid start to apply, try with empty dir%22)%0A
+ %09%09%7D%0A
+@@ -1869,16 +1869,24 @@
+ err%0A%09%09%7D%0A
++%09%09i = 0%0A
+ %09%7D%0A%0A%09for
+@@ -1929,45 +1929,8 @@
+ %5Bi%5D%0A
+-%09%09log.Printf(%22apply patch: %25s%5Cn%22, h)%0A
+ %0A%09%09/
+@@ -2067,79 +2067,119 @@
+ h %7B%0A
+-%09%09%09return fmt.Errorf(%22tree: patch failed to create target: %25s%22, h)%0A
++%09%09%09return fmt.Errorf(%22sync: patch failed to create target: %25s%22, h)%0A
+ %09%09%7D%0A
++%09%09log.Printf(%22verified patch: %25s%5Cn%22, h)%0A
+ %0A%09%09/
+@@ -2369,40 +2369,48 @@
+ tch%0A
+-%09%09log.Println(%22applying patch%22)%0A
++%09%09log.Printf(%22applying patch: %25s%5Cn%22, h)%0A
+ %09%09er
++ f ee6441e19763d7eb94e0abd27e632441013f81926f4d79fb13818bdaff9711a3 util/terminal/error.go
+dmppatch 2
+@@ -0,0 +1,135 @@
++package terminal%0A%0Aimport (%0A%09%22errors%22%0A)%0A%0A// ErrAbort is returned if a user answers 'n' to Confirm.%0Avar ErrAbort = errors.New(%22aborted%22)%0A
+- f 2ae6766fdd429d1eb99eecd644b10dafcbda70d882e60e0f3dfd963d5bf1ec05 util/terminal/terminal.go
++ f 288036a7fde860ad5498259fdcb4930317ce8558a964f4703d70d386fd8173a7 util/terminal/terminal.go
+dmppatch 7
+@@ -137,16 +137,27 @@
+ %22%0A%09%22os%22%0A
++%09%22strings%22%0A
+ %09%22syscal
+@@ -1809,16 +1809,437 @@
+ ace(str), nil%0A%7D%0A
++%0A// Confirm asks the user to confirm the question with yes or no.%0Afunc Confirm(question string) error %7B%0A%09for %7B%0A%09%09fmt.Print(question + %22 %5By/n%5D: %22)%0A%09%09answer, err := ReadLine(os.Stdin)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09a := string(bytes.ToLower(answer))%0A%09%09if strings.HasPrefix(a, %22y%22) %7B%0A%09%09%09return nil%0A%09%09%7D else if strings.HasPrefix(a, %22n%22) %7B%0A%09%09%09return ErrAbort%0A%09%09%7D else %7B%0A%09%09%09fmt.Println(%22answer not recognized%22)%0A%09%09%7D%0A%09%7D%0A%7D%0A
++ f 37a29a29cf330257b9dcb093be7697ea966d8a8811d9d80cb3886351176dfc2d vendor/github.com/fatih/color/.travis.yml
+dmppatch 2
+@@ -0,0 +1,35 @@
++language: go%0Ago: %0A - 1.8.x%0A - tip%0A%0A
++ f b48c28aa4720c070e936675fe386d6512ba1d045b8a6044b301d7739699395b6 vendor/github.com/fatih/color/Gopkg.lock
+dmppatch 2
+@@ -0,0 +1,725 @@
++# This file is autogenerated, do not edit; changes may be undone by the next 'dep ensure'.%0A%0A%0A%5B%5Bprojects%5D%5D%0A  name = %22github.com/mattn/go-colorable%22%0A  packages = %5B%22.%22%5D%0A  revision = %22167de6bfdfba052fa6b2d3664c8f5272e23c9072%22%0A  version = %22v0.0.9%22%0A%0A%5B%5Bprojects%5D%5D%0A  name = %22github.com/mattn/go-isatty%22%0A  packages = %5B%22.%22%5D%0A  revision = %220360b2af4f38e8d38c7fce2a9f4e702702d73a39%22%0A  version = %22v0.0.3%22%0A%0A%5B%5Bprojects%5D%5D%0A  branch = %22master%22%0A  name = %22golang.org/x/sys%22%0A  packages = %5B%22unix%22%5D%0A  revision = %2237707fdb30a5b38865cfb95e5aab41707daec7fd%22%0A%0A%5Bsolve-meta%5D%0A  analyzer-name = %22dep%22%0A  analyzer-version = 1%0A  inputs-digest = %22e8a50671c3cb93ea935bf210b1cd20702876b9d9226129be581ef646d1565cdc%22%0A  solver-name = %22gps-cdcl%22%0A  solver-version = 1%0A
++ f 26876e110d2bac5a95c31965dc85f230a30cf202d012cba93b37c4042378a299 vendor/github.com/fatih/color/Gopkg.toml
+dmppatch 2
+@@ -0,0 +1,686 @@
++%0A# Gopkg.toml example%0A#%0A# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md%0A# for detailed Gopkg.toml documentation.%0A#%0A# required = %5B%22github.com/user/thing/cmd/thing%22%5D%0A# ignored = %5B%22github.com/user/project/pkgX%22, %22bitbucket.org/user/project/pkgA/pkgY%22%5D%0A#%0A# %5B%5Bconstraint%5D%5D%0A#   name = %22github.com/user/project%22%0A#   version = %221.0.0%22%0A#%0A# %5B%5Bconstraint%5D%5D%0A#   name = %22github.com/user/project2%22%0A#   branch = %22dev%22%0A#   source = %22github.com/myfork/project2%22%0A#%0A# %5B%5Boverride%5D%5D%0A#  name = %22github.com/x/y%22%0A#  version = %222.4.0%22%0A%0A%0A%5B%5Bconstraint%5D%5D%0A  name = %22github.com/mattn/go-colorable%22%0A  version = %220.0.9%22%0A%0A%5B%5Bconstraint%5D%5D%0A  name = %22github.com/mattn/go-isatty%22%0A  version = %220.0.3%22%0A
++ f de95ed802d2f90e3c72cb3c9a927cca5f2aec234a3ef1250232db0f8178b2d93 vendor/github.com/fatih/color/LICENSE.md
+dmppatch 2
+@@ -0,0 +1,1079 @@
++The MIT License (MIT)%0A%0ACopyright (c) 2013 Fatih Arslan%0A%0APermission is hereby granted, free of charge, to any person obtaining a copy of%0Athis software and associated documentation files (the %22Software%22), to deal in%0Athe Software without restriction, including without limitation the rights to%0Ause, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of%0Athe Software, and to permit persons to whom the Software is furnished to do so,%0Asubject to the following conditions:%0A%0AThe above copyright notice and this permission notice shall be included in all%0Acopies or substantial portions of the Software.%0A%0ATHE SOFTWARE IS PROVIDED %22AS IS%22, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR%0AIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS%0AFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR%0ACOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER%0AIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN%0ACONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.%0A
++ f 3ef1b3417bb6c37894318d27520cb30ab7a21593b448f973e057fb14b7fba4e2 vendor/github.com/fatih/color/README.md
+dmppatch 2
+@@ -0,0 +1,4790 @@
++# Color %5B!%5BGoDoc%5D(https://godoc.org/github.com/fatih/color?status.svg)%5D(https://godoc.org/github.com/fatih/color) %5B!%5BBuild Status%5D(https://img.shields.io/travis/fatih/color.svg?style=flat-square)%5D(https://travis-ci.org/fatih/color)%0A%0A%0A%0AColor lets you use colorized outputs in terms of %5BANSI Escape%0ACodes%5D(http://en.wikipedia.org/wiki/ANSI_escape_code#Colors) in Go (Golang). It%0Ahas support for Windows too! The API can be used in several ways, pick one that%0Asuits you.%0A%0A%0A!%5BColor%5D(https://i.imgur.com/c1JI0lA.png)%0A%0A%0A## Install%0A%0A%60%60%60bash%0Ago get github.com/fatih/color%0A%60%60%60%0A%0ANote that the %60vendor%60 folder is here for stability. Remove the folder if you%0Aalready have the dependencies in your GOPATH.%0A%0A## Examples%0A%0A### Standard colors%0A%0A%60%60%60go%0A// Print with default helper functions%0Acolor.Cyan(%22Prints text in cyan.%22)%0A%0A// A newline will be appended automatically%0Acolor.Blue(%22Prints %25s in blue.%22, %22text%22)%0A%0A// These are using the default foreground colors%0Acolor.Red(%22We have red%22)%0Acolor.Magenta(%22And many others ..%22)%0A%0A%60%60%60%0A%0A### Mix and reuse colors%0A%0A%60%60%60go%0A// Create a new color object%0Ac := color.New(color.FgCyan).Add(color.Underline)%0Ac.Println(%22Prints cyan text with an underline.%22)%0A%0A// Or just add them to New()%0Ad := color.New(color.FgCyan, color.Bold)%0Ad.Printf(%22This prints bold cyan %25s%5Cn%22, %22too!.%22)%0A%0A// Mix up foreground and background colors, create new mixes!%0Ared := color.New(color.FgRed)%0A%0AboldRed := red.Add(color.Bold)%0AboldRed.Println(%22This will print text in bold red.%22)%0A%0AwhiteBackground := red.Add(color.BgWhite)%0AwhiteBackground.Println(%22Red text with white background.%22)%0A%60%60%60%0A%0A### Use your own output (io.Writer)%0A%0A%60%60%60go%0A// Use your own io.Writer output%0Acolor.New(color.FgBlue).Fprintln(myWriter, %22blue color!%22)%0A%0Ablue := color.New(color.FgBlue)%0Ablue.Fprint(writer, %22This will print text in blue.%22)%0A%60%60%60%0A%0A### Custom print functions (PrintFunc)%0A%0A%60%60%60go%0A// Create a custom print function for convenience%0Ared := color.New(color.FgRed).PrintfFunc()%0Ared(%22Warning%22)%0Ared(%22Error: %25s%22, err)%0A%0A// Mix up multiple attributes%0Anotice := color.New(color.Bold, color.FgGreen).PrintlnFunc()%0Anotice(%22Don't forget this...%22)%0A%60%60%60%0A%0A### Custom fprint functions (FprintFunc)%0A%0A%60%60%60go%0Ablue := color.New(FgBlue).FprintfFunc()%0Ablue(myWriter, %22important notice: %25s%22, stars)%0A%0A// Mix up with multiple attributes%0Asuccess := color.New(color.Bold, color.FgGreen).FprintlnFunc()%0Asuccess(myWriter, %22Don't forget this...%22)%0A%60%60%60%0A%0A### Insert into noncolor strings (SprintFunc)%0A%0A%60%60%60go%0A// Create SprintXxx functions to mix strings with other non-colorized strings:%0Ayellow := color.New(color.FgYellow).SprintFunc()%0Ared := color.New(color.FgRed).SprintFunc()%0Afmt.Printf(%22This is a %25s and this is %25s.%5Cn%22, yellow(%22warning%22), red(%22error%22))%0A%0Ainfo := color.New(color.FgWhite, color.BgGreen).SprintFunc()%0Afmt.Printf(%22This %25s rocks!%5Cn%22, info(%22package%22))%0A%0A// Use helper functions%0Afmt.Println(%22This%22, color.RedString(%22warning%22), %22should be not neglected.%22)%0Afmt.Printf(%22%25v %25v%5Cn%22, color.GreenString(%22Info:%22), %22an important message.%22)%0A%0A// Windows supported too! Just don't forget to change the output to color.Output%0Afmt.Fprintf(color.Output, %22Windows support: %25s%22, color.GreenString(%22PASS%22))%0A%60%60%60%0A%0A### Plug into existing code%0A%0A%60%60%60go%0A// Use handy standard colors%0Acolor.Set(color.FgYellow)%0A%0Afmt.Println(%22Existing text will now be in yellow%22)%0Afmt.Printf(%22This one %25s%5Cn%22, %22too%22)%0A%0Acolor.Unset() // Don't forget to unset%0A%0A// You can mix up parameters%0Acolor.Set(color.FgMagenta, color.Bold)%0Adefer color.Unset() // Use it in your function%0A%0Afmt.Println(%22All text will now be bold magenta.%22)%0A%60%60%60%0A%0A### Disable/Enable color%0A %0AThere might be a case where you want to explicitly disable/enable color output. the %0A%60go-isatty%60 package will automatically disable color output for non-tty output streams %0A(for example if the output were piped directly to %60less%60)%0A%0A%60Color%60 has support to disable/enable colors both globally and for single color %0Adefinitions. For example suppose you have a CLI app and a %60--no-color%60 bool flag. You %0Acan easily disable the color output with:%0A%0A%60%60%60go%0A%0Avar flagNoColor = flag.Bool(%22no-color%22, false, %22Disable color output%22)%0A%0Aif *flagNoColor %7B%0A%09color.NoColor = true // disables colorized output%0A%7D%0A%60%60%60%0A%0AIt also has support for single color definitions (local). You can%0Adisable/enable color output on the fly:%0A%0A%60%60%60go%0Ac := color.New(color.FgCyan)%0Ac.Println(%22Prints cyan text%22)%0A%0Ac.DisableColor()%0Ac.Println(%22This is printed without any color%22)%0A%0Ac.EnableColor()%0Ac.Println(%22This prints again cyan...%22)%0A%60%60%60%0A%0A## Todo%0A%0A* Save/Return previous values%0A* Evaluate fmt.Formatter interface%0A%0A%0A## Credits%0A%0A * %5BFatih Arslan%5D(https://github.com/fatih)%0A * Windows support via @mattn: %5Bcolorable%5D(https://github.com/mattn/go-colorable)%0A%0A## License%0A%0AThe MIT License (MIT) - see %5B%60LICENSE.md%60%5D(https://github.com/fatih/color/blob/master/LICENSE.md) for more details%0A%0A
++ f a2c297876e7cafb290511be203f50d39f9fa48da914f7f41b7ff835d6bb2695c vendor/github.com/fatih/color/color.go
+dmppatch 2
+@@ -0,0 +1,18221 @@
++package color%0A%0Aimport (%0A%09%22fmt%22%0A%09%22io%22%0A%09%22os%22%0A%09%22strconv%22%0A%09%22strings%22%0A%09%22sync%22%0A%0A%09%22github.com/mattn/go-colorable%22%0A%09%22github.com/mattn/go-isatty%22%0A)%0A%0Avar (%0A%09// NoColor defines if the output is colorized or not. It's dynamically set to%0A%09// false or true based on the stdout's file descriptor referring to a terminal%0A%09// or not. This is a global option and affects all colors. For more control%0A%09// over each color block use the methods DisableColor() individually.%0A%09NoColor = os.Getenv(%22TERM%22) == %22dumb%22 %7C%7C%0A%09%09(!isatty.IsTerminal(os.Stdout.Fd()) && !isatty.IsCygwinTerminal(os.Stdout.Fd()))%0A%0A%09// Output defines the standard output of the print functions. By default%0A%09// os.Stdout is used.%0A%09Output = colorable.NewColorableStdout()%0A%0A%09// colorsCache is used to reduce the count of created Color objects and%0A%09// allows to reuse already created objects with required Attribute.%0A%09colorsCache   = make(map%5BAttribute%5D*Color)%0A%09colorsCacheMu sync.Mutex // protects colorsCache%0A)%0A%0A// Color defines a custom color object which is defined by SGR parameters.%0Atype Color struct %7B%0A%09params  %5B%5DAttribute%0A%09noColor *bool%0A%7D%0A%0A// Attribute defines a single SGR Code%0Atype Attribute int%0A%0Aconst escape = %22%5Cx1b%22%0A%0A// Base attributes%0Aconst (%0A%09Reset Attribute = iota%0A%09Bold%0A%09Faint%0A%09Italic%0A%09Underline%0A%09BlinkSlow%0A%09BlinkRapid%0A%09ReverseVideo%0A%09Concealed%0A%09CrossedOut%0A)%0A%0A// Foreground text colors%0Aconst (%0A%09FgBlack Attribute = iota + 30%0A%09FgRed%0A%09FgGreen%0A%09FgYellow%0A%09FgBlue%0A%09FgMagenta%0A%09FgCyan%0A%09FgWhite%0A)%0A%0A// Foreground Hi-Intensity text colors%0Aconst (%0A%09FgHiBlack Attribute = iota + 90%0A%09FgHiRed%0A%09FgHiGreen%0A%09FgHiYellow%0A%09FgHiBlue%0A%09FgHiMagenta%0A%09FgHiCyan%0A%09FgHiWhite%0A)%0A%0A// Background text colors%0Aconst (%0A%09BgBlack Attribute = iota + 40%0A%09BgRed%0A%09BgGreen%0A%09BgYellow%0A%09BgBlue%0A%09BgMagenta%0A%09BgCyan%0A%09BgWhite%0A)%0A%0A// Background Hi-Intensity text colors%0Aconst (%0A%09BgHiBlack Attribute = iota + 100%0A%09BgHiRed%0A%09BgHiGreen%0A%09BgHiYellow%0A%09BgHiBlue%0A%09BgHiMagenta%0A%09BgHiCyan%0A%09BgHiWhite%0A)%0A%0A// New returns a newly created color object.%0Afunc New(value ...Attribute) *Color %7B%0A%09c := &Color%7Bparams: make(%5B%5DAttribute, 0)%7D%0A%09c.Add(value...)%0A%09return c%0A%7D%0A%0A// Set sets the given parameters immediately. It will change the color of%0A// output with the given SGR parameters until color.Unset() is called.%0Afunc Set(p ...Attribute) *Color %7B%0A%09c := New(p...)%0A%09c.Set()%0A%09return c%0A%7D%0A%0A// Unset resets all escape attributes and clears the output. Usually should%0A// be called after Set().%0Afunc Unset() %7B%0A%09if NoColor %7B%0A%09%09return%0A%09%7D%0A%0A%09fmt.Fprintf(Output, %22%25s%5B%25dm%22, escape, Reset)%0A%7D%0A%0A// Set sets the SGR sequence.%0Afunc (c *Color) Set() *Color %7B%0A%09if c.isNoColorSet() %7B%0A%09%09return c%0A%09%7D%0A%0A%09fmt.Fprintf(Output, c.format())%0A%09return c%0A%7D%0A%0Afunc (c *Color) unset() %7B%0A%09if c.isNoColorSet() %7B%0A%09%09return%0A%09%7D%0A%0A%09Unset()%0A%7D%0A%0Afunc (c *Color) setWriter(w io.Writer) *Color %7B%0A%09if c.isNoColorSet() %7B%0A%09%09return c%0A%09%7D%0A%0A%09fmt.Fprintf(w, c.format())%0A%09return c%0A%7D%0A%0Afunc (c *Color) unsetWriter(w io.Writer) %7B%0A%09if c.isNoColorSet() %7B%0A%09%09return%0A%09%7D%0A%0A%09if NoColor %7B%0A%09%09return%0A%09%7D%0A%0A%09fmt.Fprintf(w, %22%25s%5B%25dm%22, escape, Reset)%0A%7D%0A%0A// Add is used to chain SGR parameters. Use as many as parameters to combine%0A// and create custom color objects. Example: Add(color.FgRed, color.Underline).%0Afunc (c *Color) Add(value ...Attribute) *Color %7B%0A%09c.params = append(c.params, value...)%0A%09return c%0A%7D%0A%0Afunc (c *Color) prepend(value Attribute) %7B%0A%09c.params = append(c.params, 0)%0A%09copy(c.params%5B1:%5D, c.params%5B0:%5D)%0A%09c.params%5B0%5D = value%0A%7D%0A%0A// Fprint formats using the default formats for its operands and writes to w.%0A// Spaces are added between operands when neither is a string.%0A// It returns the number of bytes written and any write error encountered.%0A// On Windows, users should wrap w with colorable.NewColorable() if w is of%0A// type *os.File.%0Afunc (c *Color) Fprint(w io.Writer, a ...interface%7B%7D) (n int, err error) %7B%0A%09c.setWriter(w)%0A%09defer c.unsetWriter(w)%0A%0A%09return fmt.Fprint(w, a...)%0A%7D%0A%0A// Print formats using the default formats for its operands and writes to%0A// standard output. Spaces are added between operands when neither is a%0A// string. It returns the number of bytes written and any write error%0A// encountered. This is the standard fmt.Print() method wrapped with the given%0A// color.%0Afunc (c *Color) Print(a ...interface%7B%7D) (n int, err error) %7B%0A%09c.Set()%0A%09defer c.unset()%0A%0A%09return fmt.Fprint(Output, a...)%0A%7D%0A%0A// Fprintf formats according to a format specifier and writes to w.%0A// It returns the number of bytes written and any write error encountered.%0A// On Windows, users should wrap w with colorable.NewColorable() if w is of%0A// type *os.File.%0Afunc (c *Color) Fprintf(w io.Writer, format string, a ...interface%7B%7D) (n int, err error) %7B%0A%09c.setWriter(w)%0A%09defer c.unsetWriter(w)%0A%0A%09return fmt.Fprintf(w, format, a...)%0A%7D%0A%0A// Printf formats according to a format specifier and writes to standard output.%0A// It returns the number of bytes written and any write error encountered.%0A// This is the standard fmt.Printf() method wrapped with the given color.%0Afunc (c *Color) Printf(format string, a ...interface%7B%7D) (n int, err error) %7B%0A%09c.Set()%0A%09defer c.unset()%0A%0A%09return fmt.Fprintf(Output, format, a...)%0A%7D%0A%0A// Fprintln formats using the default formats for its operands and writes to w.%0A// Spaces are always added between operands and a newline is appended.%0A// On Windows, users should wrap w with colorable.NewColorable() if w is of%0A// type *os.File.%0Afunc (c *Color) Fprintln(w io.Writer, a ...interface%7B%7D) (n int, err error) %7B%0A%09c.setWriter(w)%0A%09defer c.unsetWriter(w)%0A%0A%09return fmt.Fprintln(w, a...)%0A%7D%0A%0A// Println formats using the default formats for its operands and writes to%0A// standard output. Spaces are always added between operands and a newline is%0A// appended. It returns the number of bytes written and any write error%0A// encountered. This is the standard fmt.Print() method wrapped with the given%0A// color.%0Afunc (c *Color) Println(a ...interface%7B%7D) (n int, err error) %7B%0A%09c.Set()%0A%09defer c.unset()%0A%0A%09return fmt.Fprintln(Output, a...)%0A%7D%0A%0A// Sprint is just like Print, but returns a string instead of printing it.%0Afunc (c *Color) Sprint(a ...interface%7B%7D) string %7B%0A%09return c.wrap(fmt.Sprint(a...))%0A%7D%0A%0A// Sprintln is just like Println, but returns a string instead of printing it.%0Afunc (c *Color) Sprintln(a ...interface%7B%7D) string %7B%0A%09return c.wrap(fmt.Sprintln(a...))%0A%7D%0A%0A// Sprintf is just like Printf, but returns a string instead of printing it.%0Afunc (c *Color) Sprintf(format string, a ...interface%7B%7D) string %7B%0A%09return c.wrap(fmt.Sprintf(format, a...))%0A%7D%0A%0A// FprintFunc returns a new function that prints the passed arguments as%0A// colorized with color.Fprint().%0Afunc (c *Color) FprintFunc() func(w io.Writer, a ...interface%7B%7D) %7B%0A%09return func(w io.Writer, a ...interface%7B%7D) %7B%0A%09%09c.Fprint(w, a...)%0A%09%7D%0A%7D%0A%0A// PrintFunc returns a new function that prints the passed arguments as%0A// colorized with color.Print().%0Afunc (c *Color) PrintFunc() func(a ...interface%7B%7D) %7B%0A%09return func(a ...interface%7B%7D) %7B%0A%09%09c.Print(a...)%0A%09%7D%0A%7D%0A%0A// FprintfFunc returns a new function that prints the passed arguments as%0A// colorized with color.Fprintf().%0Afunc (c *Color) FprintfFunc() func(w io.Writer, format string, a ...interface%7B%7D) %7B%0A%09return func(w io.Writer, format string, a ...interface%7B%7D) %7B%0A%09%09c.Fprintf(w, format, a...)%0A%09%7D%0A%7D%0A%0A// PrintfFunc returns a new function that prints the passed arguments as%0A// colorized with color.Printf().%0Afunc (c *Color) PrintfFunc() func(format string, a ...interface%7B%7D) %7B%0A%09return func(format string, a ...interface%7B%7D) %7B%0A%09%09c.Printf(format, a...)%0A%09%7D%0A%7D%0A%0A// FprintlnFunc returns a new function that prints the passed arguments as%0A// colorized with color.Fprintln().%0Afunc (c *Color) FprintlnFunc() func(w io.Writer, a ...interface%7B%7D) %7B%0A%09return func(w io.Writer, a ...interface%7B%7D) %7B%0A%09%09c.Fprintln(w, a...)%0A%09%7D%0A%7D%0A%0A// PrintlnFunc returns a new function that prints the passed arguments as%0A// colorized with color.Println().%0Afunc (c *Color) PrintlnFunc() func(a ...interface%7B%7D) %7B%0A%09return func(a ...interface%7B%7D) %7B%0A%09%09c.Println(a...)%0A%09%7D%0A%7D%0A%0A// SprintFunc returns a new function that returns colorized strings for the%0A// given arguments with fmt.Sprint(). Useful to put into or mix into other%0A// string. Windows users should use this in conjunction with color.Output, example:%0A//%0A//%09put := New(FgYellow).SprintFunc()%0A//%09fmt.Fprintf(color.Output, %22This is a %25s%22, put(%22warning%22))%0Afunc (c *Color) SprintFunc() func(a ...interface%7B%7D) string %7B%0A%09return func(a ...interface%7B%7D) string %7B%0A%09%09return c.wrap(fmt.Sprint(a...))%0A%09%7D%0A%7D%0A%0A// SprintfFunc returns a new function that returns colorized strings for the%0A// given arguments with fmt.Sprintf(). Useful to put into or mix into other%0A// string. Windows users should use this in conjunction with color.Output.%0Afunc (c *Color) SprintfFunc() func(format string, a ...interface%7B%7D) string %7B%0A%09return func(format string, a ...interface%7B%7D) string %7B%0A%09%09return c.wrap(fmt.Sprintf(format, a...))%0A%09%7D%0A%7D%0A%0A// SprintlnFunc returns a new function that returns colorized strings for the%0A// given arguments with fmt.Sprintln(). Useful to put into or mix into other%0A// string. Windows users should use this in conjunction with color.Output.%0Afunc (c *Color) SprintlnFunc() func(a ...interface%7B%7D) string %7B%0A%09return func(a ...interface%7B%7D) string %7B%0A%09%09return c.wrap(fmt.Sprintln(a...))%0A%09%7D%0A%7D%0A%0A// sequence returns a formatted SGR sequence to be plugged into a %22%5Cx1b%5B...m%22%0A// an example output might be: %221;36%22 -%3E bold cyan%0Afunc (c *Color) sequence() string %7B%0A%09format := make(%5B%5Dstring, len(c.params))%0A%09for i, v := range c.params %7B%0A%09%09format%5Bi%5D = strconv.Itoa(int(v))%0A%09%7D%0A%0A%09return strings.Join(format, %22;%22)%0A%7D%0A%0A// wrap wraps the s string with the colors attributes. The string is ready to%0A// be printed.%0Afunc (c *Color) wrap(s string) string %7B%0A%09if c.isNoColorSet() %7B%0A%09%09return s%0A%09%7D%0A%0A%09return c.format() + s + c.unformat()%0A%7D%0A%0Afunc (c *Color) format() string %7B%0A%09return fmt.Sprintf(%22%25s%5B%25sm%22, escape, c.sequence())%0A%7D%0A%0Afunc (c *Color) unformat() string %7B%0A%09return fmt.Sprintf(%22%25s%5B%25dm%22, escape, Reset)%0A%7D%0A%0A// DisableColor disables the color output. Useful to not change any existing%0A// code and still being able to output. Can be used for flags like%0A// %22--no-color%22. To enable back use EnableColor() method.%0Afunc (c *Color) DisableColor() %7B%0A%09c.noColor = boolPtr(true)%0A%7D%0A%0A// EnableColor enables the color output. Use it in conjunction with%0A// DisableColor(). Otherwise this method has no side effects.%0Afunc (c *Color) EnableColor() %7B%0A%09c.noColor = boolPtr(false)%0A%7D%0A%0Afunc (c *Color) isNoColorSet() bool %7B%0A%09// check first if we have user setted action%0A%09if c.noColor != nil %7B%0A%09%09return *c.noColor%0A%09%7D%0A%0A%09// if not return the global option, which is disabled by default%0A%09return NoColor%0A%7D%0A%0A// Equals returns a boolean value indicating whether two colors are equal.%0Afunc (c *Color) Equals(c2 *Color) bool %7B%0A%09if len(c.params) != len(c2.params) %7B%0A%09%09return false%0A%09%7D%0A%0A%09for _, attr := range c.params %7B%0A%09%09if !c2.attrExists(attr) %7B%0A%09%09%09return false%0A%09%09%7D%0A%09%7D%0A%0A%09return true%0A%7D%0A%0Afunc (c *Color) attrExists(a Attribute) bool %7B%0A%09for _, attr := range c.params %7B%0A%09%09if attr == a %7B%0A%09%09%09return true%0A%09%09%7D%0A%09%7D%0A%0A%09return false%0A%7D%0A%0Afunc boolPtr(v bool) *bool %7B%0A%09return &v%0A%7D%0A%0Afunc getCachedColor(p Attribute) *Color %7B%0A%09colorsCacheMu.Lock()%0A%09defer colorsCacheMu.Unlock()%0A%0A%09c, ok := colorsCache%5Bp%5D%0A%09if !ok %7B%0A%09%09c = New(p)%0A%09%09colorsCache%5Bp%5D = c%0A%09%7D%0A%0A%09return c%0A%7D%0A%0Afunc colorPrint(format string, p Attribute, a ...interface%7B%7D) %7B%0A%09c := getCachedColor(p)%0A%0A%09if !strings.HasSuffix(format, %22%5Cn%22) %7B%0A%09%09format += %22%5Cn%22%0A%09%7D%0A%0A%09if len(a) == 0 %7B%0A%09%09c.Print(format)%0A%09%7D else %7B%0A%09%09c.Printf(format, a...)%0A%09%7D%0A%7D%0A%0Afunc colorString(format string, p Attribute, a ...interface%7B%7D) string %7B%0A%09c := getCachedColor(p)%0A%0A%09if len(a) == 0 %7B%0A%09%09return c.SprintFunc()(format)%0A%09%7D%0A%0A%09return c.SprintfFunc()(format, a...)%0A%7D%0A%0A// Black is a convenient helper function to print with black foreground. A%0A// newline is appended to format by default.%0Afunc Black(format string, a ...interface%7B%7D) %7B colorPrint(format, FgBlack, a...) %7D%0A%0A// Red is a convenient helper function to print with red foreground. A%0A// newline is appended to format by default.%0Afunc Red(format string, a ...interface%7B%7D) %7B colorPrint(format, FgRed, a...) %7D%0A%0A// Green is a convenient helper function to print with green foreground. A%0A// newline is appended to format by default.%0Afunc Green(format string, a ...interface%7B%7D) %7B colorPrint(format, FgGreen, a...) %7D%0A%0A// Yellow is a convenient helper function to print with yellow foreground.%0A// A newline is appended to format by default.%0Afunc Yellow(format string, a ...interface%7B%7D) %7B colorPrint(format, FgYellow, a...) %7D%0A%0A// Blue is a convenient helper function to print with blue foreground. A%0A// newline is appended to format by default.%0Afunc Blue(format string, a ...interface%7B%7D) %7B colorPrint(format, FgBlue, a...) %7D%0A%0A// Magenta is a convenient helper function to print with magenta foreground.%0A// A newline is appended to format by default.%0Afunc Magenta(format string, a ...interface%7B%7D) %7B colorPrint(format, FgMagenta, a...) %7D%0A%0A// Cyan is a convenient helper function to print with cyan foreground. A%0A// newline is appended to format by default.%0Afunc Cyan(format string, a ...interface%7B%7D) %7B colorPrint(format, FgCyan, a...) %7D%0A%0A// White is a convenient helper function to print with white foreground. A%0A// newline is appended to format by default.%0Afunc White(format string, a ...interface%7B%7D) %7B colorPrint(format, FgWhite, a...) %7D%0A%0A// BlackString is a convenient helper function to return a string with black%0A// foreground.%0Afunc BlackString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgBlack, a...) %7D%0A%0A// RedString is a convenient helper function to return a string with red%0A// foreground.%0Afunc RedString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgRed, a...) %7D%0A%0A// GreenString is a convenient helper function to return a string with green%0A// foreground.%0Afunc GreenString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgGreen, a...) %7D%0A%0A// YellowString is a convenient helper function to return a string with yellow%0A// foreground.%0Afunc YellowString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgYellow, a...) %7D%0A%0A// BlueString is a convenient helper function to return a string with blue%0A// foreground.%0Afunc BlueString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgBlue, a...) %7D%0A%0A// MagentaString is a convenient helper function to return a string with magenta%0A// foreground.%0Afunc MagentaString(format string, a ...interface%7B%7D) string %7B%0A%09return colorString(format, FgMagenta, a...)%0A%7D%0A%0A// CyanString is a convenient helper function to return a string with cyan%0A// foreground.%0Afunc CyanString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgCyan, a...) %7D%0A%0A// WhiteString is a convenient helper function to return a string with white%0A// foreground.%0Afunc WhiteString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgWhite, a...) %7D%0A%0A// HiBlack is a convenient helper function to print with hi-intensity black foreground. A%0A// newline is appended to format by default.%0Afunc HiBlack(format string, a ...interface%7B%7D) %7B colorPrint(format, FgHiBlack, a...) %7D%0A%0A// HiRed is a convenient helper function to print with hi-intensity red foreground. A%0A// newline is appended to format by default.%0Afunc HiRed(format string, a ...interface%7B%7D) %7B colorPrint(format, FgHiRed, a...) %7D%0A%0A// HiGreen is a convenient helper function to print with hi-intensity green foreground. A%0A// newline is appended to format by default.%0Afunc HiGreen(format string, a ...interface%7B%7D) %7B colorPrint(format, FgHiGreen, a...) %7D%0A%0A// HiYellow is a convenient helper function to print with hi-intensity yellow foreground.%0A// A newline is appended to format by default.%0Afunc HiYellow(format string, a ...interface%7B%7D) %7B colorPrint(format, FgHiYellow, a...) %7D%0A%0A// HiBlue is a convenient helper function to print with hi-intensity blue foreground. A%0A// newline is appended to format by default.%0Afunc HiBlue(format string, a ...interface%7B%7D) %7B colorPrint(format, FgHiBlue, a...) %7D%0A%0A// HiMagenta is a convenient helper function to print with hi-intensity magenta foreground.%0A// A newline is appended to format by default.%0Afunc HiMagenta(format string, a ...interface%7B%7D) %7B colorPrint(format, FgHiMagenta, a...) %7D%0A%0A// HiCyan is a convenient helper function to print with hi-intensity cyan foreground. A%0A// newline is appended to format by default.%0Afunc HiCyan(format string, a ...interface%7B%7D) %7B colorPrint(format, FgHiCyan, a...) %7D%0A%0A// HiWhite is a convenient helper function to print with hi-intensity white foreground. A%0A// newline is appended to format by default.%0Afunc HiWhite(format string, a ...interface%7B%7D) %7B colorPrint(format, FgHiWhite, a...) %7D%0A%0A// HiBlackString is a convenient helper function to return a string with hi-intensity black%0A// foreground.%0Afunc HiBlackString(format string, a ...interface%7B%7D) string %7B%0A%09return colorString(format, FgHiBlack, a...)%0A%7D%0A%0A// HiRedString is a convenient helper function to return a string with hi-intensity red%0A// foreground.%0Afunc HiRedString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgHiRed, a...) %7D%0A%0A// HiGreenString is a convenient helper function to return a string with hi-intensity green%0A// foreground.%0Afunc HiGreenString(format string, a ...interface%7B%7D) string %7B%0A%09return colorString(format, FgHiGreen, a...)%0A%7D%0A%0A// HiYellowString is a convenient helper function to return a string with hi-intensity yellow%0A// foreground.%0Afunc HiYellowString(format string, a ...interface%7B%7D) string %7B%0A%09return colorString(format, FgHiYellow, a...)%0A%7D%0A%0A// HiBlueString is a convenient helper function to return a string with hi-intensity blue%0A// foreground.%0Afunc HiBlueString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgHiBlue, a...) %7D%0A%0A// HiMagentaString is a convenient helper function to return a string with hi-intensity magenta%0A// foreground.%0Afunc HiMagentaString(format string, a ...interface%7B%7D) string %7B%0A%09return colorString(format, FgHiMagenta, a...)%0A%7D%0A%0A// HiCyanString is a convenient helper function to return a string with hi-intensity cyan%0A// foreground.%0Afunc HiCyanString(format string, a ...interface%7B%7D) string %7B return colorString(format, FgHiCyan, a...) %7D%0A%0A// HiWhiteString is a convenient helper function to return a string with hi-intensity white%0A// foreground.%0Afunc HiWhiteString(format string, a ...interface%7B%7D) string %7B%0A%09return colorString(format, FgHiWhite, a...)%0A%7D%0A
++ f 1f1b51ee0c8b6783d1dec6a0c8762b678fcd68cfcddec7fc25acce42c0579832 vendor/github.com/fatih/color/doc.go
+dmppatch 2
+@@ -0,0 +1,4397 @@
++/*%0APackage color is an ANSI color package to output colorized or SGR defined%0Aoutput to the standard output. The API can be used in several way, pick one%0Athat suits you.%0A%0AUse simple and default helper functions with predefined foreground colors:%0A%0A    color.Cyan(%22Prints text in cyan.%22)%0A%0A    // a newline will be appended automatically%0A    color.Blue(%22Prints %25s in blue.%22, %22text%22)%0A%0A    // More default foreground colors..%0A    color.Red(%22We have red%22)%0A    color.Yellow(%22Yellow color too!%22)%0A    color.Magenta(%22And many others ..%22)%0A%0A    // Hi-intensity colors%0A    color.HiGreen(%22Bright green color.%22)%0A    color.HiBlack(%22Bright black means gray..%22)%0A    color.HiWhite(%22Shiny white color!%22)%0A%0AHowever there are times where custom color mixes are required. Below are some%0Aexamples to create custom color objects and use the print functions of each%0Aseparate color object.%0A%0A    // Create a new color object%0A    c := color.New(color.FgCyan).Add(color.Underline)%0A    c.Println(%22Prints cyan text with an underline.%22)%0A%0A    // Or just add them to New()%0A    d := color.New(color.FgCyan, color.Bold)%0A    d.Printf(%22This prints bold cyan %25s%5Cn%22, %22too!.%22)%0A%0A%0A    // Mix up foreground and background colors, create new mixes!%0A    red := color.New(color.FgRed)%0A%0A    boldRed := red.Add(color.Bold)%0A    boldRed.Println(%22This will print text in bold red.%22)%0A%0A    whiteBackground := red.Add(color.BgWhite)%0A    whiteBackground.Println(%22Red text with White background.%22)%0A%0A    // Use your own io.Writer output%0A    color.New(color.FgBlue).Fprintln(myWriter, %22blue color!%22)%0A%0A    blue := color.New(color.FgBlue)%0A    blue.Fprint(myWriter, %22This will print text in blue.%22)%0A%0AYou can create PrintXxx functions to simplify even more:%0A%0A    // Create a custom print function for convenient%0A    red := color.New(color.FgRed).PrintfFunc()%0A    red(%22warning%22)%0A    red(%22error: %25s%22, err)%0A%0A    // Mix up multiple attributes%0A    notice := color.New(color.Bold, color.FgGreen).PrintlnFunc()%0A    notice(%22don't forget this...%22)%0A%0AYou can also FprintXxx functions to pass your own io.Writer:%0A%0A    blue := color.New(FgBlue).FprintfFunc()%0A    blue(myWriter, %22important notice: %25s%22, stars)%0A%0A    // Mix up with multiple attributes%0A    success := color.New(color.Bold, color.FgGreen).FprintlnFunc()%0A    success(myWriter, don't forget this...%22)%0A%0A%0AOr create SprintXxx functions to mix strings with other non-colorized strings:%0A%0A    yellow := New(FgYellow).SprintFunc()%0A    red := New(FgRed).SprintFunc()%0A%0A    fmt.Printf(%22this is a %25s and this is %25s.%5Cn%22, yellow(%22warning%22), red(%22error%22))%0A%0A    info := New(FgWhite, BgGreen).SprintFunc()%0A    fmt.Printf(%22this %25s rocks!%5Cn%22, info(%22package%22))%0A%0AWindows support is enabled by default. All Print functions work as intended.%0AHowever only for color.SprintXXX functions, user should use fmt.FprintXXX and%0Aset the output to color.Output:%0A%0A    fmt.Fprintf(color.Output, %22Windows support: %25s%22, color.GreenString(%22PASS%22))%0A%0A    info := New(FgWhite, BgGreen).SprintFunc()%0A    fmt.Fprintf(color.Output, %22this %25s rocks!%5Cn%22, info(%22package%22))%0A%0AUsing with existing code is possible. Just use the Set() method to set the%0Astandard output to the given parameters. That way a rewrite of an existing%0Acode is not required.%0A%0A    // Use handy standard colors.%0A    color.Set(color.FgYellow)%0A%0A    fmt.Println(%22Existing text will be now in Yellow%22)%0A    fmt.Printf(%22This one %25s%5Cn%22, %22too%22)%0A%0A    color.Unset() // don't forget to unset%0A%0A    // You can mix up parameters%0A    color.Set(color.FgMagenta, color.Bold)%0A    defer color.Unset() // use it in your function%0A%0A    fmt.Println(%22All text will be now bold magenta.%22)%0A%0AThere might be a case where you want to disable color output (for example to%0Apipe the standard output of your app to somewhere else). %60Color%60 has support to%0Adisable colors both globally and for single color definition. For example%0Asuppose you have a CLI app and a %60--no-color%60 bool flag. You can easily disable%0Athe color output with:%0A%0A    var flagNoColor = flag.Bool(%22no-color%22, false, %22Disable color output%22)%0A%0A    if *flagNoColor %7B%0A    %09color.NoColor = true // disables colorized output%0A    %7D%0A%0AIt also has support for single color definitions (local). You can%0Adisable/enable color output on the fly:%0A%0A     c := color.New(color.FgCyan)%0A     c.Println(%22Prints cyan text%22)%0A%0A     c.DisableColor()%0A     c.Println(%22This is printed without any color%22)%0A%0A     c.EnableColor()%0A     c.Println(%22This prints again cyan...%22)%0A*/%0Apackage color%0A
++ f 490bf9bdfed63bda993d2890fe7614fe2311e8b036439109246e367751857e47 vendor/github.com/mattn/go-colorable/.travis.yml
+dmppatch 2
+@@ -0,0 +1,204 @@
++language: go%0Ago:%0A  - tip%0A%0Abefore_install:%0A  - go get github.com/mattn/goveralls%0A  - go get golang.org/x/tools/cmd/cover%0Ascript:%0A  - $HOME/gopath/bin/goveralls -repotoken xnXqRGwgW3SXIguzxf90ZSK1GPYZPaGrw%0A
++ f 88a2379b3ca34bf5c57127aff9dcb802bbb60ece0805cdbda65b3bd115f971d9 vendor/github.com/mattn/go-colorable/LICENSE
+dmppatch 2
+@@ -0,0 +1,1085 @@
++The MIT License (MIT)%0A%0ACopyright (c) 2016 Yasuhiro Matsumoto%0A%0APermission is hereby granted, free of charge, to any person obtaining a copy%0Aof this software and associated documentation files (the %22Software%22), to deal%0Ain the Software without restriction, including without limitation the rights%0Ato use, copy, modify, merge, publish, distribute, sublicense, and/or sell%0Acopies of the Software, and to permit persons to whom the Software is%0Afurnished to do so, subject to the following conditions:%0A%0AThe above copyright notice and this permission notice shall be included in all%0Acopies or substantial portions of the Software.%0A%0ATHE SOFTWARE IS PROVIDED %22AS IS%22, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR%0AIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,%0AFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE%0AAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER%0ALIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,%0AOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE%0ASOFTWARE.%0A
++ f 998a9170937f2ba6cac2a44ed0b5612dfef27904483693a9ab2dc38d448d2f98 vendor/github.com/mattn/go-colorable/README.md
+dmppatch 2
+@@ -0,0 +1,1374 @@
++# go-colorable%0A%0A%5B!%5BGodoc Reference%5D(https://godoc.org/github.com/mattn/go-colorable?status.svg)%5D(http://godoc.org/github.com/mattn/go-colorable)%0A%5B!%5BBuild Status%5D(https://travis-ci.org/mattn/go-colorable.svg?branch=master)%5D(https://travis-ci.org/mattn/go-colorable)%0A%5B!%5BCoverage Status%5D(https://coveralls.io/repos/github/mattn/go-colorable/badge.svg?branch=master)%5D(https://coveralls.io/github/mattn/go-colorable?branch=master)%0A%5B!%5BGo Report Card%5D(https://goreportcard.com/badge/mattn/go-colorable)%5D(https://goreportcard.com/report/mattn/go-colorable)%0A%0AColorable writer for windows.%0A%0AFor example, most of logger packages doesn't show colors on windows. (I know we can do it with ansicon. But I don't want.)%0AThis package is possible to handle escape sequence for ansi color on windows.%0A%0A## Too Bad!%0A%0A!%5B%5D(https://raw.githubusercontent.com/mattn/go-colorable/gh-pages/bad.png)%0A%0A%0A## So Good!%0A%0A!%5B%5D(https://raw.githubusercontent.com/mattn/go-colorable/gh-pages/good.png)%0A%0A## Usage%0A%0A%60%60%60go%0Alogrus.SetFormatter(&logrus.TextFormatter%7BForceColors: true%7D)%0Alogrus.SetOutput(colorable.NewColorableStdout())%0A%0Alogrus.Info(%22succeeded%22)%0Alogrus.Warn(%22not correct%22)%0Alogrus.Error(%22something error%22)%0Alogrus.Fatal(%22panic%22)%0A%60%60%60%0A%0AYou can compile above code on non-windows OSs.%0A%0A## Installation%0A%0A%60%60%60%0A$ go get github.com/mattn/go-colorable%0A%60%60%60%0A%0A# License%0A%0AMIT%0A%0A# Author%0A%0AYasuhiro Matsumoto (a.k.a mattn)%0A
++ f 425540d3fdc6090883587fde8968420a143d24ebcab357ee87f0142445f44936 vendor/github.com/mattn/go-colorable/colorable_appengine.go
+dmppatch 2
+@@ -0,0 +1,619 @@
++// +build appengine%0A%0Apackage colorable%0A%0Aimport (%0A%09%22io%22%0A%09%22os%22%0A%0A%09_ %22github.com/mattn/go-isatty%22%0A)%0A%0A// NewColorable return new instance of Writer which handle escape sequence.%0Afunc NewColorable(file *os.File) io.Writer %7B%0A%09if file == nil %7B%0A%09%09panic(%22nil passed instead of *os.File to NewColorable()%22)%0A%09%7D%0A%0A%09return file%0A%7D%0A%0A// NewColorableStdout return new instance of Writer which handle escape sequence for stdout.%0Afunc NewColorableStdout() io.Writer %7B%0A%09return os.Stdout%0A%7D%0A%0A// NewColorableStderr return new instance of Writer which handle escape sequence for stderr.%0Afunc NewColorableStderr() io.Writer %7B%0A%09return os.Stderr%0A%7D%0A
++ f 4f5fe0d562531fa8d831ae060712cfbfd037ca5937ed348dc42e93fcaa961fa0 vendor/github.com/mattn/go-colorable/colorable_others.go
+dmppatch 2
+@@ -0,0 +1,639 @@
++// +build !windows%0A// +build !appengine%0A%0Apackage colorable%0A%0Aimport (%0A%09%22io%22%0A%09%22os%22%0A%0A%09_ %22github.com/mattn/go-isatty%22%0A)%0A%0A// NewColorable return new instance of Writer which handle escape sequence.%0Afunc NewColorable(file *os.File) io.Writer %7B%0A%09if file == nil %7B%0A%09%09panic(%22nil passed instead of *os.File to NewColorable()%22)%0A%09%7D%0A%0A%09return file%0A%7D%0A%0A// NewColorableStdout return new instance of Writer which handle escape sequence for stdout.%0Afunc NewColorableStdout() io.Writer %7B%0A%09return os.Stdout%0A%7D%0A%0A// NewColorableStderr return new instance of Writer which handle escape sequence for stderr.%0Afunc NewColorableStderr() io.Writer %7B%0A%09return os.Stderr%0A%7D%0A
++ f b40f20990dac6e027ae40b990283636e5994c62cbc7ece287b70c00857fd2378 vendor/github.com/mattn/go-colorable/colorable_windows.go
+dmppatch 2
+@@ -0,0 +1,20714 @@
++// +build windows%0A// +build !appengine%0A%0Apackage colorable%0A%0Aimport (%0A%09%22bytes%22%0A%09%22io%22%0A%09%22math%22%0A%09%22os%22%0A%09%22strconv%22%0A%09%22strings%22%0A%09%22syscall%22%0A%09%22unsafe%22%0A%0A%09%22github.com/mattn/go-isatty%22%0A)%0A%0Aconst (%0A%09foregroundBlue      = 0x1%0A%09foregroundGreen     = 0x2%0A%09foregroundRed       = 0x4%0A%09foregroundIntensity = 0x8%0A%09foregroundMask      = (foregroundRed %7C foregroundBlue %7C foregroundGreen %7C foregroundIntensity)%0A%09backgroundBlue      = 0x10%0A%09backgroundGreen     = 0x20%0A%09backgroundRed       = 0x40%0A%09backgroundIntensity = 0x80%0A%09backgroundMask      = (backgroundRed %7C backgroundBlue %7C backgroundGreen %7C backgroundIntensity)%0A)%0A%0Atype wchar uint16%0Atype short int16%0Atype dword uint32%0Atype word uint16%0A%0Atype coord struct %7B%0A%09x short%0A%09y short%0A%7D%0A%0Atype smallRect struct %7B%0A%09left   short%0A%09top    short%0A%09right  short%0A%09bottom short%0A%7D%0A%0Atype consoleScreenBufferInfo struct %7B%0A%09size              coord%0A%09cursorPosition    coord%0A%09attributes        word%0A%09window            smallRect%0A%09maximumWindowSize coord%0A%7D%0A%0Atype consoleCursorInfo struct %7B%0A%09size    dword%0A%09visible int32%0A%7D%0A%0Avar (%0A%09kernel32                       = syscall.NewLazyDLL(%22kernel32.dll%22)%0A%09procGetConsoleScreenBufferInfo = kernel32.NewProc(%22GetConsoleScreenBufferInfo%22)%0A%09procSetConsoleTextAttribute    = kernel32.NewProc(%22SetConsoleTextAttribute%22)%0A%09procSetConsoleCursorPosition   = kernel32.NewProc(%22SetConsoleCursorPosition%22)%0A%09procFillConsoleOutputCharacter = kernel32.NewProc(%22FillConsoleOutputCharacterW%22)%0A%09procFillConsoleOutputAttribute = kernel32.NewProc(%22FillConsoleOutputAttribute%22)%0A%09procGetConsoleCursorInfo       = kernel32.NewProc(%22GetConsoleCursorInfo%22)%0A%09procSetConsoleCursorInfo       = kernel32.NewProc(%22SetConsoleCursorInfo%22)%0A%09procSetConsoleTitle            = kernel32.NewProc(%22SetConsoleTitleW%22)%0A)%0A%0A// Writer provide colorable Writer to the console%0Atype Writer struct %7B%0A%09out     io.Writer%0A%09handle  syscall.Handle%0A%09oldattr word%0A%09oldpos  coord%0A%7D%0A%0A// NewColorable return new instance of Writer which handle escape sequence from File.%0Afunc NewColorable(file *os.File) io.Writer %7B%0A%09if file == nil %7B%0A%09%09panic(%22nil passed instead of *os.File to NewColorable()%22)%0A%09%7D%0A%0A%09if isatty.IsTerminal(file.Fd()) %7B%0A%09%09var csbi consoleScreenBufferInfo%0A%09%09handle := syscall.Handle(file.Fd())%0A%09%09procGetConsoleScreenBufferInfo.Call(uintptr(handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09return &Writer%7Bout: file, handle: handle, oldattr: csbi.attributes, oldpos: coord%7B0, 0%7D%7D%0A%09%7D%0A%09return file%0A%7D%0A%0A// NewColorableStdout return new instance of Writer which handle escape sequence for stdout.%0Afunc NewColorableStdout() io.Writer %7B%0A%09return NewColorable(os.Stdout)%0A%7D%0A%0A// NewColorableStderr return new instance of Writer which handle escape sequence for stderr.%0Afunc NewColorableStderr() io.Writer %7B%0A%09return NewColorable(os.Stderr)%0A%7D%0A%0Avar color256 = map%5Bint%5Dint%7B%0A%090:   0x000000,%0A%091:   0x800000,%0A%092:   0x008000,%0A%093:   0x808000,%0A%094:   0x000080,%0A%095:   0x800080,%0A%096:   0x008080,%0A%097:   0xc0c0c0,%0A%098:   0x808080,%0A%099:   0xff0000,%0A%0910:  0x00ff00,%0A%0911:  0xffff00,%0A%0912:  0x0000ff,%0A%0913:  0xff00ff,%0A%0914:  0x00ffff,%0A%0915:  0xffffff,%0A%0916:  0x000000,%0A%0917:  0x00005f,%0A%0918:  0x000087,%0A%0919:  0x0000af,%0A%0920:  0x0000d7,%0A%0921:  0x0000ff,%0A%0922:  0x005f00,%0A%0923:  0x005f5f,%0A%0924:  0x005f87,%0A%0925:  0x005faf,%0A%0926:  0x005fd7,%0A%0927:  0x005fff,%0A%0928:  0x008700,%0A%0929:  0x00875f,%0A%0930:  0x008787,%0A%0931:  0x0087af,%0A%0932:  0x0087d7,%0A%0933:  0x0087ff,%0A%0934:  0x00af00,%0A%0935:  0x00af5f,%0A%0936:  0x00af87,%0A%0937:  0x00afaf,%0A%0938:  0x00afd7,%0A%0939:  0x00afff,%0A%0940:  0x00d700,%0A%0941:  0x00d75f,%0A%0942:  0x00d787,%0A%0943:  0x00d7af,%0A%0944:  0x00d7d7,%0A%0945:  0x00d7ff,%0A%0946:  0x00ff00,%0A%0947:  0x00ff5f,%0A%0948:  0x00ff87,%0A%0949:  0x00ffaf,%0A%0950:  0x00ffd7,%0A%0951:  0x00ffff,%0A%0952:  0x5f0000,%0A%0953:  0x5f005f,%0A%0954:  0x5f0087,%0A%0955:  0x5f00af,%0A%0956:  0x5f00d7,%0A%0957:  0x5f00ff,%0A%0958:  0x5f5f00,%0A%0959:  0x5f5f5f,%0A%0960:  0x5f5f87,%0A%0961:  0x5f5faf,%0A%0962:  0x5f5fd7,%0A%0963:  0x5f5fff,%0A%0964:  0x5f8700,%0A%0965:  0x5f875f,%0A%0966:  0x5f8787,%0A%0967:  0x5f87af,%0A%0968:  0x5f87d7,%0A%0969:  0x5f87ff,%0A%0970:  0x5faf00,%0A%0971:  0x5faf5f,%0A%0972:  0x5faf87,%0A%0973:  0x5fafaf,%0A%0974:  0x5fafd7,%0A%0975:  0x5fafff,%0A%0976:  0x5fd700,%0A%0977:  0x5fd75f,%0A%0978:  0x5fd787,%0A%0979:  0x5fd7af,%0A%0980:  0x5fd7d7,%0A%0981:  0x5fd7ff,%0A%0982:  0x5fff00,%0A%0983:  0x5fff5f,%0A%0984:  0x5fff87,%0A%0985:  0x5fffaf,%0A%0986:  0x5fffd7,%0A%0987:  0x5fffff,%0A%0988:  0x870000,%0A%0989:  0x87005f,%0A%0990:  0x870087,%0A%0991:  0x8700af,%0A%0992:  0x8700d7,%0A%0993:  0x8700ff,%0A%0994:  0x875f00,%0A%0995:  0x875f5f,%0A%0996:  0x875f87,%0A%0997:  0x875faf,%0A%0998:  0x875fd7,%0A%0999:  0x875fff,%0A%09100: 0x878700,%0A%09101: 0x87875f,%0A%09102: 0x878787,%0A%09103: 0x8787af,%0A%09104: 0x8787d7,%0A%09105: 0x8787ff,%0A%09106: 0x87af00,%0A%09107: 0x87af5f,%0A%09108: 0x87af87,%0A%09109: 0x87afaf,%0A%09110: 0x87afd7,%0A%09111: 0x87afff,%0A%09112: 0x87d700,%0A%09113: 0x87d75f,%0A%09114: 0x87d787,%0A%09115: 0x87d7af,%0A%09116: 0x87d7d7,%0A%09117: 0x87d7ff,%0A%09118: 0x87ff00,%0A%09119: 0x87ff5f,%0A%09120: 0x87ff87,%0A%09121: 0x87ffaf,%0A%09122: 0x87ffd7,%0A%09123: 0x87ffff,%0A%09124: 0xaf0000,%0A%09125: 0xaf005f,%0A%09126: 0xaf0087,%0A%09127: 0xaf00af,%0A%09128: 0xaf00d7,%0A%09129: 0xaf00ff,%0A%09130: 0xaf5f00,%0A%09131: 0xaf5f5f,%0A%09132: 0xaf5f87,%0A%09133: 0xaf5faf,%0A%09134: 0xaf5fd7,%0A%09135: 0xaf5fff,%0A%09136: 0xaf8700,%0A%09137: 0xaf875f,%0A%09138: 0xaf8787,%0A%09139: 0xaf87af,%0A%09140: 0xaf87d7,%0A%09141: 0xaf87ff,%0A%09142: 0xafaf00,%0A%09143: 0xafaf5f,%0A%09144: 0xafaf87,%0A%09145: 0xafafaf,%0A%09146: 0xafafd7,%0A%09147: 0xafafff,%0A%09148: 0xafd700,%0A%09149: 0xafd75f,%0A%09150: 0xafd787,%0A%09151: 0xafd7af,%0A%09152: 0xafd7d7,%0A%09153: 0xafd7ff,%0A%09154: 0xafff00,%0A%09155: 0xafff5f,%0A%09156: 0xafff87,%0A%09157: 0xafffaf,%0A%09158: 0xafffd7,%0A%09159: 0xafffff,%0A%09160: 0xd70000,%0A%09161: 0xd7005f,%0A%09162: 0xd70087,%0A%09163: 0xd700af,%0A%09164: 0xd700d7,%0A%09165: 0xd700ff,%0A%09166: 0xd75f00,%0A%09167: 0xd75f5f,%0A%09168: 0xd75f87,%0A%09169: 0xd75faf,%0A%09170: 0xd75fd7,%0A%09171: 0xd75fff,%0A%09172: 0xd78700,%0A%09173: 0xd7875f,%0A%09174: 0xd78787,%0A%09175: 0xd787af,%0A%09176: 0xd787d7,%0A%09177: 0xd787ff,%0A%09178: 0xd7af00,%0A%09179: 0xd7af5f,%0A%09180: 0xd7af87,%0A%09181: 0xd7afaf,%0A%09182: 0xd7afd7,%0A%09183: 0xd7afff,%0A%09184: 0xd7d700,%0A%09185: 0xd7d75f,%0A%09186: 0xd7d787,%0A%09187: 0xd7d7af,%0A%09188: 0xd7d7d7,%0A%09189: 0xd7d7ff,%0A%09190: 0xd7ff00,%0A%09191: 0xd7ff5f,%0A%09192: 0xd7ff87,%0A%09193: 0xd7ffaf,%0A%09194: 0xd7ffd7,%0A%09195: 0xd7ffff,%0A%09196: 0xff0000,%0A%09197: 0xff005f,%0A%09198: 0xff0087,%0A%09199: 0xff00af,%0A%09200: 0xff00d7,%0A%09201: 0xff00ff,%0A%09202: 0xff5f00,%0A%09203: 0xff5f5f,%0A%09204: 0xff5f87,%0A%09205: 0xff5faf,%0A%09206: 0xff5fd7,%0A%09207: 0xff5fff,%0A%09208: 0xff8700,%0A%09209: 0xff875f,%0A%09210: 0xff8787,%0A%09211: 0xff87af,%0A%09212: 0xff87d7,%0A%09213: 0xff87ff,%0A%09214: 0xffaf00,%0A%09215: 0xffaf5f,%0A%09216: 0xffaf87,%0A%09217: 0xffafaf,%0A%09218: 0xffafd7,%0A%09219: 0xffafff,%0A%09220: 0xffd700,%0A%09221: 0xffd75f,%0A%09222: 0xffd787,%0A%09223: 0xffd7af,%0A%09224: 0xffd7d7,%0A%09225: 0xffd7ff,%0A%09226: 0xffff00,%0A%09227: 0xffff5f,%0A%09228: 0xffff87,%0A%09229: 0xffffaf,%0A%09230: 0xffffd7,%0A%09231: 0xffffff,%0A%09232: 0x080808,%0A%09233: 0x121212,%0A%09234: 0x1c1c1c,%0A%09235: 0x262626,%0A%09236: 0x303030,%0A%09237: 0x3a3a3a,%0A%09238: 0x444444,%0A%09239: 0x4e4e4e,%0A%09240: 0x585858,%0A%09241: 0x626262,%0A%09242: 0x6c6c6c,%0A%09243: 0x767676,%0A%09244: 0x808080,%0A%09245: 0x8a8a8a,%0A%09246: 0x949494,%0A%09247: 0x9e9e9e,%0A%09248: 0xa8a8a8,%0A%09249: 0xb2b2b2,%0A%09250: 0xbcbcbc,%0A%09251: 0xc6c6c6,%0A%09252: 0xd0d0d0,%0A%09253: 0xdadada,%0A%09254: 0xe4e4e4,%0A%09255: 0xeeeeee,%0A%7D%0A%0A// %60%5C033%5D0;TITLESTR%5C007%60%0Afunc doTitleSequence(er *bytes.Reader) error %7B%0A%09var c byte%0A%09var err error%0A%0A%09c, err = er.ReadByte()%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if c != '0' && c != '2' %7B%0A%09%09return nil%0A%09%7D%0A%09c, err = er.ReadByte()%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if c != ';' %7B%0A%09%09return nil%0A%09%7D%0A%09title := make(%5B%5Dbyte, 0, 80)%0A%09for %7B%0A%09%09c, err = er.ReadByte()%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if c == 0x07 %7C%7C c == '%5Cn' %7B%0A%09%09%09break%0A%09%09%7D%0A%09%09title = append(title, c)%0A%09%7D%0A%09if len(title) %3E 0 %7B%0A%09%09title8, err := syscall.UTF16PtrFromString(string(title))%0A%09%09if err == nil %7B%0A%09%09%09procSetConsoleTitle.Call(uintptr(unsafe.Pointer(title8)))%0A%09%09%7D%0A%09%7D%0A%09return nil%0A%7D%0A%0A// Write write data on console%0Afunc (w *Writer) Write(data %5B%5Dbyte) (n int, err error) %7B%0A%09var csbi consoleScreenBufferInfo%0A%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%0A%09er := bytes.NewReader(data)%0A%09var bw %5B1%5Dbyte%0Aloop:%0A%09for %7B%0A%09%09c1, err := er.ReadByte()%0A%09%09if err != nil %7B%0A%09%09%09break loop%0A%09%09%7D%0A%09%09if c1 != 0x1b %7B%0A%09%09%09bw%5B0%5D = c1%0A%09%09%09w.out.Write(bw%5B:%5D)%0A%09%09%09continue%0A%09%09%7D%0A%09%09c2, err := er.ReadByte()%0A%09%09if err != nil %7B%0A%09%09%09break loop%0A%09%09%7D%0A%0A%09%09if c2 == '%5D' %7B%0A%09%09%09if err := doTitleSequence(er); err != nil %7B%0A%09%09%09%09break loop%0A%09%09%09%7D%0A%09%09%09continue%0A%09%09%7D%0A%09%09if c2 != 0x5b %7B%0A%09%09%09continue%0A%09%09%7D%0A%0A%09%09var buf bytes.Buffer%0A%09%09var m byte%0A%09%09for %7B%0A%09%09%09c, err := er.ReadByte()%0A%09%09%09if err != nil %7B%0A%09%09%09%09break loop%0A%09%09%09%7D%0A%09%09%09if ('a' %3C= c && c %3C= 'z') %7C%7C ('A' %3C= c && c %3C= 'Z') %7C%7C c == '@' %7B%0A%09%09%09%09m = c%0A%09%09%09%09break%0A%09%09%09%7D%0A%09%09%09buf.Write(%5B%5Dbyte(string(c)))%0A%09%09%7D%0A%0A%09%09switch m %7B%0A%09%09case 'A':%0A%09%09%09n, err = strconv.Atoi(buf.String())%0A%09%09%09if err != nil %7B%0A%09%09%09%09continue%0A%09%09%09%7D%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09csbi.cursorPosition.y -= short(n)%0A%09%09%09procSetConsoleCursorPosition.Call(uintptr(w.handle), *(*uintptr)(unsafe.Pointer(&csbi.cursorPosition)))%0A%09%09case 'B':%0A%09%09%09n, err = strconv.Atoi(buf.String())%0A%09%09%09if err != nil %7B%0A%09%09%09%09continue%0A%09%09%09%7D%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09csbi.cursorPosition.y += short(n)%0A%09%09%09procSetConsoleCursorPosition.Call(uintptr(w.handle), *(*uintptr)(unsafe.Pointer(&csbi.cursorPosition)))%0A%09%09case 'C':%0A%09%09%09n, err = strconv.Atoi(buf.String())%0A%09%09%09if err != nil %7B%0A%09%09%09%09continue%0A%09%09%09%7D%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09csbi.cursorPosition.x += short(n)%0A%09%09%09procSetConsoleCursorPosition.Call(uintptr(w.handle), *(*uintptr)(unsafe.Pointer(&csbi.cursorPosition)))%0A%09%09case 'D':%0A%09%09%09n, err = strconv.Atoi(buf.String())%0A%09%09%09if err != nil %7B%0A%09%09%09%09continue%0A%09%09%09%7D%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09csbi.cursorPosition.x -= short(n)%0A%09%09%09procSetConsoleCursorPosition.Call(uintptr(w.handle), *(*uintptr)(unsafe.Pointer(&csbi.cursorPosition)))%0A%09%09case 'E':%0A%09%09%09n, err = strconv.Atoi(buf.String())%0A%09%09%09if err != nil %7B%0A%09%09%09%09continue%0A%09%09%09%7D%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09csbi.cursorPosition.x = 0%0A%09%09%09csbi.cursorPosition.y += short(n)%0A%09%09%09procSetConsoleCursorPosition.Call(uintptr(w.handle), *(*uintptr)(unsafe.Pointer(&csbi.cursorPosition)))%0A%09%09case 'F':%0A%09%09%09n, err = strconv.Atoi(buf.String())%0A%09%09%09if err != nil %7B%0A%09%09%09%09continue%0A%09%09%09%7D%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09csbi.cursorPosition.x = 0%0A%09%09%09csbi.cursorPosition.y -= short(n)%0A%09%09%09procSetConsoleCursorPosition.Call(uintptr(w.handle), *(*uintptr)(unsafe.Pointer(&csbi.cursorPosition)))%0A%09%09case 'G':%0A%09%09%09n, err = strconv.Atoi(buf.String())%0A%09%09%09if err != nil %7B%0A%09%09%09%09continue%0A%09%09%09%7D%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09csbi.cursorPosition.x = short(n - 1)%0A%09%09%09procSetConsoleCursorPosition.Call(uintptr(w.handle), *(*uintptr)(unsafe.Pointer(&csbi.cursorPosition)))%0A%09%09case 'H', 'f':%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09if buf.Len() %3E 0 %7B%0A%09%09%09%09token := strings.Split(buf.String(), %22;%22)%0A%09%09%09%09switch len(token) %7B%0A%09%09%09%09case 1:%0A%09%09%09%09%09n1, err := strconv.Atoi(token%5B0%5D)%0A%09%09%09%09%09if err != nil %7B%0A%09%09%09%09%09%09continue%0A%09%09%09%09%09%7D%0A%09%09%09%09%09csbi.cursorPosition.y = short(n1 - 1)%0A%09%09%09%09case 2:%0A%09%09%09%09%09n1, err := strconv.Atoi(token%5B0%5D)%0A%09%09%09%09%09if err != nil %7B%0A%09%09%09%09%09%09continue%0A%09%09%09%09%09%7D%0A%09%09%09%09%09n2, err := strconv.Atoi(token%5B1%5D)%0A%09%09%09%09%09if err != nil %7B%0A%09%09%09%09%09%09continue%0A%09%09%09%09%09%7D%0A%09%09%09%09%09csbi.cursorPosition.x = short(n2 - 1)%0A%09%09%09%09%09csbi.cursorPosition.y = short(n1 - 1)%0A%09%09%09%09%7D%0A%09%09%09%7D else %7B%0A%09%09%09%09csbi.cursorPosition.y = 0%0A%09%09%09%7D%0A%09%09%09procSetConsoleCursorPosition.Call(uintptr(w.handle), *(*uintptr)(unsafe.Pointer(&csbi.cursorPosition)))%0A%09%09case 'J':%0A%09%09%09n := 0%0A%09%09%09if buf.Len() %3E 0 %7B%0A%09%09%09%09n, err = strconv.Atoi(buf.String())%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09continue%0A%09%09%09%09%7D%0A%09%09%09%7D%0A%09%09%09var count, written dword%0A%09%09%09var cursor coord%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09switch n %7B%0A%09%09%09case 0:%0A%09%09%09%09cursor = coord%7Bx: csbi.cursorPosition.x, y: csbi.cursorPosition.y%7D%0A%09%09%09%09count = dword(csbi.size.x - csbi.cursorPosition.x + (csbi.size.y-csbi.cursorPosition.y)*csbi.size.x)%0A%09%09%09case 1:%0A%09%09%09%09cursor = coord%7Bx: csbi.window.left, y: csbi.window.top%7D%0A%09%09%09%09count = dword(csbi.size.x - csbi.cursorPosition.x + (csbi.window.top-csbi.cursorPosition.y)*csbi.size.x)%0A%09%09%09case 2:%0A%09%09%09%09cursor = coord%7Bx: csbi.window.left, y: csbi.window.top%7D%0A%09%09%09%09count = dword(csbi.size.x - csbi.cursorPosition.x + (csbi.size.y-csbi.cursorPosition.y)*csbi.size.x)%0A%09%09%09%7D%0A%09%09%09procFillConsoleOutputCharacter.Call(uintptr(w.handle), uintptr(' '), uintptr(count), *(*uintptr)(unsafe.Pointer(&cursor)), uintptr(unsafe.Pointer(&written)))%0A%09%09%09procFillConsoleOutputAttribute.Call(uintptr(w.handle), uintptr(csbi.attributes), uintptr(count), *(*uintptr)(unsafe.Pointer(&cursor)), uintptr(unsafe.Pointer(&written)))%0A%09%09case 'K':%0A%09%09%09n := 0%0A%09%09%09if buf.Len() %3E 0 %7B%0A%09%09%09%09n, err = strconv.Atoi(buf.String())%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09continue%0A%09%09%09%09%7D%0A%09%09%09%7D%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09var cursor coord%0A%09%09%09var count, written dword%0A%09%09%09switch n %7B%0A%09%09%09case 0:%0A%09%09%09%09cursor = coord%7Bx: csbi.cursorPosition.x + 1, y: csbi.cursorPosition.y%7D%0A%09%09%09%09count = dword(csbi.size.x - csbi.cursorPosition.x - 1)%0A%09%09%09case 1:%0A%09%09%09%09cursor = coord%7Bx: csbi.window.left, y: csbi.window.top + csbi.cursorPosition.y%7D%0A%09%09%09%09count = dword(csbi.size.x - csbi.cursorPosition.x)%0A%09%09%09case 2:%0A%09%09%09%09cursor = coord%7Bx: csbi.window.left, y: csbi.window.top + csbi.cursorPosition.y%7D%0A%09%09%09%09count = dword(csbi.size.x)%0A%09%09%09%7D%0A%09%09%09procFillConsoleOutputCharacter.Call(uintptr(w.handle), uintptr(' '), uintptr(count), *(*uintptr)(unsafe.Pointer(&cursor)), uintptr(unsafe.Pointer(&written)))%0A%09%09%09procFillConsoleOutputAttribute.Call(uintptr(w.handle), uintptr(csbi.attributes), uintptr(count), *(*uintptr)(unsafe.Pointer(&cursor)), uintptr(unsafe.Pointer(&written)))%0A%09%09case 'm':%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09attr := csbi.attributes%0A%09%09%09cs := buf.String()%0A%09%09%09if cs == %22%22 %7B%0A%09%09%09%09procSetConsoleTextAttribute.Call(uintptr(w.handle), uintptr(w.oldattr))%0A%09%09%09%09continue%0A%09%09%09%7D%0A%09%09%09token := strings.Split(cs, %22;%22)%0A%09%09%09for i := 0; i %3C len(token); i++ %7B%0A%09%09%09%09ns := token%5Bi%5D%0A%09%09%09%09if n, err = strconv.Atoi(ns); err == nil %7B%0A%09%09%09%09%09switch %7B%0A%09%09%09%09%09case n == 0 %7C%7C n == 100:%0A%09%09%09%09%09%09attr = w.oldattr%0A%09%09%09%09%09case 1 %3C= n && n %3C= 5:%0A%09%09%09%09%09%09attr %7C= foregroundIntensity%0A%09%09%09%09%09case n == 7:%0A%09%09%09%09%09%09attr = ((attr & foregroundMask) %3C%3C 4) %7C ((attr & backgroundMask) %3E%3E 4)%0A%09%09%09%09%09case n == 22 %7C%7C n == 25:%0A%09%09%09%09%09%09attr %7C= foregroundIntensity%0A%09%09%09%09%09case n == 27:%0A%09%09%09%09%09%09attr = ((attr & foregroundMask) %3C%3C 4) %7C ((attr & backgroundMask) %3E%3E 4)%0A%09%09%09%09%09case 30 %3C= n && n %3C= 37:%0A%09%09%09%09%09%09attr &= backgroundMask%0A%09%09%09%09%09%09if (n-30)&1 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= foregroundRed%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09if (n-30)&2 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= foregroundGreen%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09if (n-30)&4 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= foregroundBlue%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09case n == 38: // set foreground color.%0A%09%09%09%09%09%09if i %3C len(token)-2 && (token%5Bi+1%5D == %225%22 %7C%7C token%5Bi+1%5D == %2205%22) %7B%0A%09%09%09%09%09%09%09if n256, err := strconv.Atoi(token%5Bi+2%5D); err == nil %7B%0A%09%09%09%09%09%09%09%09if n256foreAttr == nil %7B%0A%09%09%09%09%09%09%09%09%09n256setup()%0A%09%09%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09%09%09attr &= backgroundMask%0A%09%09%09%09%09%09%09%09attr %7C= n256foreAttr%5Bn256%5D%0A%09%09%09%09%09%09%09%09i += 2%0A%09%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09%7D else %7B%0A%09%09%09%09%09%09%09attr = attr & (w.oldattr & backgroundMask)%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09case n == 39: // reset foreground color.%0A%09%09%09%09%09%09attr &= backgroundMask%0A%09%09%09%09%09%09attr %7C= w.oldattr & foregroundMask%0A%09%09%09%09%09case 40 %3C= n && n %3C= 47:%0A%09%09%09%09%09%09attr &= foregroundMask%0A%09%09%09%09%09%09if (n-40)&1 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= backgroundRed%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09if (n-40)&2 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= backgroundGreen%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09if (n-40)&4 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= backgroundBlue%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09case n == 48: // set background color.%0A%09%09%09%09%09%09if i %3C len(token)-2 && token%5Bi+1%5D == %225%22 %7B%0A%09%09%09%09%09%09%09if n256, err := strconv.Atoi(token%5Bi+2%5D); err == nil %7B%0A%09%09%09%09%09%09%09%09if n256backAttr == nil %7B%0A%09%09%09%09%09%09%09%09%09n256setup()%0A%09%09%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09%09%09attr &= foregroundMask%0A%09%09%09%09%09%09%09%09attr %7C= n256backAttr%5Bn256%5D%0A%09%09%09%09%09%09%09%09i += 2%0A%09%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09%7D else %7B%0A%09%09%09%09%09%09%09attr = attr & (w.oldattr & foregroundMask)%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09case n == 49: // reset foreground color.%0A%09%09%09%09%09%09attr &= foregroundMask%0A%09%09%09%09%09%09attr %7C= w.oldattr & backgroundMask%0A%09%09%09%09%09case 90 %3C= n && n %3C= 97:%0A%09%09%09%09%09%09attr = (attr & backgroundMask)%0A%09%09%09%09%09%09attr %7C= foregroundIntensity%0A%09%09%09%09%09%09if (n-90)&1 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= foregroundRed%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09if (n-90)&2 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= foregroundGreen%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09if (n-90)&4 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= foregroundBlue%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09case 100 %3C= n && n %3C= 107:%0A%09%09%09%09%09%09attr = (attr & foregroundMask)%0A%09%09%09%09%09%09attr %7C= backgroundIntensity%0A%09%09%09%09%09%09if (n-100)&1 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= backgroundRed%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09if (n-100)&2 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= backgroundGreen%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09%09if (n-100)&4 != 0 %7B%0A%09%09%09%09%09%09%09attr %7C= backgroundBlue%0A%09%09%09%09%09%09%7D%0A%09%09%09%09%09%7D%0A%09%09%09%09%09procSetConsoleTextAttribute.Call(uintptr(w.handle), uintptr(attr))%0A%09%09%09%09%7D%0A%09%09%09%7D%0A%09%09case 'h':%0A%09%09%09var ci consoleCursorInfo%0A%09%09%09cs := buf.String()%0A%09%09%09if cs == %225%3E%22 %7B%0A%09%09%09%09procGetConsoleCursorInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&ci)))%0A%09%09%09%09ci.visible = 0%0A%09%09%09%09procSetConsoleCursorInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&ci)))%0A%09%09%09%7D else if cs == %22?25%22 %7B%0A%09%09%09%09procGetConsoleCursorInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&ci)))%0A%09%09%09%09ci.visible = 1%0A%09%09%09%09procSetConsoleCursorInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&ci)))%0A%09%09%09%7D%0A%09%09case 'l':%0A%09%09%09var ci consoleCursorInfo%0A%09%09%09cs := buf.String()%0A%09%09%09if cs == %225%3E%22 %7B%0A%09%09%09%09procGetConsoleCursorInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&ci)))%0A%09%09%09%09ci.visible = 1%0A%09%09%09%09procSetConsoleCursorInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&ci)))%0A%09%09%09%7D else if cs == %22?25%22 %7B%0A%09%09%09%09procGetConsoleCursorInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&ci)))%0A%09%09%09%09ci.visible = 0%0A%09%09%09%09procSetConsoleCursorInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&ci)))%0A%09%09%09%7D%0A%09%09case 's':%0A%09%09%09procGetConsoleScreenBufferInfo.Call(uintptr(w.handle), uintptr(unsafe.Pointer(&csbi)))%0A%09%09%09w.oldpos = csbi.cursorPosition%0A%09%09case 'u':%0A%09%09%09procSetConsoleCursorPosition.Call(uintptr(w.handle), *(*uintptr)(unsafe.Pointer(&w.oldpos)))%0A%09%09%7D%0A%09%7D%0A%0A%09return len(data), nil%0A%7D%0A%0Atype consoleColor struct %7B%0A%09rgb       int%0A%09red       bool%0A%09green     bool%0A%09blue      bool%0A%09intensity bool%0A%7D%0A%0Afunc (c consoleColor) foregroundAttr() (attr word) %7B%0A%09if c.red %7B%0A%09%09attr %7C= foregroundRed%0A%09%7D%0A%09if c.green %7B%0A%09%09attr %7C= foregroundGreen%0A%09%7D%0A%09if c.blue %7B%0A%09%09attr %7C= foregroundBlue%0A%09%7D%0A%09if c.intensity %7B%0A%09%09attr %7C= foregroundIntensity%0A%09%7D%0A%09return%0A%7D%0A%0Afunc (c consoleColor) backgroundAttr() (attr word) %7B%0A%09if c.red %7B%0A%09%09attr %7C= backgroundRed%0A%09%7D%0A%09if c.green %7B%0A%09%09attr %7C= backgroundGreen%0A%09%7D%0A%09if c.blue %7B%0A%09%09attr %7C= backgroundBlue%0A%09%7D%0A%09if c.intensity %7B%0A%09%09attr %7C= backgroundIntensity%0A%09%7D%0A%09return%0A%7D%0A%0Avar color16 = %5B%5DconsoleColor%7B%0A%09%7B0x000000, false, false, false, false%7D,%0A%09%7B0x000080, false, false, true, false%7D,%0A%09%7B0x008000, false, true, false, false%7D,%0A%09%7B0x008080, false, true, true, false%7D,%0A%09%7B0x800000, true, false, false, false%7D,%0A%09%7B0x800080, true, false, true, false%7D,%0A%09%7B0x808000, true, true, false, false%7D,%0A%09%7B0xc0c0c0, true, true, true, false%7D,%0A%09%7B0x808080, false, false, false, true%7D,%0A%09%7B0x0000ff, false, false, true, true%7D,%0A%09%7B0x00ff00, false, true, false, true%7D,%0A%09%7B0x00ffff, false, true, true, true%7D,%0A%09%7B0xff0000, true, false, false, true%7D,%0A%09%7B0xff00ff, true, false, true, true%7D,%0A%09%7B0xffff00, true, true, false, true%7D,%0A%09%7B0xffffff, true, true, true, true%7D,%0A%7D%0A%0Atype hsv struct %7B%0A%09h, s, v float32%0A%7D%0A%0Afunc (a hsv) dist(b hsv) float32 %7B%0A%09dh := a.h - b.h%0A%09switch %7B%0A%09case dh %3E 0.5:%0A%09%09dh = 1 - dh%0A%09case dh %3C -0.5:%0A%09%09dh = -1 - dh%0A%09%7D%0A%09ds := a.s - b.s%0A%09dv := a.v - b.v%0A%09return float32(math.Sqrt(float64(dh*dh + ds*ds + dv*dv)))%0A%7D%0A%0Afunc toHSV(rgb int) hsv %7B%0A%09r, g, b := float32((rgb&0xFF0000)%3E%3E16)/256.0,%0A%09%09float32((rgb&0x00FF00)%3E%3E8)/256.0,%0A%09%09float32(rgb&0x0000FF)/256.0%0A%09min, max := minmax3f(r, g, b)%0A%09h := max - min%0A%09if h %3E 0 %7B%0A%09%09if max == r %7B%0A%09%09%09h = (g - b) / h%0A%09%09%09if h %3C 0 %7B%0A%09%09%09%09h += 6%0A%09%09%09%7D%0A%09%09%7D else if max == g %7B%0A%09%09%09h = 2 + (b-r)/h%0A%09%09%7D else %7B%0A%09%09%09h = 4 + (r-g)/h%0A%09%09%7D%0A%09%7D%0A%09h /= 6.0%0A%09s := max - min%0A%09if max != 0 %7B%0A%09%09s /= max%0A%09%7D%0A%09v := max%0A%09return hsv%7Bh: h, s: s, v: v%7D%0A%7D%0A%0Atype hsvTable %5B%5Dhsv%0A%0Afunc toHSVTable(rgbTable %5B%5DconsoleColor) hsvTable %7B%0A%09t := make(hsvTable, len(rgbTable))%0A%09for i, c := range rgbTable %7B%0A%09%09t%5Bi%5D = toHSV(c.rgb)%0A%09%7D%0A%09return t%0A%7D%0A%0Afunc (t hsvTable) find(rgb int) consoleColor %7B%0A%09hsv := toHSV(rgb)%0A%09n := 7%0A%09l := float32(5.0)%0A%09for i, p := range t %7B%0A%09%09d := hsv.dist(p)%0A%09%09if d %3C l %7B%0A%09%09%09l, n = d, i%0A%09%09%7D%0A%09%7D%0A%09return color16%5Bn%5D%0A%7D%0A%0Afunc minmax3f(a, b, c float32) (min, max float32) %7B%0A%09if a %3C b %7B%0A%09%09if b %3C c %7B%0A%09%09%09return a, c%0A%09%09%7D else if a %3C c %7B%0A%09%09%09return a, b%0A%09%09%7D else %7B%0A%09%09%09return c, b%0A%09%09%7D%0A%09%7D else %7B%0A%09%09if a %3C c %7B%0A%09%09%09return b, c%0A%09%09%7D else if b %3C c %7B%0A%09%09%09return b, a%0A%09%09%7D else %7B%0A%09%09%09return c, a%0A%09%09%7D%0A%09%7D%0A%7D%0A%0Avar n256foreAttr %5B%5Dword%0Avar n256backAttr %5B%5Dword%0A%0Afunc n256setup() %7B%0A%09n256foreAttr = make(%5B%5Dword, 256)%0A%09n256backAttr = make(%5B%5Dword, 256)%0A%09t := toHSVTable(color16)%0A%09for i, rgb := range color256 %7B%0A%09%09c := t.find(rgb)%0A%09%09n256foreAttr%5Bi%5D = c.foregroundAttr()%0A%09%09n256backAttr%5Bi%5D = c.backgroundAttr()%0A%09%7D%0A%7D%0A
++ f fd2c8c68e345996ff70af73e92e7e9deb8b040f29c77af845362cbec32ff3e82 vendor/github.com/mattn/go-colorable/noncolorable.go
+dmppatch 2
+@@ -0,0 +1,946 @@
++package colorable%0A%0Aimport (%0A%09%22bytes%22%0A%09%22io%22%0A)%0A%0A// NonColorable hold writer but remove escape sequence.%0Atype NonColorable struct %7B%0A%09out io.Writer%0A%7D%0A%0A// NewNonColorable return new instance of Writer which remove escape sequence from Writer.%0Afunc NewNonColorable(w io.Writer) io.Writer %7B%0A%09return &NonColorable%7Bout: w%7D%0A%7D%0A%0A// Write write data on console%0Afunc (w *NonColorable) Write(data %5B%5Dbyte) (n int, err error) %7B%0A%09er := bytes.NewReader(data)%0A%09var bw %5B1%5Dbyte%0Aloop:%0A%09for %7B%0A%09%09c1, err := er.ReadByte()%0A%09%09if err != nil %7B%0A%09%09%09break loop%0A%09%09%7D%0A%09%09if c1 != 0x1b %7B%0A%09%09%09bw%5B0%5D = c1%0A%09%09%09w.out.Write(bw%5B:%5D)%0A%09%09%09continue%0A%09%09%7D%0A%09%09c2, err := er.ReadByte()%0A%09%09if err != nil %7B%0A%09%09%09break loop%0A%09%09%7D%0A%09%09if c2 != 0x5b %7B%0A%09%09%09continue%0A%09%09%7D%0A%0A%09%09var buf bytes.Buffer%0A%09%09for %7B%0A%09%09%09c, err := er.ReadByte()%0A%09%09%09if err != nil %7B%0A%09%09%09%09break loop%0A%09%09%09%7D%0A%09%09%09if ('a' %3C= c && c %3C= 'z') %7C%7C ('A' %3C= c && c %3C= 'Z') %7C%7C c == '@' %7B%0A%09%09%09%09break%0A%09%09%09%7D%0A%09%09%09buf.Write(%5B%5Dbyte(string(c)))%0A%09%09%7D%0A%09%7D%0A%0A%09return len(data), nil%0A%7D%0A
++ f 6c37310d5b7f2207f7a322e03c567bc9f278d9746b84d3a3c250ad439c2c50eb vendor/github.com/mattn/go-isatty/.travis.yml
+dmppatch 2
+@@ -0,0 +1,204 @@
++language: go%0Ago:%0A  - tip%0A%0Abefore_install:%0A  - go get github.com/mattn/goveralls%0A  - go get golang.org/x/tools/cmd/cover%0Ascript:%0A  - $HOME/gopath/bin/goveralls -repotoken 3gHdORO5k5ziZcWMBxnd9LrMZaJs8m9x5%0A
++ f 08eab1118c80885fa1fa6a6dd7303f65a379fcb3733e063d20d1bbc2c76e6fa1 vendor/github.com/mattn/go-isatty/LICENSE
+dmppatch 2
+@@ -0,0 +1,1099 @@
++Copyright (c) Yasuhiro MATSUMOTO %3Cmattn.jp@gmail.com%3E%0A%0AMIT License (Expat)%0A%0APermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the %22Software%22), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:%0A%0AThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.%0A%0ATHE SOFTWARE IS PROVIDED %22AS IS%22, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.%0A
++ f 65c905383882592539f246600e8ac35223a6a8ab3474274017718ff812903b82 vendor/github.com/mattn/go-isatty/README.md
+dmppatch 2
+@@ -0,0 +1,1081 @@
++# go-isatty%0A%0A%5B!%5BGodoc Reference%5D(https://godoc.org/github.com/mattn/go-isatty?status.svg)%5D(http://godoc.org/github.com/mattn/go-isatty)%0A%5B!%5BBuild Status%5D(https://travis-ci.org/mattn/go-isatty.svg?branch=master)%5D(https://travis-ci.org/mattn/go-isatty)%0A%5B!%5BCoverage Status%5D(https://coveralls.io/repos/github/mattn/go-isatty/badge.svg?branch=master)%5D(https://coveralls.io/github/mattn/go-isatty?branch=master)%0A%5B!%5BGo Report Card%5D(https://goreportcard.com/badge/mattn/go-isatty)%5D(https://goreportcard.com/report/mattn/go-isatty)%0A%0Aisatty for golang%0A%0A## Usage%0A%0A%60%60%60go%0Apackage main%0A%0Aimport (%0A%09%22fmt%22%0A%09%22github.com/mattn/go-isatty%22%0A%09%22os%22%0A)%0A%0Afunc main() %7B%0A%09if isatty.IsTerminal(os.Stdout.Fd()) %7B%0A%09%09fmt.Println(%22Is Terminal%22)%0A%09%7D else if isatty.IsCygwinTerminal(os.Stdout.Fd()) %7B%0A%09%09fmt.Println(%22Is Cygwin/MSYS2 Terminal%22)%0A%09%7D else %7B%0A%09%09fmt.Println(%22Is Not Terminal%22)%0A%09%7D%0A%7D%0A%60%60%60%0A%0A## Installation%0A%0A%60%60%60%0A$ go get github.com/mattn/go-isatty%0A%60%60%60%0A%0A## License%0A%0AMIT%0A%0A## Author%0A%0AYasuhiro Matsumoto (a.k.a mattn)%0A%0A## Thanks%0A%0A* k-takata: base idea for IsCygwinTerminal%0A%0A    https://github.com/k-takata/go-iscygpty%0A
++ f 06182cb1a7113cae6fdef9be492893298610bfc63cf565a23f86203c3074a861 vendor/github.com/mattn/go-isatty/doc.go
+dmppatch 2
+@@ -0,0 +1,64 @@
++// Package isatty implements interface to isatty%0Apackage isatty%0A
++ f 72c0073494bbf63b4c68eb0d88f22fb69779bb83231f934c178038ab9f07fa07 vendor/github.com/mattn/go-isatty/isatty_appengine.go
+dmppatch 2
+@@ -0,0 +1,422 @@
++// +build appengine%0A%0Apackage isatty%0A%0A// IsTerminal returns true if the file descriptor is terminal which%0A// is always false on on appengine classic which is a sandboxed PaaS.%0Afunc IsTerminal(fd uintptr) bool %7B%0A%09return false%0A%7D%0A%0A// IsCygwinTerminal() return true if the file descriptor is a cygwin or msys2%0A// terminal. This is also always false on this environment.%0Afunc IsCygwinTerminal(fd uintptr) bool %7B%0A%09return false%0A%7D%0A
++ f 29bc911a760b77697fbe9517f33e9f21ebcde632c51e2359a14dd4fed9e8119e vendor/github.com/mattn/go-isatty/isatty_bsd.go
+dmppatch 2
+@@ -0,0 +1,425 @@
++// +build darwin freebsd openbsd netbsd dragonfly%0A// +build !appengine%0A%0Apackage isatty%0A%0Aimport (%0A%09%22syscall%22%0A%09%22unsafe%22%0A)%0A%0Aconst ioctlReadTermios = syscall.TIOCGETA%0A%0A// IsTerminal return true if the file descriptor is terminal.%0Afunc IsTerminal(fd uintptr) bool %7B%0A%09var termios syscall.Termios%0A%09_, _, err := syscall.Syscall6(syscall.SYS_IOCTL, fd, ioctlReadTermios, uintptr(unsafe.Pointer(&termios)), 0, 0, 0)%0A%09return err == 0%0A%7D%0A
++ f 00bc65d10cef36bb3d233812fb85a3306a95870e25dc682a0d042279ffd14a01 vendor/github.com/mattn/go-isatty/isatty_linux.go
+dmppatch 2
+@@ -0,0 +1,405 @@
++// +build linux%0A// +build !appengine,!ppc64,!ppc64le%0A%0Apackage isatty%0A%0Aimport (%0A%09%22syscall%22%0A%09%22unsafe%22%0A)%0A%0Aconst ioctlReadTermios = syscall.TCGETS%0A%0A// IsTerminal return true if the file descriptor is terminal.%0Afunc IsTerminal(fd uintptr) bool %7B%0A%09var termios syscall.Termios%0A%09_, _, err := syscall.Syscall6(syscall.SYS_IOCTL, fd, ioctlReadTermios, uintptr(unsafe.Pointer(&termios)), 0, 0, 0)%0A%09return err == 0%0A%7D%0A
++ f 6d00f69c4f9c1637909e4d3af9b502126be1f31bfa29545767fbe8b475d43f37 vendor/github.com/mattn/go-isatty/isatty_linux_ppc64x.go
+dmppatch 2
+@@ -0,0 +1,415 @@
++// +build linux%0A// +build ppc64 ppc64le%0A%0Apackage isatty%0A%0Aimport (%0A%09%22unsafe%22%0A%0A%09syscall %22golang.org/x/sys/unix%22%0A)%0A%0Aconst ioctlReadTermios = syscall.TCGETS%0A%0A// IsTerminal return true if the file descriptor is terminal.%0Afunc IsTerminal(fd uintptr) bool %7B%0A%09var termios syscall.Termios%0A%09_, _, err := syscall.Syscall6(syscall.SYS_IOCTL, fd, ioctlReadTermios, uintptr(unsafe.Pointer(&termios)), 0, 0, 0)%0A%09return err == 0%0A%7D%0A
++ f e670e00bfc232609b71bf895aec5ed2beceee501660a76fe7339d492ef2513c8 vendor/github.com/mattn/go-isatty/isatty_others.go
+dmppatch 2
+@@ -0,0 +1,252 @@
++// +build !windows%0A// +build !appengine%0A%0Apackage isatty%0A%0A// IsCygwinTerminal() return true if the file descriptor is a cygwin or msys2%0A// terminal. This is also always false on this environment.%0Afunc IsCygwinTerminal(fd uintptr) bool %7B%0A%09return false%0A%7D%0A
++ f 769b953ec7f6c129cfc47c6d6bfedb0017b87dca37a9a3521289b598b37a2769 vendor/github.com/mattn/go-isatty/isatty_solaris.go
+dmppatch 2
+@@ -0,0 +1,402 @@
++// +build solaris%0A// +build !appengine%0A%0Apackage isatty%0A%0Aimport (%0A%09%22golang.org/x/sys/unix%22%0A)%0A%0A// IsTerminal returns true if the given file descriptor is a terminal.%0A// see: http://src.illumos.org/source/xref/illumos-gate/usr/src/lib/libbc/libc/gen/common/isatty.c%0Afunc IsTerminal(fd uintptr) bool %7B%0A%09var termio unix.Termio%0A%09err := unix.IoctlSetTermio(int(fd), unix.TCGETA, &termio)%0A%09return err == nil%0A%7D%0A
++ f 405eba4ed581cc4cd10ebb2c608c539c3beeef8628a45b7a128e7d7305fe296c vendor/github.com/mattn/go-isatty/isatty_windows.go
+dmppatch 2
+@@ -0,0 +1,2135 @@
++// +build windows%0A// +build !appengine%0A%0Apackage isatty%0A%0Aimport (%0A%09%22strings%22%0A%09%22syscall%22%0A%09%22unicode/utf16%22%0A%09%22unsafe%22%0A)%0A%0Aconst (%0A%09fileNameInfo uintptr = 2%0A%09fileTypePipe         = 3%0A)%0A%0Avar (%0A%09kernel32                         = syscall.NewLazyDLL(%22kernel32.dll%22)%0A%09procGetConsoleMode               = kernel32.NewProc(%22GetConsoleMode%22)%0A%09procGetFileInformationByHandleEx = kernel32.NewProc(%22GetFileInformationByHandleEx%22)%0A%09procGetFileType                  = kernel32.NewProc(%22GetFileType%22)%0A)%0A%0Afunc init() %7B%0A%09// Check if GetFileInformationByHandleEx is available.%0A%09if procGetFileInformationByHandleEx.Find() != nil %7B%0A%09%09procGetFileInformationByHandleEx = nil%0A%09%7D%0A%7D%0A%0A// IsTerminal return true if the file descriptor is terminal.%0Afunc IsTerminal(fd uintptr) bool %7B%0A%09var st uint32%0A%09r, _, e := syscall.Syscall(procGetConsoleMode.Addr(), 2, fd, uintptr(unsafe.Pointer(&st)), 0)%0A%09return r != 0 && e == 0%0A%7D%0A%0A// Check pipe name is used for cygwin/msys2 pty.%0A// Cygwin/MSYS2 PTY has a name like:%0A//   %5C%7Bcygwin,msys%7D-XXXXXXXXXXXXXXXX-ptyN-%7Bfrom,to%7D-master%0Afunc isCygwinPipeName(name string) bool %7B%0A%09token := strings.Split(name, %22-%22)%0A%09if len(token) %3C 5 %7B%0A%09%09return false%0A%09%7D%0A%0A%09if token%5B0%5D != %60%5Cmsys%60 && token%5B0%5D != %60%5Ccygwin%60 %7B%0A%09%09return false%0A%09%7D%0A%0A%09if token%5B1%5D == %22%22 %7B%0A%09%09return false%0A%09%7D%0A%0A%09if !strings.HasPrefix(token%5B2%5D, %22pty%22) %7B%0A%09%09return false%0A%09%7D%0A%0A%09if token%5B3%5D != %60from%60 && token%5B3%5D != %60to%60 %7B%0A%09%09return false%0A%09%7D%0A%0A%09if token%5B4%5D != %22master%22 %7B%0A%09%09return false%0A%09%7D%0A%0A%09return true%0A%7D%0A%0A// IsCygwinTerminal() return true if the file descriptor is a cygwin or msys2%0A// terminal.%0Afunc IsCygwinTerminal(fd uintptr) bool %7B%0A%09if procGetFileInformationByHandleEx == nil %7B%0A%09%09return false%0A%09%7D%0A%0A%09// Cygwin/msys's pty is a pipe.%0A%09ft, _, e := syscall.Syscall(procGetFileType.Addr(), 1, fd, 0, 0)%0A%09if ft != fileTypePipe %7C%7C e != 0 %7B%0A%09%09return false%0A%09%7D%0A%0A%09var buf %5B2 + syscall.MAX_PATH%5Duint16%0A%09r, _, e := syscall.Syscall6(procGetFileInformationByHandleEx.Addr(),%0A%09%094, fd, fileNameInfo, uintptr(unsafe.Pointer(&buf)),%0A%09%09uintptr(len(buf)*2), 0, 0)%0A%09if r == 0 %7C%7C e != 0 %7B%0A%09%09return false%0A%09%7D%0A%0A%09l := *(*uint32)(unsafe.Pointer(&buf))%0A%09return isCygwinPipeName(string(utf16.Decode(buf%5B2 : 2+l/2%5D)))%0A%7D%0A
+treehash 4ca310bdc5f3357b0eac9161b188f62f540e633acc8547aaf762d6fa087a608c

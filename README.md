@@ -40,6 +40,10 @@ Codechain depends on the `git` binary (for `git diff`), but that's optional.
   work.
 - Code distribution.
 
+### Walkthrough
+
+[![asciicast](https://asciinema.org/a/181075.png)](https://asciinema.org/a/181075)
+
 ### Acknowledgments
 
 Codechain has been heavily influenced by discussions with

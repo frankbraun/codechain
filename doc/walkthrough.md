@@ -2,8 +2,8 @@
 
 ```
 # [single tmux window]
-# Let's assume you have `go` installed and $GOPATH set
-# (otherwise go to https://golang.org/dl/)
+# let's assume you have `go` installed and $GOPATH set
+# otherwise go to https://golang.org/dl/
 
 # get Codechain repository from GitHub
 go get -u -v github.com/frankbraun/codechain
@@ -125,7 +125,7 @@ codechain review -d
 # add detached signature
 codechain review -a ...
 
-# now we are back to one review
+# now we are back to one reviewer
 codechain status
 
 ```

@@ -12,7 +12,6 @@ import (
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
-	"github.com/frankbraun/codechain/util/home"
 	"github.com/frankbraun/codechain/util/terminal"
 	"golang.org/x/crypto/ed25519"
 )
@@ -55,8 +54,7 @@ func KeyGen(argv0 string, args ...string) error {
 			return fmt.Errorf("file '%s' exists already", *seckey)
 		}
 	} else {
-		homeDir = home.AppDataDir("codechain", false)
-		homeDir = filepath.Join(homeDir, secretsDir)
+		homeDir = filepath.Join(codechainHomeDir(), secretsDir)
 		if err := os.MkdirAll(homeDir, 0700); err != nil {
 			return err
 		}

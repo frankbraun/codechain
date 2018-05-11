@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -68,6 +69,7 @@ func Status(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Show status of hashchain and tree.\n")
 		fs.PrintDefaults()
 	}
+	deepVerify := fs.Bool("deep-verify", false, "Verify all patch files match hash chain entries")
 	print := fs.Bool("p", false, "Print hashchain to stdout")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
@@ -85,6 +87,12 @@ func Status(argv0 string, args ...string) error {
 		return err
 	}
 	defer c.Close()
+	if *deepVerify {
+		err := c.DeepVerify(treeDirA, patchDir, def.ExcludePaths)
+		if err != nil {
+			return err
+		}
+	}
 	if *print {
 		c.Print()
 		return nil

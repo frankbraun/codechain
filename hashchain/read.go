@@ -13,7 +13,7 @@ import (
 	"github.com/frankbraun/codechain/util/time"
 )
 
-// Read hash chain from filename.
+// Read hash chain from filename and verify it.
 func Read(filename string) (*HashChain, error) {
 	log.Printf("hashchain.Read(%s)", filename)
 	// check arguments

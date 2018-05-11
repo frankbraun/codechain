@@ -119,6 +119,9 @@ func Apply(hashchainFile, patchDir string, r io.Reader) error {
 					return err
 				}
 			} else {
+				if err := os.MkdirAll(def.PatchDir, 0755); err != nil {
+					return err
+				}
 				// save new hashchain file
 				f, err := os.Create(def.HashchainFile)
 				if err != nil {

@@ -1,6 +1,7 @@
 ## Codechain walkthrough
 
 ```
+# [single tmux window]
 # Let's assume you have `go` installed and $GOPATH set
 # (otherwise go to https://golang.org/dl/)
 
@@ -31,11 +32,8 @@ codechain treehash
 codechain treehash -l
 codechain treehash -l | sha256sum
 
-# let's generate a key pair in the default directory
+# let's generate a key pair
 codechain keygen
-
-# show keys in default directory
-codechain keyfile -l
 
 # let's start using Codechain for our example project
 codechain start -s ~/.config/codechain/secrets/...
@@ -43,7 +41,7 @@ codechain start -s ~/.config/codechain/secrets/...
 # this started the hash chain
 cat .codechain/hashchain
 
-# also
+# also:
 codechain status -p
 
 # see current status of project
@@ -62,12 +60,12 @@ codechain review
 codechain status
 
 # let's bring a second reviewer on board
-# [switch tmux window]
+# [switch tmux window ctrl+b n]
 # the reviewer already has Codechain installed
 # generate a key
 codechain keygen
 
-# [switch tmux window]
+# [switch tmux window ctrl+b n]
 # add second signer
 codechain addkey ...
 
@@ -91,7 +89,43 @@ codechain review
 codechain status
 
 # we still need the second signature, create distribution
+codechain createdist -f /tmp/dist.tar.gz
 
 # [switch tmux window]
-# we assume the second reviewer already has the new
+# apply new distribution
+codechain apply -f /tmp/dist.tar.gz
+
+# create detached signature and send it to John
+codechain review -d
+
+# [switch tmux window]
+# add detached signature
+codechain review -a ...
+
+# now we a new signed release
+codechain status
+
+# let's remove the second reviewer again
+codechain sigctl -m 2
+codechain remkey ...
+codechain review
+
+# of course, Jane has to sign off on it
+codechain status
+codechain createdist -f /tmp/dist2.tar.gz
+
+# [switch tmux window]
+# apply new distribution
+codechain apply -f /tmp/dist.tar.gz
+
+# create detached signature and send it to John
+codechain review -d
+
+# [switch tmux window]
+# add detached signature
+codechain review -a ...
+
+# now we are back to one review
+codechain status
+
 ```

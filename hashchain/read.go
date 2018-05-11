@@ -3,6 +3,7 @@ package hashchain
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -13,9 +14,56 @@ import (
 	"github.com/frankbraun/codechain/util/time"
 )
 
-// Read hash chain from filename and verify it.
-func Read(filename string) (*HashChain, error) {
-	log.Printf("hashchain.Read(%s)", filename)
+func (c *HashChain) read(r io.Reader) error {
+	// read hash chain
+	s := bufio.NewScanner(r)
+	for s.Scan() {
+		// the parsing is very basic, the actual verification is done in c.verify()
+		text := s.Text()
+		log.Println(text)
+		line := strings.SplitN(text, " ", 4)
+		previous, err := hex.Decode(line[0], 32)
+		if err != nil {
+			return err
+		}
+		var prev [32]byte
+		copy(prev[:], previous)
+		t, err := time.Parse(line[1])
+		if err != nil {
+			return fmt.Errorf("hashchain: cannot parse time '%s': %s", line[1], err)
+		}
+		l := &link{
+			previous:   prev,
+			datum:      t,
+			linkType:   line[2],
+			typeFields: strings.SplitN(line[3], " ", 4),
+		}
+		if l.String() != text {
+			return fmt.Errorf("hashchain: cannot reproduce line:\n%s", text)
+		}
+		c.chain = append(c.chain, l)
+	}
+	if err := s.Err(); err != nil {
+		return err
+	}
+
+	// verify
+	return c.verify()
+}
+
+// Read hash chain from r and verify it.
+func Read(r io.Reader) (*HashChain, error) {
+	log.Printf("hashchain.Read()")
+	var c HashChain
+	if err := c.read(r); err != nil {
+		return nil, err
+	}
+	return &c, nil
+}
+
+// ReadFile reads hash chain from filename and verifies it.
+func ReadFile(filename string) (*HashChain, error) {
+	log.Printf("hashchain.ReadFile(%s)", filename)
 	// check arguments
 	exists, err := file.Exists(filename)
 	if err != nil {
@@ -37,46 +85,10 @@ func Read(filename string) (*HashChain, error) {
 		return nil, err
 	}
 
-	// read hash chain
-	s := bufio.NewScanner(c.fp)
-	for s.Scan() {
-		// the parsing is very basic, the actual verification is done in c.verify()
-		text := s.Text()
-		log.Println(text)
-		line := strings.SplitN(text, " ", 4)
-		previous, err := hex.Decode(line[0], 32)
-		if err != nil {
-			c.lock.Release()
-			return nil, err
-		}
-		var prev [32]byte
-		copy(prev[:], previous)
-		t, err := time.Parse(line[1])
-		if err != nil {
-			c.lock.Release()
-			return nil, fmt.Errorf("hashchain: cannot parse time '%s': %s", line[1], err)
-		}
-		l := &link{
-			previous:   prev,
-			datum:      t,
-			linkType:   line[2],
-			typeFields: strings.SplitN(line[3], " ", 4),
-		}
-		if l.String() != text {
-			c.lock.Release()
-			return nil, fmt.Errorf("hashchain: cannot reproduce line:\n%s", text)
-		}
-		c.chain = append(c.chain, l)
-	}
-	if err := s.Err(); err != nil {
-		c.lock.Release()
+	if err := c.read(c.fp); err != nil {
+		c.Close()
 		return nil, err
 	}
 
-	// verify
-	if err := c.verify(); err != nil {
-		c.lock.Release()
-		return nil, err
-	}
 	return &c, nil
 }

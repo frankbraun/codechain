@@ -57,17 +57,17 @@ func TestStartEmpty(t *testing.T) {
 	defer c.Close()
 	fmt.Println(l)
 
-	_, err = Read(filename)
+	_, err = ReadFile(filename)
 	if err == nil {
-		t.Error("Read() should fail (lockfile)")
+		t.Error("ReadFile() should fail (lockfile)")
 	}
 	err = c.Close()
 	if err != nil {
 		t.Fatalf("c.Close() failed: %v", err)
 	}
-	c2, err := Read(filename)
+	c2, err := ReadFile(filename)
 	if err != nil {
-		t.Fatalf("Read() 2 failed: %v", err)
+		t.Fatalf("ReadFile() 2 failed: %v", err)
 	}
 	defer c2.Close()
 }
@@ -231,9 +231,9 @@ func TestStartAddKeySignRemKeySign(t *testing.T) {
 	if err != nil {
 		t.Fatalf("c.Close() failed: %v", err)
 	}
-	c2, err := Read(filename)
+	c2, err := ReadFile(filename)
 	if err != nil {
-		t.Fatalf("Read() 2 failed: %v", err)
+		t.Fatalf("ReadFile() 2 failed: %v", err)
 	}
 	defer c2.Close()
 }

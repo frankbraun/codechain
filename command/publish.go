@@ -36,7 +36,7 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) err
 	treeHash := c.LastTreeHash()
 
 	// make sure patch file doesn't exist for last tree hash
-	patchFile := filepath.Join(patchDir, treeHash)
+	patchFile := filepath.Join(def.PatchDir, treeHash)
 	exists, err := file.Exists(patchFile)
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) err
 	// bring .codechain/tree/a in sync with last published treehash
 	log.Println("sync tree/a")
 	treeHashes := c.TreeHashes()
-	err = sync.Dir(treeDirA, treeHash, patchDir, treeHashes, def.ExcludePaths, true)
+	err = sync.Dir(treeDirA, treeHash, def.PatchDir, treeHashes, def.ExcludePaths, true)
 	if err != nil {
 		return err
 	}
@@ -160,10 +160,10 @@ func Publish(argv0 string, args ...string) error {
 	if err := os.MkdirAll(treeDirB, 0755); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(patchDir, 0755); err != nil {
+	if err := os.MkdirAll(def.PatchDir, 0755); err != nil {
 		return err
 	}
-	c, err := hashchain.Read(hashchainFile)
+	c, err := hashchain.ReadFile(def.HashchainFile)
 	if err != nil {
 		return err
 	}

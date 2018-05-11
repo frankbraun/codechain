@@ -103,13 +103,13 @@ func Status(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	c, err := hashchain.Read(hashchainFile)
+	c, err := hashchain.ReadFile(def.HashchainFile)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	if *deepVerify {
-		err := c.DeepVerify(treeDirA, patchDir, def.ExcludePaths)
+		err := c.DeepVerify(treeDirA, def.PatchDir, def.ExcludePaths)
 		if err != nil {
 			return err
 		}

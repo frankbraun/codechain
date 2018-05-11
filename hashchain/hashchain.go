@@ -2,6 +2,7 @@ package hashchain
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain/internal/state"
@@ -119,9 +120,16 @@ func (c *HashChain) SignerBarrier(pubKey string) int {
 	return c.state.SignerBarrier(pubKey)
 }
 
-// Print hash chain on stdout
+// Print colorized hash chain on stdout.
 func (c *HashChain) Print() {
 	for _, l := range c.chain {
 		fmt.Println(l.StringColor())
+	}
+}
+
+// Fprint hash chain to w.
+func (c *HashChain) Fprint(w io.Writer) {
+	for _, l := range c.chain {
+		fmt.Fprintln(w, l.String())
 	}
 }

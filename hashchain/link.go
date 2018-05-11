@@ -1,6 +1,7 @@
 package hashchain
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"fmt"
 	"strings"
@@ -26,6 +27,27 @@ type link struct {
 	datum      int64    // current-time
 	linkType   string   // type
 	typeFields []string // type-fields ...
+}
+
+func linkEqual(a, b *link) bool {
+	if !bytes.Equal(a.previous[:], b.previous[:]) {
+		return false
+	}
+	if a.datum != b.datum {
+		return false
+	}
+	if a.linkType != b.linkType {
+		return false
+	}
+	if len(a.typeFields) != len(b.typeFields) {
+		return false
+	}
+	for i, field := range a.typeFields {
+		if field != b.typeFields[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func (l *link) String() string {

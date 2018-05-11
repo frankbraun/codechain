@@ -8,9 +8,7 @@ import (
 )
 
 var (
-	hashchainFile = filepath.Join(def.CodechainDir, "hashchain")
-	treeDirRoot   = filepath.Join(def.CodechainDir, "tree")
-	treeDirA      = filepath.Join(treeDirRoot, "a")
-	treeDirB      = filepath.Join(treeDirRoot, "b")
-	patchDir      = filepath.Join(def.CodechainDir, "patches")
+	treeDirRoot = filepath.Join(def.CodechainDir, "tree")
+	treeDirA    = filepath.Join(treeDirRoot, "a")
+	treeDirB    = filepath.Join(treeDirRoot, "b")
 )

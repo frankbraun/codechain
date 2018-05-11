@@ -31,14 +31,14 @@ func showPatchInfo(c *hashchain.HashChain, i, idx int, treeHashes, treeComments 
 func procDiff(i int, treeHashes []string, useGit bool) error {
 	// bring .codechain/tree/a in sync
 	log.Println("bring .codechain/tree/a in sync")
-	err := sync.Dir(treeDirA, treeHashes[i-1], patchDir, treeHashes, def.ExcludePaths, true)
+	err := sync.Dir(treeDirA, treeHashes[i-1], def.PatchDir, treeHashes, def.ExcludePaths, true)
 	if err != nil {
 		return err
 	}
 
 	// bring .codechain/tree/b in sync
 	log.Println("bring .codechain/tree/b in sync")
-	err = sync.Dir(treeDirB, treeHashes[i], patchDir, treeHashes, def.ExcludePaths, true)
+	err = sync.Dir(treeDirB, treeHashes[i], def.PatchDir, treeHashes, def.ExcludePaths, true)
 	if err != nil {
 		return err
 	}
@@ -229,7 +229,7 @@ func Review(argv0 string, args ...string) error {
 	if fs.NArg() == 1 {
 		treeHash = fs.Arg(0)
 	}
-	c, err := hashchain.Read(hashchainFile)
+	c, err := hashchain.ReadFile(def.HashchainFile)
 	if err != nil {
 		return err
 	}

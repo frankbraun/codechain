@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/file"
 )
 
@@ -56,12 +57,12 @@ func TestKey(t *testing.T) {
 	if err != nil {
 		t.Errorf("Start() failed: %v ", err)
 	}
-	exists, err := file.Exists(hashchainFile)
+	exists, err := file.Exists(def.HashchainFile)
 	if err != nil {
 		t.Fatalf("file.Exists() failed: %v", err)
 	}
 	if !exists {
-		t.Errorf("file '%s' doesn't exist", hashchainFile)
+		t.Errorf("file '%s' doesn't exist", def.HashchainFile)
 	}
 	// codechain addkey -w 2 pubkey signature comment
 	err = AddKey("addkey", "-w", "2", testPubkey, testSig, testComment)

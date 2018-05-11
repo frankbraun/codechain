@@ -20,6 +20,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "       %s addkey [-w] pubkey signature [comment]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s remkey pubkey\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s sigctl -m\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s createdist -f dist.tar.gz\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s apply\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s status\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s cleanslate\n", cmd)
@@ -52,6 +53,8 @@ func main() {
 		err = command.RemKey(argv0, args...)
 	case "sigctl":
 		err = command.SigCtl(argv0, args...)
+	case "createdist":
+		err = command.CreateDist(argv0, args...)
 	case "apply":
 		err = command.Apply(argv0, args...)
 	case "status":

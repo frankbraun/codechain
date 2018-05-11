@@ -7,6 +7,7 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -34,7 +35,7 @@ func RemKey(argv0 string, args ...string) error {
 	if err != nil {
 		return fmt.Errorf("cannot decode pubkey: %s", err)
 	}
-	c, err := hashchain.Read(hashchainFile)
+	c, err := hashchain.ReadFile(def.HashchainFile)
 	if err != nil {
 		return err
 	}

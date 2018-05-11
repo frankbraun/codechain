@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -35,7 +36,7 @@ func SigCtl(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	c, err := hashchain.Read(hashchainFile)
+	c, err := hashchain.ReadFile(def.HashchainFile)
 	if err != nil {
 		return err
 	}

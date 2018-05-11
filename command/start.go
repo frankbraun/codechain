@@ -37,18 +37,18 @@ func Start(argv0 string, args ...string) error {
 	if err := os.MkdirAll(def.CodechainDir, 0755); err != nil {
 		return err
 	}
-	exists, err := file.Exists(hashchainFile)
+	exists, err := file.Exists(def.HashchainFile)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return fmt.Errorf("%s: file '%s' exists already", argv0, hashchainFile)
+		return fmt.Errorf("%s: file '%s' exists already", argv0, def.HashchainFile)
 	}
 	sec, _, comment, err := seckeyRead(*seckey)
 	if err != nil {
 		return err
 	}
-	c, entry, err := hashchain.Start(hashchainFile, *sec, comment)
+	c, entry, err := hashchain.Start(def.HashchainFile, *sec, comment)
 	if err != nil {
 		return err
 	}

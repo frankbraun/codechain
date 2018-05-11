@@ -8,6 +8,9 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/tree"
+	"github.com/frankbraun/codechain/util"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -53,12 +56,30 @@ func showUnsigned(c *hashchain.HashChain) error {
 	return nil
 }
 
+func showTreeStatus(c *hashchain.HashChain) error {
+	treeHash, err := tree.Hash(".", def.ExcludePaths)
+	if err != nil {
+		return err
+	}
+	treeHashes := c.TreeHashes()
+	if util.ContainsString(treeHashes, hex.Encode(treeHash[:])) {
+		fmt.Printf("tree matches %x\n", treeHash[:])
+	} else {
+		fmt.Println("tree is dirty")
+	}
+	return nil
+}
+
 func status(c *hashchain.HashChain) error {
 	showSignedReleases(c)
 	fmt.Println()
 	showSigner(c)
 	fmt.Println()
-	return showUnsigned(c)
+	if err := showUnsigned(c); err != nil {
+		return err
+	}
+	fmt.Println()
+	return showTreeStatus(c)
 }
 
 // Status implement the 'status' command.

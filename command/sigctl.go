@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // SigCtl implements the 'sigctl' command.
@@ -17,8 +18,12 @@ func SigCtl(argv0 string, args ...string) error {
 		fs.PrintDefaults()
 	}
 	m := fs.Int("m", -1, "Signature threshold M")
+	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
 	}
 	if *m == -1 {
 		return fmt.Errorf("%s: option -m is mandatory", argv0)

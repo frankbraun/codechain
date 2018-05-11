@@ -7,6 +7,7 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // AddKey implements the 'addkey' command.
@@ -17,9 +18,13 @@ func AddKey(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Add new signer to hashchain.\n")
 		fs.PrintDefaults()
 	}
+	verbose := fs.Bool("v", false, "Be verbose")
 	w := fs.Int("w", 1, "Signature weight w")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
 	}
 	if *w < 1 {
 		return fmt.Errorf("%s: option -w must be >= 1", argv0)

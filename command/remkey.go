@@ -7,6 +7,7 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // RemKey implements the 'remkey' command.
@@ -17,8 +18,12 @@ func RemKey(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Remove existing signer from hashchain.\n")
 		fs.PrintDefaults()
 	}
+	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
 	}
 	if fs.NArg() != 1 {
 		fs.Usage()

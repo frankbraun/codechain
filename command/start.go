@@ -8,6 +8,7 @@ import (
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // Start implements the 'start' command.
@@ -19,8 +20,12 @@ func Start(argv0 string, args ...string) error {
 		fs.PrintDefaults()
 	}
 	seckey := fs.String("s", "", "Secret key file")
+	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
 	}
 	if *seckey == "" {
 		return fmt.Errorf("%s: option -s is mandatory", argv0)

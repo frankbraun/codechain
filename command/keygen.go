@@ -12,6 +12,7 @@ import (
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/terminal"
 	"golang.org/x/crypto/ed25519"
 )
@@ -38,8 +39,12 @@ func KeyGen(argv0 string, args ...string) error {
 		fs.PrintDefaults()
 	}
 	seckey := fs.String("s", "", "Secret key file")
+	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
 	}
 	if fs.NArg() != 0 {
 		fs.Usage()

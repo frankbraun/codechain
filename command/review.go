@@ -202,11 +202,11 @@ func Review(argv0 string, args ...string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if err := seckeyCheck(*seckey); err != nil {
-		return err
-	}
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
+	}
+	if err := seckeyCheck(*seckey); err != nil {
+		return err
 	}
 	if *add {
 		if fs.NArg() != 3 {

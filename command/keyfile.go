@@ -13,6 +13,7 @@ import (
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
+	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
@@ -70,8 +71,12 @@ func KeyFile(argv0 string, args ...string) error {
 	change := fs.Bool("c", false, "Change passphrase")
 	list := fs.Bool("l", false, "List keyfiles")
 	seckey := fs.String("s", "", "Secret key file")
+	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
 	}
 	if *change && *list {
 		return fmt.Errorf("%s: options -c and -l exclude each other", argv0)

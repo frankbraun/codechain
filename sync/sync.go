@@ -74,6 +74,7 @@ func Dir(
 		if err := os.Mkdir(treeDir, 0755); err != nil {
 			return err
 		}
+		i = 0
 	}
 
 	for ; i <= idx; i++ {

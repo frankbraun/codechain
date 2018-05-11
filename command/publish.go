@@ -9,6 +9,7 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/patchfile"
 	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/tree"
@@ -24,13 +25,6 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) err
 		secKey *[64]byte
 		err    error
 	)
-	// load secret key
-	if !dryRun {
-		secKey, _, _, err = seckeyLoad(c, secKeyFile)
-		if err != nil {
-			return err
-		}
-	}
 
 	// get last published treehash
 	treeHash := c.LastTreeHash()
@@ -45,6 +39,27 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) err
 		return fmt.Errorf("%s: patch file already exists", patchFile)
 	}
 
+	// calculate current treehash
+	curHash, err := tree.Hash(".", def.ExcludePaths)
+	if err != nil {
+		return err
+	}
+	curHashStr := hex.Encode(curHash[:])
+	log.Printf("current tree hash: %s", curHashStr)
+
+	// make sure the tree is dirty
+	if curHashStr == treeHash {
+		return fmt.Errorf("tree not dirty, nothing to publish")
+	}
+
+	// load secret key
+	if !dryRun {
+		secKey, _, _, err = seckeyLoad(c, secKeyFile)
+		if err != nil {
+			return err
+		}
+	}
+
 	// bring .codechain/tree/a in sync with last published treehash
 	log.Println("sync tree/a")
 	treeHashes := c.TreeHashes()
@@ -53,13 +68,6 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) err
 		return err
 	}
 	log.Println("done")
-
-	// calculate current treehash
-	curHash, err := tree.Hash(".", def.ExcludePaths)
-	if err != nil {
-		return err
-	}
-	log.Printf("%x\n", curHash[:])
 
 	// bring .codechain/tree/b in sync with the tree hash to be published
 	tmpHash, err := tree.Hash(treeDirB, def.ExcludePaths)

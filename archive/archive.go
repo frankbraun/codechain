@@ -5,7 +5,6 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -19,8 +18,8 @@ import (
 )
 
 var (
-	hashchainFile = path.Join(def.CodechainDir, "hashchain")
-	patchDir      = path.Join(def.CodechainDir, "patches")
+	globalHashchainFile = path.Join(def.CodechainDir, "hashchain")
+	globalPatchDir      = path.Join(def.CodechainDir, "patches")
 )
 
 // Create a new archive for the given hash chain and write it to w.
@@ -34,11 +33,11 @@ func Create(w io.Writer, c *hashchain.HashChain, patchDir string) error {
 	// write hashchain file
 	c.Fprint(&buf)
 	hdr := &tar.Header{
-		Name: hashchainFile,
+		Name: globalHashchainFile,
 		Mode: 0644,
 		Size: int64(buf.Len()),
 	}
-	log.Printf("archive: write %s", hashchainFile)
+	log.Printf("archive: write %s", globalHashchainFile)
 	if err := tw.WriteHeader(hdr); err != nil {
 		return err
 	}
@@ -50,11 +49,11 @@ func Create(w io.Writer, c *hashchain.HashChain, patchDir string) error {
 	treeHashes := c.TreeHashes()
 	for i := 0; i < len(treeHashes)-1; i++ {
 		treeHash := treeHashes[i]
-		patchFile := path.Join(patchDir, treeHash)
-		patch, err := ioutil.ReadFile(patchFile)
+		patch, err := ioutil.ReadFile(filepath.Join(patchDir, treeHash))
 		if err != nil {
 			return err
 		}
+		patchFile := path.Join(globalPatchDir, treeHash)
 		hdr := &tar.Header{
 			Name: patchFile,
 			Mode: 0644,
@@ -94,14 +93,14 @@ func Apply(hashchainFile, patchDir string, r io.Reader) error {
 			return err
 		}
 		log.Printf("archive: read %s", hdr.Name)
-		if hdr.Name == hashchainFile {
-			exists, err := file.Exists(def.HashchainFile)
+		if hdr.Name == globalHashchainFile {
+			exists, err := file.Exists(hashchainFile)
 			if err != nil {
 				return err
 			}
 			if exists {
 				// try to merge hashchain files
-				c, err := hashchain.ReadFile(def.HashchainFile)
+				c, err := hashchain.ReadFile(hashchainFile)
 				if err != nil {
 					return err
 				}
@@ -119,11 +118,11 @@ func Apply(hashchainFile, patchDir string, r io.Reader) error {
 					return err
 				}
 			} else {
-				if err := os.MkdirAll(def.PatchDir, 0755); err != nil {
+				if err := os.MkdirAll(patchDir, 0755); err != nil {
 					return err
 				}
 				// save new hashchain file
-				f, err := os.Create(def.HashchainFile)
+				f, err := os.Create(hashchainFile)
 				if err != nil {
 					return err
 				}
@@ -135,8 +134,8 @@ func Apply(hashchainFile, patchDir string, r io.Reader) error {
 					return err
 				}
 			}
-		} else if path.Dir(hdr.Name) == patchDir {
-			patchFile := filepath.Join(def.PatchDir, path.Base(hdr.Name))
+		} else if path.Dir(hdr.Name) == globalPatchDir {
+			patchFile := filepath.Join(patchDir, path.Base(hdr.Name))
 			exists, err := file.Exists(patchFile)
 			if err != nil {
 				return err
@@ -161,7 +160,9 @@ func Apply(hashchainFile, patchDir string, r io.Reader) error {
 				}
 			}
 		} else {
-			return fmt.Errorf("contains unknown file '%s', not a codechain archive?", hdr.Name)
+			log.Printf("hdr.Name:       %s", hdr.Name)
+			log.Printf("globalPatchDir: %s", globalPatchDir)
+			return ErrUnknownFile
 		}
 	}
 

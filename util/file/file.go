@@ -175,7 +175,7 @@ outer:
 				}
 			}
 		}
-		if err := os.RemoveAll(fi.Name()); err != nil {
+		if err := os.RemoveAll(filepath.Join(path, fi.Name())); err != nil {
 			return err
 		}
 	}

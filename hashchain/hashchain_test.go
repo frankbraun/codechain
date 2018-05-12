@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/frankbraun/codechain/internal/hex"
@@ -95,10 +96,17 @@ func TestStartSourceSign(t *testing.T) {
 	}
 	fmt.Println(l)
 
-	// sign hello.go
-	l, err = c.Signature(c.LastEntryHash(), secA, false)
+	// sign hello.go (detached)
+	detachedSig, err := c.Signature(c.LastEntryHash(), secA, true)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
+	}
+	parts := strings.SplitN(detachedSig, " ", 3)
+
+	// add detached signature
+	l, err = c.DetachedSignature(parts[0], parts[1], parts[2])
+	if err != nil {
+		t.Fatalf("c.DetachedSignature() failed: %v", err)
 	}
 	fmt.Println(l)
 }

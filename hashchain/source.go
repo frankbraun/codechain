@@ -6,6 +6,7 @@ import (
 	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/util"
 	"github.com/frankbraun/codechain/util/time"
 	"golang.org/x/crypto/ed25519"
 )
@@ -14,11 +15,18 @@ import (
 // secKey to the hash chain.
 func (c *HashChain) Source(treeHash [32]byte, secKey [64]byte, comment []byte) (string, error) {
 	// check arguments
-	// TODO: treeHash
-	// TODO: secKey
+	hash := hex.Encode(treeHash[:])
+	if util.ContainsString(c.TreeHashes(), hash) {
+		return "", fmt.Errorf("hashchain: treehash %s already published", hash)
+	}
+	pub := secKey[32:]
+	pubKey := base64.Encode(pub)
+	signer := c.Signer()
+	if !signer[pubKey] {
+		return "", fmt.Errorf("hashchain: pubkey %s is not an active signer", pubKey)
+	}
 
 	// create signature
-	pub := secKey[32:]
 	msg := treeHash[:]
 	if len(comment) > 0 {
 		msg = append(msg, comment...)
@@ -27,8 +35,8 @@ func (c *HashChain) Source(treeHash [32]byte, secKey [64]byte, comment []byte) (
 
 	// create entry
 	typeFields := []string{
-		hex.Encode(treeHash[:]),
-		base64.Encode(pub),
+		hash,
+		pubKey,
 		base64.Encode(sig),
 	}
 	if len(comment) > 0 {

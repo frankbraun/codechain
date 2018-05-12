@@ -10,23 +10,29 @@ import (
 	"golang.org/x/crypto/ed25519"
 )
 
+func (c *HashChain) signatureCheckArgs(linkHash, pubKey [32]byte) error {
+	// make sure link hash does exist
+	if !c.state.HasLinkHash(linkHash) {
+		return fmt.Errorf("hashchain: link hash doesn't exist: %s",
+			hex.Encode(linkHash[:]))
+	}
+	// make sure secKey is a valid signer
+	if !c.state.HasSigner(pubKey) {
+		return fmt.Errorf("hashchain: not a valid signer: %s",
+			hex.Encode(pubKey[:]))
+	}
+	return nil
+}
+
 // Signature adds a signature entry for entryHash signed by secKey to the hash chain.
 // If detached it just returns the signature without adding it.
 func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte, detached bool) (string, error) {
 	// check arguments
-	// make sure link hash does exist
-	if !c.state.HasLinkHash(linkHash) {
-		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s",
-			hex.Encode(linkHash[:]))
-	}
-	// make sure secKey is a valid signer
 	var pub [32]byte
 	copy(pub[:], secKey[32:])
-	if !c.state.HasSigner(pub) {
-		return "", fmt.Errorf("hashchain: not a valid signer: %s",
-			hex.Encode(pub[:]))
+	if err := c.signatureCheckArgs(linkHash, pub); err != nil {
+		return "", err
 	}
-	// TODO: make sure entryHash is a valid position to sign
 
 	// create signature
 	sig := ed25519.Sign(secKey[:], linkHash[:])
@@ -80,19 +86,13 @@ func (c *HashChain) DetachedSignature(linkHash, pubKey, signature string) (strin
 	}
 
 	// check arguments
-	// make sure link hash does exist
 	var h [32]byte
 	copy(h[:], lh)
-	if !c.state.HasLinkHash(h) {
-		return "", fmt.Errorf("hashchain: link hash doesn't exist: %s", linkHash)
-	}
-	// make sure secKey is a valid signer
 	var p [32]byte
 	copy(p[:], pub)
-	if !c.state.HasSigner(p) {
-		return "", fmt.Errorf("hashchain: not a valid signer: %s", pubKey)
+	if err := c.signatureCheckArgs(h, p); err != nil {
+		return "", err
 	}
-	// TODO: similar checks as for Signature() refactor?
 
 	// verify signature
 	if !ed25519.Verify(pub, lh, sig) {

@@ -100,13 +100,6 @@ func (c *HashChain) SourceLine(treeHash string) int {
 	return c.state.SourceLine(treeHash)
 }
 
-// EntryHash returns the entry hash for the given treeHash.
-func (c *HashChain) EntryHash(treeHash [32]byte) [32]byte {
-	var h [32]byte
-	// TODO: implement
-	return h
-}
-
 // UnsignedInfo returns a string slice with information about all unsigned
 // entries suitable for printing.
 // If TreeHash is defined it returns info until that treeHash.

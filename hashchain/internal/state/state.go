@@ -218,7 +218,7 @@ func (s *State) lastWeight(pubKey [32]byte) (int, error) {
 	}
 	w, ok := s.signerWeights[pub]
 	if !ok {
-		return 0, errors.New("state: unknown remkey")
+		return 0, errors.New("state: unknown pubkey")
 	}
 	return w, nil
 }

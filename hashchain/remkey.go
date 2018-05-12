@@ -11,8 +11,7 @@ import (
 // RemoveKey adds a pubkey remove entry to hash chain.
 func (c *HashChain) RemoveKey(pubKey [32]byte) (string, error) {
 	// check arguments
-	// TODO: check that pubkey is actually active in chain
-	// TODO: check that still enough public keys remain to reach m
+	// not necessary, done by c.verify()
 
 	// create entry
 	l := &link{

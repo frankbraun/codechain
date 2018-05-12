@@ -12,10 +12,10 @@ trailing newline) in hex encoding. The fields are separated by single white
 spaces. The current-time is encoded as an ISO 8601 string in UTC (corresponds
 to time.RFC3339).
 
-All hashes in a hash chain are SHA256 hashes encoded in hex notation. All
-public keys are Ed25519 keys and they and their signatures are encoded in
-base64 (URL encoding without padding). Comments are arbitrary UTF-8 sequences,
-but cannot contain newlines.
+All hashes in a hash chain are SHA256 hashes encoded in hex notation.
+Hex encodings have to be lowercase. All public keys are Ed25519 keys and they
+and their signatures are encoded in base64 (URL encoding without padding).
+Comments are arbitrary UTF-8 sequences, but cannot contain newlines.
 
 Their are six different types of hash chain entries:
 

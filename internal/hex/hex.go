@@ -11,10 +11,15 @@ func Encode(src []byte) string {
 	return hex.EncodeToString(src)
 }
 
-// Decode returns the bytes represented by the hexadecimal string s.
-// Decode expects that src contain only hexadecimal characters and that the
+// Decode returns the bytes represented by the hexadecimal string s. Decode
+// expects that src contain only lowercase hexadecimal characters and that the
 // resulting byte slice has length l.
 func Decode(s string, l int) ([]byte, error) {
+	for _, c := range []byte(s) {
+		if 'A' <= c && c <= 'F' {
+			return nil, fmt.Errorf("hex: only lowercase hexadecimal characters are allowed")
+		}
+	}
 	r, err := hex.DecodeString(s)
 	if err != nil {
 		return nil, err

@@ -20,6 +20,12 @@
   version = "v0.0.3"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/mutecomm/mute"
+  packages = ["util/fuzzer"]
+  revision = "8124193e6371a55a2f2adea4158084d514561a51"
+
+[[projects]]
   name = "github.com/sergi/go-diff"
   packages = ["diffmatchpatch"]
   revision = "1744e2970ca51c86172c8190fadad617561ed6e7"
@@ -53,6 +59,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "db38a8b17c792ec111ccd425ad5b41fb0ccd7f1da258868d8fee6879b19ed436"
+  inputs-digest = "eba0cf7bcedd98584f04ccc7ab8b051df38cdd53b95713e3fb58c762ae5b85f2"
   solver-name = "gps-cdcl"
   solver-version = 1

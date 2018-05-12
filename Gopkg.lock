@@ -38,7 +38,7 @@
     "salsa20/salsa",
     "ssh/terminal"
   ]
-  revision = "4ec37c66abab2c7e02ae775328b2ff001c3f025a"
+  revision = "2d027ae1dddd4694d54f7a8b6cbe78dca8720226"
 
 [[projects]]
   branch = "master"
@@ -48,7 +48,7 @@
     "unix",
     "windows"
   ]
-  revision = "7db1c3b1a98089d0071c84f646ff5c96aad43682"
+  revision = "d0faeb539838e250bd0a9db4182d48d4a1915181"
 
 [solve-meta]
   analyzer-name = "dep"

@@ -129,7 +129,7 @@ outer:
 			err := terminal.Confirm("review already signed patch (no continues)?")
 			if err != nil {
 				if err == terminal.ErrAbort {
-					continue outer
+					break outer
 				}
 				return err
 			}

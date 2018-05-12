@@ -1,0 +1,2503 @@
+codechain patchfile version 1
+treehash 4ca310bdc5f3357b0eac9161b188f62f540e633acc8547aaf762d6fa087a608c
+- f 701699a9323e7e6389d0ea4f7da73cbcf4884a78b5fb048151061bae73237873 Gopkg.lock
++ f b847bbc2e297776f2d47cb8c00d6dd9b2ac815753f51b94a4050e804e8b4d493 Gopkg.lock
+dmppatch 10
+@@ -934,64 +934,64 @@
+   %5D%0A
+-  revision = %224ec37c66abab2c7e02ae775328b2ff001c3f025a%22%0A
++  revision = %222d027ae1dddd4694d54f7a8b6cbe78dca8720226%22%0A
+ %0A%5B%5Bp
+@@ -1108,64 +1108,64 @@
+   %5D%0A
+-  revision = %227db1c3b1a98089d0071c84f646ff5c96aad43682%22%0A
++  revision = %22d0faeb539838e250bd0a9db4182d48d4a1915181%22%0A
+ %0A%5Bso
+- f 795b40fa6083dcece1223a1a034a5309ae56b262692327f9d27ca4977c8d924b README.md
++ f 31af541c2b169105062d9234aa5bda3b0e98daf9b30358984622c2dd081b94fe README.md
+dmppatch 4
+@@ -1717,16 +1717,117 @@
+ ution.%0A%0A
++### Walkthrough%0A%0A%5B!%5Basciicast%5D(https://asciinema.org/a/181075.png)%5D(https://asciinema.org/a/181075)%0A%0A
+ ### Ackn
+- f 2d244728a79c3c413672caeef5ed58321fba06f91f578992e7c1a29a217f970f archive/archive.go
++ f c3ca88a06b842c9edf72ba9014bf4288a03526d82d8e349eeb333c9e854f3c5c archive/archive.go
+dmppatch 66
+@@ -144,15 +144,8 @@
+ ip%22%0A
+-%09%22fmt%22%0A
+ %09%22io
+@@ -190,16 +190,27 @@
+ lepath%22%0A
++%09%22strconv%22%0A
+ %0A%09%22githu
+@@ -397,122 +397,134 @@
+ r (%0A
+-%09hashchainFile = path.Join(def.CodechainDir, %22hashchain%22)%0A%09patchDir      = path.Join(def.CodechainDir, %22patches%22)%0A
++%09globalHashchainFile = path.Join(def.CodechainDir, %22hashchain%22)%0A%09globalPatchDir      = path.Join(def.CodechainDir, %22patches%22)%0A
+ )%0A%0A/
+@@ -911,31 +911,37 @@
+ er%7B%0A
+-%09%09Name: hashchainFile,%0A
++%09%09Name: globalHashchainFile,%0A
+ %09%09Mo
+@@ -983,56 +983,62 @@
+ %0A%09%7D%0A
+-%09log.Printf(%22archive: write %25s%22, hashchainFile)%0A
++%09log.Printf(%22archive: write %25s%22, globalHashchainFile)%0A
+ %09if 
+@@ -1287,96 +1287,75 @@
+ %5Bi%5D%0A
+-%09%09patchFile := path.Join(patchDir, treeHash)%0A%09%09patch, err := ioutil.ReadFile(patchFile)%0A
++%09%09patch, err := ioutil.ReadFile(filepath.Join(patchDir, treeHash))%0A
+ %09%09if
+@@ -1386,16 +1386,67 @@
+ err%0A%09%09%7D%0A
++%09%09patchFile := path.Join(globalPatchDir, treeHash)%0A
+ %09%09hdr :=
+@@ -2319,90 +2319,142 @@
+ me)%0A
+-%09%09if hdr.Name == hashchainFile %7B%0A%09%09%09exists, err := file.Exists(def.HashchainFile)%0A
++%09%09if hdr.Name == globalHashchainFile %7B%0A%09%09%09log.Printf(%22hashchainFile: %25s%22, hashchainFile)%0A%09%09%09exists, err := file.Exists(hashchainFile)%0A
+ %09%09%09i
+@@ -2480,32 +2480,88 @@
+ return err%0A%09%09%09%7D%0A
++%09%09%09log.Printf(%22exists: %25s%22, strconv.FormatBool(exists))%0A
+ %09%09%09if exists %7B%0A%09
+@@ -2599,60 +2599,56 @@
+ les%0A
+-%09%09%09%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
++%09%09%09%09c, err := hashchain.ReadFile(hashchainFile)%0A
+ %09%09%09%09
+@@ -2933,68 +2933,161 @@
+ e %7B%0A
+-%09%09%09%09if err := os.MkdirAll(def.PatchDir, 0755); err != nil %7B%0A
++%09%09%09%09if err := os.MkdirAll(filepath.Dir(hashchainFile), 0755); err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09if err := os.MkdirAll(patchDir, 0755); err != nil %7B%0A
+ %09%09%09%09
+@@ -3139,51 +3139,47 @@
+ ile%0A
+-%09%09%09%09f, err := os.Create(def.HashchainFile)%0A
++%09%09%09%09f, err := os.Create(hashchainFile)%0A
+ %09%09%09%09
+@@ -3368,118 +3368,120 @@
+ %09%09%7D%0A
+-%09%09%7D else if path.Dir(hdr.Name) == patchDir %7B%0A%09%09%09patchFile := filepath.Join(def.PatchDir, path.Base(hdr.Name))%0A
++%09%09%7D else if path.Dir(hdr.Name) == globalPatchDir %7B%0A%09%09%09patchFile := filepath.Join(patchDir, path.Base(hdr.Name))%0A
+ %09%09%09e
+@@ -3978,95 +3978,131 @@
+ e %7B%0A
+-%09%09%09return fmt.Errorf(%22contains unknown file '%25s', not a codechain archive?%22, hdr.Name)%0A
++%09%09%09log.Printf(%22hdr.Name:       %25s%22, hdr.Name)%0A%09%09%09log.Printf(%22globalPatchDir: %25s%22, globalPatchDir)%0A%09%09%09return ErrUnknownFile%0A
+ %09%09%7D%0A
++ f bff0a11490ead8db5a1674b74820b3c938917ae2fe90f99aee14c7d52546639d archive/archive_test.go
+dmppatch 2
+@@ -0,0 +1,2770 @@
++package archive%0A%0Aimport (%0A%09%22io/ioutil%22%0A%09%22os%22%0A%09%22path/filepath%22%0A%09%22testing%22%0A%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A)%0A%0Afunc TestCreateApply(t *testing.T) %7B%0A%09tmpdir, err := ioutil.TempDir(%22%22, %22archive_test%22)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22TempDir() failed: %25v%22, err)%0A%09%7D%0A%09defer os.RemoveAll(tmpdir)%0A%0A%09archiveA, err := ioutil.TempFile(%22%22, %22archive_test%22)%0A%09if err != nil %7B%0A%09%09t.Fatal(err)%0A%09%7D%0A%09defer os.Remove(archiveA.Name())%0A%0A%09archiveB, err := ioutil.TempFile(%22%22, %22archive_test%22)%0A%09if err != nil %7B%0A%09%09t.Fatal(err)%0A%09%7D%0A%09defer os.Remove(archiveB.Name())%0A%0A%09srcPatchDir := filepath.Join(%22..%22, %22.codechain%22, %22patches%22)%0A%09hashchainFileA := filepath.Join(%22testdata%22, %22hashchain_a%22)%0A%09chainA, err := hashchain.ReadFile(hashchainFileA)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22hashchain.ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer chainA.Close()%0A%0A%09err = Create(archiveA, chainA, srcPatchDir)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Create() failed: %25v%22, err)%0A%09%7D%0A%09err = chainA.Close()%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22chainA.Close() failed: %25v%22, err)%0A%09%7D%0A%09err = archiveA.Close()%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22archiveA.Close() failed: %25v%22, err)%0A%09%7D%0A%0A%09fpA, err := os.Open(archiveA.Name())%0A%09if err != nil %7B%0A%09%09t.Fatal(err)%0A%09%7D%0A%09defer fpA.Close()%0A%0A%09hashchainFile := filepath.Join(tmpdir, def.HashchainFile)%0A%09patchDir := filepath.Join(tmpdir, def.PatchDir)%0A%09err = Apply(hashchainFile, patchDir, fpA)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Apply() failed: %25v%22, err)%0A%09%7D%0A%0A%09chainA, err = hashchain.ReadFile(hashchainFileA)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22hashchain.ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer chainA.Close()%0A%09chainA.DeepVerify(tmpdir, patchDir, def.ExcludePaths)%0A%0A%09hashchainFileB := filepath.Join(%22testdata%22, %22hashchain_b%22)%0A%09chainB, err := hashchain.ReadFile(hashchainFileB)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22hashchain.ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer chainB.Close()%0A%0A%09err = Create(archiveB, chainB, srcPatchDir)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Create() failed: %25v%22, err)%0A%09%7D%0A%09err = chainB.Close()%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22chainB.Close() failed: %25v%22, err)%0A%09%7D%0A%09err = archiveB.Close()%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22archiveB.Close() failed: %25v%22, err)%0A%09%7D%0A%0A%09fpB, err := os.Open(archiveB.Name())%0A%09if err != nil %7B%0A%09%09t.Fatal(err)%0A%09%7D%0A%09defer fpB.Close()%0A%0A%09err = Apply(hashchainFile, patchDir, fpB)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Apply() failed: %25v%22, err)%0A%09%7D%0A%0A%09f, err := os.Open(filepath.Join(%22testdata%22, %22empty.tar.gz%22))%0A%09if err != nil %7B%0A%09%09t.Fatal(err)%0A%09%7D%0A%09defer f.Close()%0A%0A%09err = Apply(hashchainFile, patchDir, f)%0A%09if err != ErrUnknownFile %7B%0A%09%09t.Error(%22Apply() should fail with ErrUnknownFile%22)%0A%09%7D%0A%0A%09chainB, err = hashchain.ReadFile(hashchainFileB)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22hashchain.ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer chainB.Close()%0A%09chainB.DeepVerify(tmpdir, patchDir, def.ExcludePaths)%0A%7D%0A
++ f 8a4239129abbb05c2bcb5690b90316f644f922757db94a79f4e73225ca094550 archive/errors.go
+dmppatch 2
+@@ -0,0 +1,201 @@
++package archive%0A%0Aimport (%0A%09%22errors%22%0A)%0A%0A// ErrUnknownFile is returned if an archive contains an unknown file.%0Avar ErrUnknownFile = errors.New(%22archive: contains unknown file, not a codechain archive?%22)%0A
++ f 3a918f334820c1a9dafde202aa98bc858f41f92c42fa418b6d818a9db9a1e715 archive/testdata/empty.tar.gz
+ascii85 2
++,^C)8Mp-E!!DW60b/e#'ElcGar]O1ZH.;>ZnWJO:iLd/`5G7uXPR`iQmq0B\]npD=)8AK4gPQFI-+W_
+>oidmeIj`.fgNufo<4MB5*&XfkqnCOo9\::*WQ0?z!!*#^!R=9-%KImW!!
++ f 7bce33ff866a693f069656b60d36c1233d5f442f4370f60be4f690a4d60da104 archive/testdata/hashchain_a
+dmppatch 2
+@@ -0,0 +1,885 @@
++e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-09T16:12:35Z cstart E1At2Fv4Hd6Y1RCIWv_3NlH_lW14p5cj8SKZuBwkePk F9rI9Rdx3AMzB_LXtyiCBSWL09yJNzu7 0G6XrINExEtQdjrGUxpdd9qeB2CBBA03PL_FvEtgAgijr8PU9zTT2rDg3KonmsH9p9sRRaxBx2tz440Pi7D1CQ Frank Braun %3Cfrank@cryptogroup.net%3E%0Ae2afe7563fa9fc79e631f515a608774afe7a73d95e0672edf93cc0743cdf9a05 2018-05-09T16:12:56Z source e070070ba5833d805202da33599a4ce74df320bd4b7356035f2fa5e33822d851 E1At2Fv4Hd6Y1RCIWv_3NlH_lW14p5cj8SKZuBwkePk sXp9bK73HhtcZ9q_KujRBD4uhuzyzNpZH-DcZ07rixudB6Vj-8LEislXRs_VLTpi_OK65WYKqv9EW0vq7pFzCA alpha release%0A314d8f2c078bfe5df5f94b808b6018e2655e03e8b0a7cd6a69904e782f5ea77f 2018-05-09T16:13:57Z signtr 314d8f2c078bfe5df5f94b808b6018e2655e03e8b0a7cd6a69904e782f5ea77f E1At2Fv4Hd6Y1RCIWv_3NlH_lW14p5cj8SKZuBwkePk 4ZXa2PxbVwn3dSx4jVD86dDFFAxkm9k52R94jYYfiRmHcC6vyBWbju40l-qsY-M6hvirqvGyOZPBPtV5fHrJCA%0A
++ f 5910c08efa6e4f306117867a47f97c69b3487996ba11842e3b3e82099372a4d0 archive/testdata/hashchain_b
+dmppatch 2
+@@ -0,0 +1,1476 @@
++e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-09T16:12:35Z cstart E1At2Fv4Hd6Y1RCIWv_3NlH_lW14p5cj8SKZuBwkePk F9rI9Rdx3AMzB_LXtyiCBSWL09yJNzu7 0G6XrINExEtQdjrGUxpdd9qeB2CBBA03PL_FvEtgAgijr8PU9zTT2rDg3KonmsH9p9sRRaxBx2tz440Pi7D1CQ Frank Braun %3Cfrank@cryptogroup.net%3E%0Ae2afe7563fa9fc79e631f515a608774afe7a73d95e0672edf93cc0743cdf9a05 2018-05-09T16:12:56Z source e070070ba5833d805202da33599a4ce74df320bd4b7356035f2fa5e33822d851 E1At2Fv4Hd6Y1RCIWv_3NlH_lW14p5cj8SKZuBwkePk sXp9bK73HhtcZ9q_KujRBD4uhuzyzNpZH-DcZ07rixudB6Vj-8LEislXRs_VLTpi_OK65WYKqv9EW0vq7pFzCA alpha release%0A314d8f2c078bfe5df5f94b808b6018e2655e03e8b0a7cd6a69904e782f5ea77f 2018-05-09T16:13:57Z signtr 314d8f2c078bfe5df5f94b808b6018e2655e03e8b0a7cd6a69904e782f5ea77f E1At2Fv4Hd6Y1RCIWv_3NlH_lW14p5cj8SKZuBwkePk 4ZXa2PxbVwn3dSx4jVD86dDFFAxkm9k52R94jYYfiRmHcC6vyBWbju40l-qsY-M6hvirqvGyOZPBPtV5fHrJCA%0A0eed41e6fbaba9d55148f7d5997a64a1dec58396087dc5f8f498f506fcf282a3 2018-05-11T19:35:56Z source 4ca310bdc5f3357b0eac9161b188f62f540e633acc8547aaf762d6fa087a608c E1At2Fv4Hd6Y1RCIWv_3NlH_lW14p5cj8SKZuBwkePk 1to7hXDG79FT_w_c1hzf6DA7X9uefinlpo68AuOKW3y9yGJN54dO6g8-2lLb-gduB6JdezFxZp-zuqgaakVzCw prepare beta%0Acae03e83f3eb27d1f48a2a8f8a0687aa70118aa87291d7da7267324ee4324e8a 2018-05-11T19:36:02Z signtr cae03e83f3eb27d1f48a2a8f8a0687aa70118aa87291d7da7267324ee4324e8a E1At2Fv4Hd6Y1RCIWv_3NlH_lW14p5cj8SKZuBwkePk FlYyQzkrCYp1c-AwVciHNoQVDenb2xo8OSZKpN-_4SB_Od2WVuGxIZ9xeGyRhSlINnHYEIKbDAh9u1Q-3dv9Cw%0A
+- f dd1f67283263977c5d6fd64f237772147c72f8834cd040c6e32e8252035800e2 command/cleanslate.go
++ f 566b883c6a14d3acc48003937f58460ec769c85f3c012cf4834f75b50e7c62cb command/cleanslate.go
+dmppatch 19
+@@ -119,16 +119,61 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/util/file%22%0A
+ %09%22github
+@@ -358,16 +358,15 @@
+ %0A%09%7D%0A
+-outerA:%0A
++outer:%0A
+ %09for
+@@ -552,29 +552,28 @@
+ l %7B%0A
+-%09%09%09%09%09continue outerA%0A
++%09%09%09%09%09continue outer%0A
+ %09%09%09%09
+@@ -790,323 +790,54 @@
+ %09%7D%0A%0A
+-outerB:%0A%09for _, fi := range files %7B%0A%09%09if def.ExcludePaths != nil %7B%0A%09%09%09canonical := filepath.ToSlash(fi.Name())%0A%09%09%09for _, excludePath := range def.ExcludePaths %7B%0A%09%09%09%09if excludePath == canonical %7B%0A%09%09%09%09%09continue outerB%0A%09%09%09%09%7D%0A%09%09%09%7D%0A%09%09%7D%0A%09%09if err := os.RemoveAll(fi.Name()); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%0A%09return nil%0A
++%09return file.RemoveAll(%22.%22, def.ExcludePaths)%0A
+ %7D%0A%0A/
+- f d537166d95c83a528bd5ea21b14b7d68803481438e074e30a34227f91f5c346d command/command_test.go
++ f 843a5c43e8bcd2ba00fb357a20d093312980c13d12a56a66bd65df6ea35b4e43 command/command_test.go
+dmppatch 33
+@@ -374,16 +374,163 @@
+ ng.T) %7B%0A
++%09tmpdirDist, err := ioutil.TempDir(%22%22, %22command_test%22)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22TempDir() failed: %25v%22, err)%0A%09%7D%0A%09defer os.RemoveAll(tmpdirDist)%0A
+ %09tmpdir,
+@@ -660,16 +660,17 @@
+ tmpdir)%0A
++%0A
+ %09err = f
+@@ -818,24 +818,666 @@
+ v%22, err)%0A%09%7D%0A
++%0A%09if err := os.Chdir(%22..%22); err != nil %7B%0A%09%09t.Fatalf(%22os.Chdir() failed: %25v%22, err)%0A%09%7D%0A%09err = os.MkdirAll(filepath.Join(tmpdirDist, def.CodechainDir), 0755)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22os.MkdirAll() failed: %25v%22, err)%0A%09%7D%0A%09distFile := filepath.Join(tmpdirDist, def.CodechainDir, %22dist.tar.gz%22)%0A%09// codechain createdist -f%0A%09err = CreateDist(%22createdist%22, %22-f%22, distFile)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22DistFile() failed: %25v %22, err)%0A%09%7D%0A%0A%09if err := os.Chdir(tmpdirDist); err != nil %7B%0A%09%09t.Fatalf(%22os.Chdir() failed: %25v%22, err)%0A%09%7D%0A%0A%09// codechain apply -f%0A%09err = Apply(%22apply%22, %22-f%22, distFile)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Apply() failed: %25v %22, err)%0A%09%7D%0A%0A
+ %09if err := o
+@@ -1542,32 +1542,159 @@
+ d: %25v%22, err)%0A%09%7D%0A
++%0A%09if err = os.RemoveAll(filepath.Join(tmpdir, def.CodechainDir)); err != nil %7B%0A%09%09t.Fatalf(%22os.RemoveAll() failed: %25v%22, err)%0A%09%7D%0A
+ %09// codechain tr
+@@ -1968,42 +1968,43 @@
+ oe%22%0A
+-%09// codechain keyge -s seckey.bin%0A
++%09// codechain keygen -s seckey.bin%0A
+ %09err
+@@ -2729,32 +2729,398 @@
+ : %25v %22, err)%0A%09%7D%0A
++%09// codechain sigctl -m 3%0A%09err = SigCtl(%22sigctl%22, %22-m%22, %223%22)%0A%09if err != nil %7B%0A%09%09t.Errorf(%22AddKey() failed: %25v %22, err)%0A%09%7D%0A%09// codechain sigctl -m 1%0A%09err = SigCtl(%22sigctl%22, %22-m%22, %221%22)%0A%09if err != nil %7B%0A%09%09t.Errorf(%22AddKey() failed: %25v %22, err)%0A%09%7D%0A%09// codechain remkey pubkey%0A%09err = RemKey(%22remkey%22, testPubkey)%0A%09if err != nil %7B%0A%09%09t.Errorf(%22RemKey() failed: %25v %22, err)%0A%09%7D%0A
+ %09// codechain st
+@@ -3148,16 +3148,150 @@
+ tatus%22)%0A
++%09if err != nil %7B%0A%09%09t.Errorf(%22Status() failed: %25v %22, err)%0A%09%7D%0A%09// codechain status -deep-verify%0A%09err = Status(%22status%22, %22-deep-verify%22)%0A
+ %09if err 
+@@ -4871,32 +4871,214 @@
+ Help: %25v%22, err)%0A
++%09%7D%0A%09// codechain createdist -h%0A%09err = CreateDist(%22codechain createdist%22, %22-h%22)%0A%09if err != flag.ErrHelp %7B%0A%09%09t.Errorf(%22codechain createdist -h should fail with flag.ErrHelp: %25v%22, err)%0A
+ %09%7D%0A%09// codechain
+- f 393441eba75222e9d4a4b7987d8bcd79e36a8e4159708a4bd49369eb206e32dd command/review.go
++ f 940d2fa7ee3dc101a35456f11d2856b371fc23f7c58c85cd59bd3978269c0f4b command/review.go
+dmppatch 29
+@@ -429,100 +429,124 @@
+ %0A)%0A%0A
+-func showPatchInfo(c *hashchain.HashChain, i, idx int, treeHashes, treeComments %5B%5Dstring) %7B%0A
++func showPatchInfo(%0A%09c *hashchain.HashChain, i, idx int,%0A%09treeHashes, treeComments %5B%5Dstring,%0A%09foundBarrier int,%0A) %7B%0A
+ %09pub
+@@ -590,67 +590,189 @@
+ i%5D)%0A
+-%09fmt.Printf(%22patch %25d/%25d%5Cn%22, i-idx, len(treeHashes)-idx-1)%0A
++%09if foundBarrier %3E 0 %7B%0A%09%09fmt.Printf(%22patch %25d/%25d%5Cn%22, i-foundBarrier+1, idx-foundBarrier+1)%0A%09%7D else %7B // after barrier%0A%09%09fmt.Printf(%22patch %25d/%25d%5Cn%22, i-idx, len(treeHashes)-idx-1)%0A%09%7D%0A
+ %09if 
+@@ -3230,16 +3230,38 @@
+ pubKey)%0A
++%09var foundBarrier int%0A
+ outer:%0A%09
+@@ -3337,62 +3337,128 @@
+ r %7B%0A
+-%09%09%09showPatchInfo(c, i, idx, treeHashes, treeComments)%0A
++%09%09%09if foundBarrier == 0 %7B%0A%09%09%09%09foundBarrier = i%0A%09%09%09%7D%0A%09%09%09showPatchInfo(c, i, idx, treeHashes, treeComments, foundBarrier)%0A
+ %09%09%09e
+@@ -3584,28 +3584,25 @@
+ t %7B%0A
+-%09%09%09%09%09continue outer%0A
++%09%09%09%09%09break outer%0A
+ %09%09%09%09
+@@ -3760,61 +3760,64 @@
+ + %7B%0A
+-%09%09showPatchInfo(c, i, idx, treeHashes, treeComments)%0A
++%09%09showPatchInfo(c, i, idx, treeHashes, treeComments, 0)%0A
+ %09%09if
+- f 523933525690007979d4941f0d577076f49360a76e6e6345a81a0ca7ce62bd22 hashchain/deepverify.go
++ f 586087b692198ec916d3ddad854ca51ca06c4146a3e092c58eb3690405bec07d hashchain/deepverify.go
+dmppatch 15
+@@ -72,52 +72,53 @@
+ nc%22%0A
+-%09%22github.com/frankbraun/codechain/util/log%22%0A
++%09%22github.com/frankbraun/codechain/util/file%22%0A
+ )%0A%0A/
+@@ -420,114 +420,89 @@
+ ()%0A%0A
+-%09// remove treeDir first%0A%09log.Printf(%22rm -rf %25s%22, treeDir)%0A%09if err := os.RemoveAll(treeDir); err != nil %7B%0A
++%09// make sure treeDir exists%0A%09if err := os.MkdirAll(treeDir, 0755); err != nil %7B%0A
+ %09%09re
+@@ -517,90 +517,106 @@
+ %0A%09%7D%0A
+-%09log.Printf(%22mkdir %25s%22, treeDir)%0A%09if err := os.Mkdir(treeDir, 0755); err != nil %7B%0A
++%0A%09// remove treeDir contents first%0A%09if err := file.RemoveAll(treeDir, excludePaths); err != nil %7B%0A
+ %09%09re
++ f 595ea15c019c7dc28d3f3f4462a64b4f28c4e537423d3841a6db70003d197e46 hashchain/deepverify_test.go
+dmppatch 2
+@@ -0,0 +1,821 @@
++package hashchain%0A%0Aimport (%0A%09%22io/ioutil%22%0A%09%22os%22%0A%09%22path/filepath%22%0A%09%22testing%22%0A%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A)%0A%0Afunc TestDeepVerify(t *testing.T) %7B%0A%09tmpdir, err := ioutil.TempDir(%22%22, %22hashchain_test%22)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22TempDir() failed: %25v%22, err)%0A%09%7D%0A%09defer os.RemoveAll(tmpdir)%0A%0A%09hashChainFile := filepath.Join(%22..%22, def.HashchainFile)%0A%09hashChainTmp := filepath.Join(tmpdir, %22hashchain%22)%0A%09err = file.Copy(hashChainFile, hashChainTmp)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22file.Copy() failed: %25v%22, err)%0A%09%7D%0A%0A%09c, err := ReadFile(hashChainTmp)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer c.Close()%0A%0A%09c.DeepVerify(tmpdir, filepath.Join(%22..%22, def.PatchDir), def.ExcludePaths)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22DeepVerify() failed: %25v%22, err)%0A%09%7D%0A%7D%0A
+- f 7d49aaad2102ca6dee2b59a9a8db99e5c2bc034790fddc7608e5355352eba5c1 hashchain/doc.go
++ f a20fd452cce442bdc9f6077d4adfe68de22ffe910f38575ae2a09ecd6d6e326b hashchain/doc.go
+dmppatch 5
+@@ -3253,13 +3253,929 @@
+ le%0A%0A
+-TODO%0A
++An example of a hash chain.%0A%0A  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-12T01:50:44Z cstart 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg 5GQKPh8TdrM8-9oaqGbLmHU114vfGNzr NJtS4MVm8WIc2YhMPqJzXGD4i6LBkdxpRP6WeQoG9PfFRdi1F7pKdvQxgB9d3X1J9L3VgZsfhBm910zfET0eBQ John Doe %3Cjohn.doe@mailinator.com%3E%0A  94d49adf9bad1104ab2f7117d45fa177bc416ea0ad5a44b4569e89f04728ff94 2018-05-12T01:51:03Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg KWWplv94ziYZsxjtnf4sGuzC2bvA-LSB0-fSbTGfCCt9aAf7rgn3SKSidyACWtQLKoY4qrvRDZYDNEAdqhT0Cg initial release%0A  170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 2018-05-12T01:51:24Z signtr 170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg VBpOkf3PAQhGe67cgaxn4eDQBSzsv-w1lFIQhw02pfvoLLIVZ_fHBZHO2wQUfOiVEfI4uhHfrB7KkDzliY05DQ%0A
+ */%0Ap
+- f f8524b1952110732b972da1914224f3cd89f8af9efcb516b56b86f068adfeff6 hashchain/errors.go
++ f cb50dc7da1edeab7ce730e1f95cf7376b9237b98d516769be8a7c690cb635841 hashchain/errors.go
+dmppatch 3
+@@ -2124,28 +2124,285 @@
+ ignature doesn't validate%22)%0A
++%0A// ErrCannotMerge is returned if two hash chains cannot be merged.%0Avar ErrCannotMerge = errors.New(%22hashchain: cannot merge%22)%0A%0A// ErrNothingToMerge is returned if there is nothing to merge.%0Avar ErrNothingToMerge = errors.New(%22hashchain: nothing to merge%22)%0A
+- f 1a214ca211308de1cedc61c280ac0e09a11c1c9cfdc0a6b474244cbaaecec3b2 hashchain/hashchain.go
++ f fdb4f1669339a1087d9a90343b6e5ba03ee4de62184bdd2d207f5b987018edf4 hashchain/hashchain.go
+dmppatch 4
+@@ -2630,177 +2630,8 @@
+ %0A%7D%0A%0A
+-// EntryHash returns the entry hash for the given treeHash.%0Afunc (c *HashChain) EntryHash(treeHash %5B32%5Dbyte) %5B32%5Dbyte %7B%0A%09var h %5B32%5Dbyte%0A%09// TODO: implement%0A%09return h%0A%7D%0A%0A
+ // U
+- f 4b1b8ee3553d21bff62d65c78329310c0c8f74d78c3aef85616c762c8f03fe5a hashchain/hashchain_test.go
++ f 97a24b2eb6a0bc6b4f66d74604d8525308c1df4f401dbeda87422be4044f1a7c hashchain/hashchain_test.go
+dmppatch 13
+@@ -79,16 +79,27 @@
+ lepath%22%0A
++%09%22strings%22%0A
+ %09%22testin
+@@ -1980,80 +1980,101 @@
+ l)%0A%0A
+-%09// sign hello.go%0A%09l, err = c.Signature(c.LastEntryHash(), secA, false)%0A
++%09// sign hello.go (detached)%0A%09detachedSig, err := c.Signature(c.LastEntryHash(), secA, true)%0A
+ %09if 
+@@ -2122,32 +2122,238 @@
+ iled: %25v%22, err)%0A
++%09%7D%0A%09parts := strings.SplitN(detachedSig, %22 %22, 3)%0A%0A%09// add detached signature%0A%09l, err = c.DetachedSignature(parts%5B0%5D, parts%5B1%5D, parts%5B2%5D)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22c.DetachedSignature() failed: %25v%22, err)%0A
+ %09%7D%0A%09fmt.Println(
+- f 3c330182678629c65b451adb1eb15db33a773fb397c3a190dcd2da2720c8c972 hashchain/internal/state/state.go
++ f 0d101cae6a32eb0ad2e0f37685a8e071d7efa24a8b5f4341481bece34681dc59 hashchain/internal/state/state.go
+dmppatch 13
+@@ -6478,56 +6478,56 @@
+ k %7B%0A
+-%09%09return 0, errors.New(%22state: unknown remkey%22)%0A
++%09%09return 0, errors.New(%22state: unknown pubkey%22)%0A
+ %09%7D%0A%09
+@@ -9027,56 +9027,8 @@
+ %0A%09%7D%0A
+-%09// make sure this pubkey hasn't already signed%0A
+ %09log
+@@ -9183,131 +9183,8 @@
+ b%5D)%0A
+-%09/* let him sign again?%0A%09if line %3C= s.signerBarriers%5Bpub%5D+1 %7B%0A%09%09return errors.New(%22this pubkey has already signed%22)%0A%09%7D%0A%09*/%0A
+ %09// 
+- f ac76496bb39c7bf3645b8ac9a9451d5b73a85916bf0a3b2e0797523e0f7b903f hashchain/merge.go
++ f ec6ac7b9e3384ade24bf8f786e8353ddf2a92807de687fd6de145990ed7c69f4 hashchain/merge.go
+dmppatch 14
+@@ -25,18 +25,8 @@
+ t (%0A
+-%09%22errors%22%0A
+ %09%22fm
+@@ -221,56 +221,33 @@
+ ) %7B%0A
+-%09%09%09return errors.New(%22hashchain: cannot merge%22)%0A
++%09%09%09return ErrCannotMerge%0A
+ %09%09%7D%0A
+@@ -289,59 +289,35 @@
+ ) %7B%0A
+-%09%09return errors.New(%22hashchain: nothing to merge%22)%0A
++%09%09return ErrNothingToMerge%0A
+ %09%7D%0A%09
++ f 6fb0a6b71b35e2fd570f4ac990ff424ba534cd52c999672f52c4ec68864c5232 hashchain/merge_test.go
+dmppatch 2
+@@ -0,0 +1,1938 @@
++package hashchain%0A%0Aimport (%0A%09%22bytes%22%0A%09%22io/ioutil%22%0A%09%22os%22%0A%09%22path/filepath%22%0A%09%22testing%22%0A%0A%09%22github.com/frankbraun/codechain/util/file%22%0A)%0A%0Avar (%0A%09hashChainA    = filepath.Join(%22testdata%22, %22hashchain_a%22)%0A%09hashChainB    = filepath.Join(%22testdata%22, %22hashchain_b%22)%0A%09hashChainFork = filepath.Join(%22testdata%22, %22hashchain_fork%22)%0A)%0A%0Afunc TestMergeSucces(t *testing.T) %7B%0A%09tmpdir, err := ioutil.TempDir(%22%22, %22hashchain_test%22)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22TempDir() failed: %25v%22, err)%0A%09%7D%0A%09defer os.RemoveAll(tmpdir)%0A%0A%09hashChainTmp := filepath.Join(tmpdir, %22hashchain%22)%0A%09err = file.Copy(hashChainA, hashChainTmp)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22file.Copy() failed: %25v%22, err)%0A%09%7D%0A%0A%09chainTmp, err := ReadFile(hashChainTmp)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer chainTmp.Close()%0A%0A%09chainB, err := ReadFile(hashChainB)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer chainB.Close()%0A%0A%09err = chainTmp.Merge(chainB)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Merge() failed: %25v%22, err)%0A%09%7D%0A%0A%09tmpBuf, err := ioutil.ReadFile(hashChainTmp)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ioutil.ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09bBuf, err := ioutil.ReadFile(hashChainB)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ioutil.ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09if !bytes.Equal(tmpBuf, bBuf) %7B%0A%09%09t.Error(%22tmpBuf differs from bBuf%22)%0A%09%7D%0A%7D%0A%0Afunc TestMergeFail(t *testing.T) %7B%0A%09chainA, err := ReadFile(hashChainA)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer chainA.Close()%0A%0A%09chainB, err := ReadFile(hashChainB)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer chainB.Close()%0A%0A%09chainFork, err := ReadFile(hashChainFork)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer chainFork.Close()%0A%0A%09err = chainB.Merge(chainA)%0A%09if err != ErrNothingToMerge %7B%0A%09%09t.Error(%22Merge() should fail with ErrNothingToMerge%22)%0A%09%7D%0A%0A%09err = chainB.Merge(chainFork)%0A%09if err != ErrCannotMerge %7B%0A%09%09t.Error(%22Merge() should fail with ErrCannotMerge%22)%0A%09%7D%0A%0A%7D%0A
+- f 4851dd93c39c3145f161d0552945d16157af80d74c0e4dd126252dba164dad4d hashchain/remkey.go
++ f 9cd698f6ccd55c3371eac6faa89b6765d1acd31627482672cc4b7ac1e7fca176 hashchain/remkey.go
+dmppatch 5
+@@ -326,128 +326,46 @@
+ nts%0A
+-%09// TODO: check that pubkey is actually active in chain%0A%09// TODO: check that still enough public keys remain to reach m%0A
++%09// not necessary, done by c.verify()%0A
+ %0A%09//
+- f 01dcd90450c5df692c0fea53f382673a600a52eb49b02a69754073d6eadd142b hashchain/signature.go
++ f acddc7d6054668043bf287b724d276ea37206d2fc4710cc56251f9a0313b5ca3 hashchain/signature.go
+dmppatch 36
+@@ -265,277 +265,82 @@
+ %0A)%0A%0A
+-// Signature adds a signature entry for entryHash signed by secKey to the hash chain.%0A// If detached it just returns the signature without adding it.%0Afunc (c *HashChain) Signature(linkHash %5B32%5Dbyte, secKey %5B64%5Dbyte, detached bool) (string, error) %7B%0A%09// check arguments%0A
++func (c *HashChain) signatureCheckArgs(linkHash, pubKey %5B32%5Dbyte) error %7B%0A
+ %09// 
+@@ -411,74 +411,70 @@
+ ) %7B%0A
+-%09%09return %22%22, fmt.Errorf(%22hashchain: link hash doesn't exist: %25s%22,%0A
++%09%09return fmt.Errorf(%22hashchain: link hash doesn't exist: %25s%22,%0A
+ %09%09%09h
+@@ -535,24 +535,427 @@
+ alid signer%0A
++%09if !c.state.HasSigner(pubKey) %7B%0A%09%09return fmt.Errorf(%22hashchain: not a valid signer: %25s%22,%0A%09%09%09hex.Encode(pubKey%5B:%5D))%0A%09%7D%0A%09return nil%0A%7D%0A%0A// Signature adds a signature entry for entryHash signed by secKey to the hash chain.%0A// If detached it just returns the signature without adding it.%0Afunc (c *HashChain) Signature(linkHash %5B32%5Dbyte, secKey %5B64%5Dbyte, detached bool) (string, error) %7B%0A%09// check arguments%0A
+ %09var pub %5B32
+@@ -991,183 +991,89 @@
+ :%5D)%0A
+-%09if !c.state.HasSigner(pub) %7B%0A%09%09return %22%22, fmt.Errorf(%22hashchain: not a valid signer: %25s%22,%0A%09%09%09hex.Encode(pub%5B:%5D))%0A
++%09if err := c.signatureCheckArgs(linkHash, pub); err != nil %7B%0A%09%09return %22%22, err%0A
+ %09%7D%0A
+-%09// TODO: make sure entryHash is a valid position to sign%0A
+ %0A%09//
+@@ -2207,43 +2207,8 @@
+ nts%0A
+-%09// make sure link hash does exist%0A
+ %09var
+@@ -2239,156 +2239,8 @@
+ lh)%0A
+-%09if !c.state.HasLinkHash(h) %7B%0A%09%09return %22%22, fmt.Errorf(%22hashchain: link hash doesn't exist: %25s%22, linkHash)%0A%09%7D%0A%09// make sure secKey is a valid signer%0A
+ %09var
+@@ -2272,162 +2272,80 @@
+ ub)%0A
+-%09if !c.state.HasSigner(p) %7B%0A%09%09return %22%22, fmt.Errorf(%22hashchain: not a valid signer: %25s%22, pubKey)%0A
++%09if err := c.signatureCheckArgs(h, p); err != nil %7B%0A%09%09return %22%22, err%0A
+ %09%7D%0A
+-%09// TODO: similar checks as for Signature() refactor?%0A
+ %0A%09//
+- f 72da2ad5cc80908a3495758e6438e66060c54be52c75a54ad964aced6a4c2c30 hashchain/source.go
++ f 38d3c6b2d90f0b7242d1d75ee1de57cc044fe49f58e94d7d603bc9cfbd21332e hashchain/source.go
+dmppatch 18
+@@ -182,16 +182,56 @@
+ al/hex%22%0A
++%09%22github.com/frankbraun/codechain/util%22%0A
+ %09%22github
+@@ -525,44 +525,343 @@
+ nts%0A
+-%09// TODO: treeHash%0A%09// TODO: secKey%0A
++%09hash := hex.Encode(treeHash%5B:%5D)%0A%09if util.ContainsString(c.TreeHashes(), hash) %7B%0A%09%09return %22%22, fmt.Errorf(%22hashchain: treehash %25s already published%22, hash)%0A%09%7D%0A%09pub := secKey%5B32:%5D%0A%09pubKey := base64.Encode(pub)%0A%09signer := c.Signer()%0A%09if !signer%5BpubKey%5D %7B%0A%09%09return %22%22, fmt.Errorf(%22hashchain: pubkey %25s is not an active signer%22, pubKey)%0A%09%7D%0A
+ %0A%09//
+@@ -878,36 +878,16 @@
+ gnature%0A
+-%09pub := secKey%5B32:%5D%0A
+ %09msg := 
+@@ -1040,57 +1040,26 @@
+ ng%7B%0A
+-%09%09hex.Encode(treeHash%5B:%5D),%0A%09%09base64.Encode(pub),%0A
++%09%09hash,%0A%09%09pubKey,%0A
+ %09%09ba
++ f 69cec47e1bd7c847af093f1e720ee89e94015a1ce359a594afe26496d3be5577 hashchain/testdata/hashchain_a
+dmppatch 2
+@@ -0,0 +1,886 @@
++e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-12T01:50:44Z cstart 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg 5GQKPh8TdrM8-9oaqGbLmHU114vfGNzr NJtS4MVm8WIc2YhMPqJzXGD4i6LBkdxpRP6WeQoG9PfFRdi1F7pKdvQxgB9d3X1J9L3VgZsfhBm910zfET0eBQ John Doe %3Cjohn.doe@mailinator.com%3E%0A94d49adf9bad1104ab2f7117d45fa177bc416ea0ad5a44b4569e89f04728ff94 2018-05-12T01:51:03Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg KWWplv94ziYZsxjtnf4sGuzC2bvA-LSB0-fSbTGfCCt9aAf7rgn3SKSidyACWtQLKoY4qrvRDZYDNEAdqhT0Cg initial release%0A170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 2018-05-12T01:51:24Z signtr 170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg VBpOkf3PAQhGe67cgaxn4eDQBSzsv-w1lFIQhw02pfvoLLIVZ_fHBZHO2wQUfOiVEfI4uhHfrB7KkDzliY05DQ%0A
++ f c48d48c9c45a7889a3496f9bb6334540b588d873681dd655d312e4f784bb57b0 hashchain/testdata/hashchain_b
+dmppatch 2
+@@ -0,0 +1,1481 @@
++e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-12T01:50:44Z cstart 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg 5GQKPh8TdrM8-9oaqGbLmHU114vfGNzr NJtS4MVm8WIc2YhMPqJzXGD4i6LBkdxpRP6WeQoG9PfFRdi1F7pKdvQxgB9d3X1J9L3VgZsfhBm910zfET0eBQ John Doe %3Cjohn.doe@mailinator.com%3E%0A94d49adf9bad1104ab2f7117d45fa177bc416ea0ad5a44b4569e89f04728ff94 2018-05-12T01:51:03Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg KWWplv94ziYZsxjtnf4sGuzC2bvA-LSB0-fSbTGfCCt9aAf7rgn3SKSidyACWtQLKoY4qrvRDZYDNEAdqhT0Cg initial release%0A170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 2018-05-12T01:51:24Z signtr 170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg VBpOkf3PAQhGe67cgaxn4eDQBSzsv-w1lFIQhw02pfvoLLIVZ_fHBZHO2wQUfOiVEfI4uhHfrB7KkDzliY05DQ%0A111d1ac155cd4e3190cedfb54797f42e37c4e6406e190276eeaf1ef4d146d025 2018-05-12T01:52:20Z source a06e099f02939933881240cf689b089580e2b637b6aab25189ed37353294f6cb 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg XbYt-xV9Z5Xcg8CtBOoFMEIaNwIKjw3br7TxMuXn5YiEqhbqKyND0gNilvEGUWlCh7jDRWvKOfvYY3RiQdu0BQ add license file%0A0636b1e6faf8724ce3145b5de15ba4ffffacc6b852e1074d6a68721bfc0a8ecb 2018-05-12T01:52:29Z signtr 0636b1e6faf8724ce3145b5de15ba4ffffacc6b852e1074d6a68721bfc0a8ecb 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg x21BApsMJA761nn2GRwy5MOfAhHk9WAfoOD_uHWi8Q2efmdjwcEZOBmOmax4S1r7-pinMp-ivR825SspF6qKAg%0A
++ f c01566206b4adb8991acc8a83099e06d3d49edf1d71c2ff17a9589790b874996 hashchain/testdata/hashchain_fork
+dmppatch 2
+@@ -0,0 +1,1491 @@
++e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-12T01:50:44Z cstart 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg 5GQKPh8TdrM8-9oaqGbLmHU114vfGNzr NJtS4MVm8WIc2YhMPqJzXGD4i6LBkdxpRP6WeQoG9PfFRdi1F7pKdvQxgB9d3X1J9L3VgZsfhBm910zfET0eBQ John Doe %3Cjohn.doe@mailinator.com%3E%0A94d49adf9bad1104ab2f7117d45fa177bc416ea0ad5a44b4569e89f04728ff94 2018-05-12T01:51:03Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg KWWplv94ziYZsxjtnf4sGuzC2bvA-LSB0-fSbTGfCCt9aAf7rgn3SKSidyACWtQLKoY4qrvRDZYDNEAdqhT0Cg initial release%0A170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 2018-05-12T01:51:24Z signtr 170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg VBpOkf3PAQhGe67cgaxn4eDQBSzsv-w1lFIQhw02pfvoLLIVZ_fHBZHO2wQUfOiVEfI4uhHfrB7KkDzliY05DQ%0A111d1ac155cd4e3190cedfb54797f42e37c4e6406e190276eeaf1ef4d146d025 2018-05-12T01:53:44Z source 73f1673aa50e0860895b6f59edb4f26145d35483ee60bfe316f142aaed911ad8 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg UDx6gH-Mvhap3n1bHyoMIXdQ6sA1JVQvCsiASb1b5oxLUL5ruNNv3eDn0e2U1zN5ljAAs7tSxye6ReCPHQD1DQ FORK FOR TESTING PURPOSES!%0Ac0aa7dcc74d5166765e876f6495f7451dfd784d268de6e2312118dc012677539 2018-05-12T01:53:54Z signtr c0aa7dcc74d5166765e876f6495f7451dfd784d268de6e2312118dc012677539 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg LxVHJOv2sSKG7IxhxD3Zwl4lE8P-xaJlsLI9pDczFMNwO1N0GtuGNvZMV7nvtcIuLXFp0vy_QcQlEQdFpXrzBA%0A
+- f 9dadbaa611033467f2a48675e801ef3d9625fa16bd31ee220b3c2e99855092c8 patchfile/error.go
++ f 9dadbaa611033467f2a48675e801ef3d9625fa16bd31ee220b3c2e99855092c8 patchfile/errors.go
+dmppatch 2
+@@ -0,0 +1,3903 @@
++package patchfile%0A%0Aimport (%0A%09%22errors%22%0A)%0A%0A// ErrNoDifference is returned if the two directory trees Apply has been%0A// called have the same tree hash.%0Avar ErrNoDifference = errors.New(%22patchfile: directory trees do not differ%22)%0A%0A// ErrHeaderFieldsNum is returned if the header does not have 4 space separated fields.%0Avar ErrHeaderFieldsNum = errors.New(%22patchfile: header does not have 4 space separated fields%22)%0A%0A// ErrHeaderFieldsText is returned if the header does not start with 'codechain patchfile version'.%0Avar ErrHeaderFieldsText = errors.New(%22patchfile: header does not start with 'codechain patchfile version'%22)%0A%0A// ErrHeaderVersion is returned if if the patchfile version is not supported.%0Avar ErrHeaderVersion = errors.New(%22patchfile: version not supported%22)%0A%0A// ErrTreeHashFieldsNum is returned if the tree hash does not have 2 space separated fields.%0Avar ErrTreeHashFieldsNum = errors.New(%22patchfile: treehash does not have 2 space separated fields%22)%0A%0A// ErrTreeHashFieldsText is returned if the tree hash does not start with 'codechain patchfile version'.%0Avar ErrTreeHashFieldsText = errors.New(%22patchfile: treehash line does not start with 'treehash'%22)%0A%0A// ErrTreeHashStartMismatch is returned if directory tree hash does not match the one given in the treehash start line.%0Avar ErrTreeHashStartMismatch = errors.New(%22patchfile: directory tree hash does not match treehash start line%22)%0A%0A// ErrTreeHashFinishMismatch is returned if directory tree hash does not match the one given in the treehash finish line.%0Avar ErrTreeHashFinishMismatch = errors.New(%22patchfile: directory tree hash does not match treehash finish line%22)%0A%0A// ErrFileHashMismatchBefore is returned if file hash does not match before apply.%0Avar ErrFileHashMismatchBefore = errors.New(%22patchfile: file hash does not match before apply%22)%0A%0A// ErrFileHashMismatchAfter is returned if file hash does not match after apply.%0Avar ErrFileHashMismatchAfter = errors.New(%22patchfile: file hash does not match after apply%22)%0A%0A// ErrFileFieldsNum is returned if a file diff line does not have 4 space separated fields.%0Avar ErrFileFieldsNum = errors.New(%22patchfile: file diff line does not have 4 space separated fields%22)%0A%0A// ErrFileField0 is returned if the file diff line does not start with '-' or '+'.%0Avar ErrFileField0 = errors.New(%22patchfile: file diff line does not start with '-' or '+'%22)%0A%0A// ErrFileField1 is returned if the file diff line does have mode 'f' or 'x'.%0Avar ErrFileField1 = errors.New(%22patchfile: file diff line does not have mode 'f' or 'x'%22)%0A%0A// ErrAddTargetFileExists is returned if an add target file exists already.%0Avar ErrAddTargetFileExists = errors.New(%22patchfile: add target file exists already%22)%0A%0A// ErrMoveTargetFileExists is returned if a move target file exists already.%0Avar ErrMoveTargetFileExists = errors.New(%22patchfile: move target file exists already%22)%0A%0A// ErrDiffLinesParse is returned if the number of diff lines cannot be parsed.%0Avar ErrDiffLinesParse = errors.New(%22patchfile: cannot parse number of diff lines%22)%0A%0A// ErrDiffLinesNonPositive is returned if the number of diff lines is non-positive.%0Avar ErrDiffLinesNonPositive = errors.New(%22patchfile: number of lines %3C 1%22)%0A%0A// ErrDiffLinesNegative is returned if the number of diff lines is negative.%0Avar ErrDiffLinesNegative = errors.New(%22patchfile: number of lines %3C 0%22)%0A%0A// ErrDiffModeUnknown if returned if the diff mode is unknown.%0Avar ErrDiffModeUnknown = errors.New(%22patchfile: unknown diff modes%22)%0A%0A// ErrNotTerminal is returned if more input is read after terminal state.%0Avar ErrNotTerminal = errors.New(%22patchfile: more input read after terminal state%22)%0A%0A// ErrPrematureDiffEnd is returned if a diff ends prematurely.%0Avar ErrPrematureDiffEnd = errors.New(%22patchfile: diff ends prematurely%22)%0A%0A// ErrPrematurePatchfileEnd is returned if a patchfile ends prematurely.%0Avar ErrPrematurePatchfileEnd = errors.New(%22patchfile: ends prematurely%22)%0A
++ f caea3b51715ff15b02ed3f2add94829b45dc94e1ec3f14d6dedae59138cc640c sync/errors.go
+dmppatch 2
+@@ -0,0 +1,250 @@
++package sync%0A%0Aimport (%0A%09%22errors%22%0A)%0A%0A// ErrCannotRemove is returned if Sync could not find a valid start to apply,%0A// but cannot remove the directory.%0Avar ErrCannotRemove = errors.New(%22sync: could not find a valid start to apply, try with empty dir%22)%0A
+- f c8df49e9a83f2735bd7b172451085bac94ddfb5256986376ce0c6ef42a8b792c sync/sync.go
++ f 664860a2ebef79ba7b65fafade60d481a919c5ca58391efd0a72072a710b94a6 sync/sync.go
+dmppatch 9
+@@ -66,18 +66,8 @@
+ t (%0A
+-%09%22errors%22%0A
+ %09%22fm
+@@ -1556,96 +1556,34 @@
+ r %7B%0A
+-%09%09%09return errors.New(%22sync: could not find a valid start to apply, try with empty dir%22)%0A
++%09%09%09return ErrCannotRemove%0A
+ %09%09%7D%0A
++ f ed8053296280b385d421085e9de101add38aecf8fba30490db22712ac8b886a6 sync/sync_test.go
+dmppatch 2
+@@ -0,0 +1,1635 @@
++package sync_test%0A%0Aimport (%0A%09%22io/ioutil%22%0A%09%22os%22%0A%09%22path/filepath%22%0A%09%22testing%22%0A%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/sync%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A)%0A%0Afunc TestDir(t *testing.T) %7B%0A%09tmpdir, err := ioutil.TempDir(%22%22, %22sync_test%22)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22TempDir() failed: %25v%22, err)%0A%09%7D%0A%09defer os.RemoveAll(tmpdir)%0A%0A%09hashChainFile := filepath.Join(%22..%22, def.HashchainFile)%0A%09err = os.Mkdir(filepath.Join(tmpdir, def.CodechainDir), 0755)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22os.Mkdir() failed: %25v%22, err)%0A%09%7D%0A%09hashChainTmp := filepath.Join(tmpdir, def.HashchainFile)%0A%09err = file.Copy(hashChainFile, hashChainTmp)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22file.Copy() failed: %25v%22, err)%0A%09%7D%0A%0A%09c, err := hashchain.ReadFile(hashChainTmp)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22hashchain.ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer c.Close()%0A%0A%09treeHashes := c.TreeHashes()%0A%0A%09patchDir := filepath.Join(%22..%22, def.PatchDir)%0A%09err = sync.Dir(tmpdir, treeHashes%5Blen(treeHashes)-1%5D, patchDir, treeHashes,%0A%09%09def.ExcludePaths, false)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22sync.Dir() failed: %25v%22, err)%0A%09%7D%0A%0A%09err = os.Remove(filepath.Join(tmpdir, %22README.md%22))%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22os.Remove() failed: %25v%22, err)%0A%09%7D%0A%0A%09err = sync.Dir(tmpdir, treeHashes%5Blen(treeHashes)-1%5D, patchDir, treeHashes,%0A%09%09def.ExcludePaths, false)%0A%09if err != sync.ErrCannotRemove %7B%0A%09%09t.Fatalf(%22sync.Dir() should fail with sync.ErrCannotRemove%22)%0A%09%7D%0A%0A%09err = sync.Dir(tmpdir, treeHashes%5Blen(treeHashes)-1%5D, patchDir, treeHashes,%0A%09%09def.ExcludePaths, true)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22sync.Dir() failed: %25v%22, err)%0A%09%7D%0A%7D%0A
+- f c5d95224cd40f9529e0e34540326284b483e6a04649f511f7db3fcce878d7830 util/file/file.go
++ f b321ec8cd17a84296c549cdbec3124d011aad38f7d34c00ae3dc6e79ae9c2030 util/file/file.go
+dmppatch 3
+@@ -3943,12 +3943,565 @@
+ udePaths)%0A%7D%0A
++%0A// RemoveAll removes all files and directories in path except the ones given%0A// in excludePaths.%0Afunc RemoveAll(path string, excludePaths %5B%5Dstring) error %7B%0A%09files, err := ioutil.ReadDir(path)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0Aouter:%0A%09for _, fi := range files %7B%0A%09%09if excludePaths != nil %7B%0A%09%09%09canonical := filepath.ToSlash(fi.Name())%0A%09%09%09for _, excludePath := range excludePaths %7B%0A%09%09%09%09if excludePath == canonical %7B%0A%09%09%09%09%09continue outer%0A%09%09%09%09%7D%0A%09%09%09%7D%0A%09%09%7D%0A%09%09if err := os.RemoveAll(filepath.Join(path, fi.Name())); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%09return nil%0A%7D%0A
+- f 682fdc0683fc1d1f3e2f062580a19af6a77cdeead318e4cd828b60050b9d1b2e util/file/file_test.go
++ f 74b50718a02d6e33a36cc2903d877ab876a623650ebfe7ed8899a759b7658a90 util/file/file_test.go
+dmppatch 13
+@@ -78,16 +78,64 @@
+ sting%22%0A%0A
++%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22github
+@@ -424,63 +424,62 @@
+ t%22)%0A
+-%09if err := file.CopyDir(%22testdata%22, dst); err != nil %7B%0A
++%09err = file.CopyDir(%22testdata%22, dst)%0A%09if err != nil %7B%0A
+ %09%09t.
+@@ -820,13 +820,1580 @@
+ iffer%22)%0A
++%09%7D%0A%0A%09// make dir which should be excluded%0A%09err = os.Mkdir(filepath.Join(dst, def.CodechainDir), 0755)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22os.Mkdir() failed: %25v%22, err)%0A%09%7D%0A%09dst2 := filepath.Join(tmpdir, %22dst2%22)%0A%09err = file.CopyDirExclude(dst, dst2, def.ExcludePaths)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22CopyDirExclude() failed: %25v%22, err)%0A%09%7D%0A%09dst2Hash, err := tree.Hash(dst2, nil)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22tree.Hash(dst2) failed: %25v%22, err)%0A%09%7D%0A%09if !bytes.Equal(srcHash%5B:%5D, dst2Hash%5B:%5D) %7B%0A%09%09t.Error(%22srcHash and dst2Hash differ%22)%0A%09%7D%0A%0A%09// make sure dir wasn't copied%0A%09exists, err := file.Exists(filepath.Join(dst2, def.CodechainDir))%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Exists() failed: %25v%22, err)%0A%09%7D%0A%09if exists %7B%0A%09%09t.Error(%22exists should be false%22)%0A%09%7D%0A%0A%09// remove everything except codechain directory%0A%09err = file.RemoveAll(dst, def.ExcludePaths)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22RemoveAll() failed: %25v%22, err)%0A%09%7D%0A%0A%09// make sure codechain directory still exists%0A%09exists, err = file.Exists(filepath.Join(dst, def.CodechainDir))%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Exists() failed: %25v%22, err)%0A%09%7D%0A%09if !exists %7B%0A%09%09t.Error(%22exists should be true%22)%0A%09%7D%0A%7D%0A%0Afunc TestIsBinaryTrue(t *testing.T) %7B%0A%09isBinary, err := file.IsBinary(filepath.Join(%22testdata%22, %22gopher.png%22))%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22IsBinary() failed: %25v%22, err)%0A%09%7D%0A%09if !isBinary %7B%0A%09%09t.Error(%22isBinary should be true%22)%0A%09%7D%0A%7D%0A%0Afunc TestIsBinaryFalse(t *testing.T) %7B%0A%09isBinary, err := file.IsBinary(filepath.Join(%22testdata%22, %22foo.txt%22))%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22IsBinary() failed: %25v%22, err)%0A%09%7D%0A%09if isBinary %7B%0A%09%09t.Error(%22isBinary should be false%22)%0A
+ %09%7D%0A%7D%0A
++ f b37a25cdb5171ed6688dc6522349c4c8448812ce2efd1b7a842248f779b87b54 util/file/testdata/gopher.png
+ascii85 12
+M,6r;%14!\!!!!.8Ou6I!!!!1!!!!0#R18/!:=i'0)ttP"D:"p5l^o9f[N]!1&q:S)0A;LFAm*iFE_/6
+AH5#,Ddm9#8SqmKAQ!)JA9i1:ANTqm!d.(&5u]8YA,-*(56E\/kicCSJs7AggInNfM'%>%K3fI2.6fT>
+=*nOhA#"XY*egq6d:-^94l&+SgPc(">s7jF#dgs]r,4!Bs'LlGs$%q]f`nJXWMuj*;:.*,E`-AIGOF,R
+J*N7is(c[crpS[VoDapTHi>*lec5[5lG!9.[al0"$&K'F0eoU20JP:C8r3kWW6:8#s7+#(s!LU7rGQOj
+o\[VckPr]H<WB8kT(E!=Tgetp6JQGb$&^Q!3&mQL^rO>mAT+aGI-'GSs1;?+rkEgQbl;OVM>p3UErKu_
+d/O'fc<:0#n!s?+qtuc[<gFN3O\nuS"onZS&0#3#pqFIlGiAZqgSY-2bkf(k;>:)HS#1ej+@C&8TDuYO
+/+,VT^Hall!FR$"`'=(aQ>-@Pm?mSH_R:?^YC^QpZ4F&'s1]Rf(s%7$Z4rB))ls5DJO"7Ca8Oci(Ouqp
+)mX8Qs#Joss!P6Vs1c!hpA_[/`?5VY\-ubQ@:g#,\YoVsCmZC/JZcSgFW/VW\c8!jX9<5k_.`l\#hA!*
+J%Z#-0$F;4"rXYL[g](K!1s;9.1r.)mMoJf@DFIff/h';rrCS?U)9Q)X:3+KWi?J$bcK%Q;;NtoU)<q<
+bWA'kQ/s@kkN:_r75<`FRl=aQoB/o(_P1L'.mruj&!&=D#N1TToD[VN-6eNpKukLAFnPC<*?C]`;%-9"
+;ZgM=%1NLB!<F77'9arP@m=d:h"uS=8&>4WUnBXR11CXPjlI6BlKT4(hRps\0+>Y3fYh<mS"&/5It)r<
++BK+"VPpH7:g[Rj@K6Ct9EMrI4i5JE!!!!j78?7R6=>B
+- f ee6441e19763d7eb94e0abd27e632441013f81926f4d79fb13818bdaff9711a3 util/terminal/error.go
++ f ee6441e19763d7eb94e0abd27e632441013f81926f4d79fb13818bdaff9711a3 util/terminal/errors.go
+dmppatch 2
+@@ -0,0 +1,135 @@
++package terminal%0A%0Aimport (%0A%09%22errors%22%0A)%0A%0A// ErrAbort is returned if a user answers 'n' to Confirm.%0Avar ErrAbort = errors.New(%22aborted%22)%0A
+- f 876aa66c7797d54853e7e124747a169e2ea05f478d6f024f8dd56b97dd6ca946 vendor/golang.org/x/sys/unix/asm_dragonfly_amd64.s
++ f d493467c4d6462f018a13de285d931b80138af5de7296256496af915e20d26a9 vendor/golang.org/x/sys/unix/asm_dragonfly_amd64.s
+dmppatch 25
+@@ -360,41 +360,41 @@
+ m.%0A%0A
+-TEXT%09%C2%B7Syscall(SB),NOSPLIT,$0-64%0A
++TEXT%09%C2%B7Syscall(SB),NOSPLIT,$0-56%0A
+ %09JMP
+@@ -420,42 +420,42 @@
+ B)%0A%0A
+-TEXT%09%C2%B7Syscall6(SB),NOSPLIT,$0-88%0A
++TEXT%09%C2%B7Syscall6(SB),NOSPLIT,$0-80%0A
+ %09JMP
+@@ -482,43 +482,43 @@
+ B)%0A%0A
+-TEXT%09%C2%B7Syscall9(SB),NOSPLIT,$0-112%0A
++TEXT%09%C2%B7Syscall9(SB),NOSPLIT,$0-104%0A
+ %09JMP
+@@ -545,44 +545,44 @@
+ B)%0A%0A
+-TEXT %C2%B7RawSyscall(SB),NOSPLIT,$0-64%0A
++TEXT %C2%B7RawSyscall(SB),NOSPLIT,$0-56%0A
+ %09JMP
+@@ -611,45 +611,45 @@
+ B)%0A%0A
+-TEXT%09%C2%B7RawSyscall6(SB),NOSPLIT,$0-88%0A
++TEXT%09%C2%B7RawSyscall6(SB),NOSPLIT,$0-80%0A
+ %09JMP
+- x ac9a00a8c876ec5b2dcfdd437a3102955c5ccda8b95e24e6017cfa6868d4e2e9 vendor/golang.org/x/sys/unix/mkerrors.sh
++ x 2c0eed0780f38eae77d0c296ef370bbeca5fc56ae916c891f6a9b79d8b7b0a06 vendor/golang.org/x/sys/unix/mkerrors.sh
+dmppatch 8
+@@ -4058,24 +4058,49 @@
+ x/keyctl.h%3E%0A
++#include %3Clinux/magic.h%3E%0A
+ #include %3Cli
+@@ -10601,24 +10601,57 @@
+ SPLICE_/ %7C%7C%0A
++%09%09$2 ~ /%5E%5BA-Z0-9_%5D+_MAGIC2?$/ %7C%7C%0A
+ %09%09$2 ~ /%5E(VM
+- f 3e9442afaec97ee0bd641f8675ebfe95856e001b90560cc66fc579698a5e3580 vendor/golang.org/x/sys/unix/zerrors_linux_386.go
++ f 3e82cd40e6404072efff2e2a607bd56e922663beb266c261347fd52ff960bbb4 vendor/golang.org/x/sys/unix/zerrors_linux_386.go
+dmppatch 176
+@@ -291,16 +291,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -2980,32 +2980,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6097,16 +6097,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7552,16 +7552,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8825,24 +8825,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10719,24 +10719,126 @@
+    = 0x2000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11891,16 +11891,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -13960,16 +13960,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14193,16 +14193,67 @@
+ = 0x600%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14879,16 +14879,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15741,16 +15741,63 @@
+ = 0x400%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15918,32 +15918,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21371,16 +21371,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21648,16 +21648,67 @@
+ 0x10000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -22285,16 +22285,67 @@
+  0x1000%0A
++%09FP_XSTATE_MAGIC2                     = 0x46505845%0A
+ %09FS_ENCR
+@@ -23245,16 +23245,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27850,16 +27850,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39312,16 +39312,63 @@
+   = 0x1%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39636,16 +39636,63 @@
+ = 0x400%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -44022,24 +44022,259 @@
+       = 0x4%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DETACH 
+@@ -44389,24 +44389,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47220,16 +47220,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47316,16 +47316,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48865,16 +48865,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50404,16 +50404,118 @@
+  = 0x80%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50818,16 +50818,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50909,16 +50909,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55153,16 +55153,67 @@
+  0x2405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55336,16 +55336,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60086,32 +60086,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -62806,32 +62806,280 @@
+           = 0x0%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_AS      
+@@ -71444,16 +71444,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -75485,16 +75485,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -76166,16 +76166,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -81199,24 +81199,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -82260,16 +82260,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -90630,16 +90630,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -90726,16 +90726,67 @@
+ = 0x100%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -92148,16 +92148,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -92243,16 +92243,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -92392,16 +92392,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -98240,16 +98240,60 @@
+   = 0x2%0A
++%09X86_FXSR_MAGIC                       = 0x0%0A
+ %09XATTR_C
+@@ -98416,16 +98416,67 @@
+   = 0x4%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -98514,16 +98514,67 @@
+  0x1800%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f dd12723a762c59e803c974605f3ba8c92f865818bc77f896b7d1f36af622857d vendor/golang.org/x/sys/unix/zerrors_linux_amd64.go
++ f 3182d7141c19d4290c6e636aaee6e81cec842a20ba43757c694bc179447d79a5 vendor/golang.org/x/sys/unix/zerrors_linux_amd64.go
+dmppatch 172
+@@ -293,16 +293,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -2982,32 +2982,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6099,16 +6099,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7554,16 +7554,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8827,24 +8827,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10721,24 +10721,126 @@
+    = 0x2000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11893,16 +11893,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -13962,16 +13962,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14195,16 +14195,67 @@
+ = 0x600%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14881,16 +14881,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15743,16 +15743,63 @@
+ = 0x400%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15920,32 +15920,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21373,16 +21373,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21650,16 +21650,67 @@
+ 0x10000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -22287,16 +22287,67 @@
+  0x1000%0A
++%09FP_XSTATE_MAGIC2                     = 0x46505845%0A
+ %09FS_ENCR
+@@ -23247,16 +23247,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27852,16 +27852,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39314,16 +39314,63 @@
+   = 0x1%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39638,16 +39638,63 @@
+ = 0x400%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -44024,24 +44024,259 @@
+       = 0x4%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DETACH 
+@@ -44391,24 +44391,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47222,16 +47222,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47318,16 +47318,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48867,16 +48867,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50406,16 +50406,118 @@
+  = 0x80%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50820,16 +50820,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50911,16 +50911,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55152,16 +55152,67 @@
+  0x2405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55335,16 +55335,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60093,32 +60093,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ARCH_PRC
+@@ -62858,32 +62858,280 @@
+           = 0x0%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_AS      
+@@ -71496,16 +71496,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -75537,16 +75537,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -76218,16 +76218,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -81251,24 +81251,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -82312,16 +82312,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -90682,16 +90682,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -90778,16 +90778,67 @@
+ = 0x100%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -92200,16 +92200,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -92295,16 +92295,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -92444,16 +92444,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -98424,16 +98424,67 @@
+   = 0x4%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -98522,16 +98522,67 @@
+  0x1800%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f 6d24edcc3508b35bff607c4663184829b927dede660fa7035f4fa9dd26d33804 vendor/golang.org/x/sys/unix/zerrors_linux_arm.go
++ f 67d4d3bb09600819beb5697389b0bbf452d1a8411b65efc92104ca1e4102a21c vendor/golang.org/x/sys/unix/zerrors_linux_arm.go
+dmppatch 168
+@@ -281,16 +281,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -2970,32 +2970,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6087,16 +6087,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7542,16 +7542,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8815,24 +8815,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10709,24 +10709,126 @@
+    = 0x2000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11881,16 +11881,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -13950,16 +13950,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14183,16 +14183,67 @@
+ = 0x600%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14869,16 +14869,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15731,16 +15731,63 @@
+ = 0x400%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15908,32 +15908,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21361,16 +21361,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21638,16 +21638,67 @@
+ 0x10000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -23184,16 +23184,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27789,16 +27789,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39251,16 +39251,63 @@
+   = 0x1%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39575,16 +39575,63 @@
+ = 0x400%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -43916,24 +43916,259 @@
+       = 0x4%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DETACH 
+@@ -44283,24 +44283,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47114,16 +47114,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47210,16 +47210,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48759,16 +48759,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50298,16 +50298,118 @@
+  = 0x80%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50712,16 +50712,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50803,16 +50803,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55047,16 +55047,67 @@
+  0x2405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55230,16 +55230,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -59980,32 +59980,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -63120,16 +63120,264 @@
+ 0x10008%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_
+@@ -71750,16 +71750,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -75791,16 +75791,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -76472,16 +76472,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -81505,24 +81505,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -82566,16 +82566,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -90936,16 +90936,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -91032,16 +91032,67 @@
+ = 0x100%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -92454,16 +92454,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -92549,16 +92549,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -92698,16 +92698,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -98678,16 +98678,67 @@
+   = 0x4%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -98776,16 +98776,67 @@
+  0x1800%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f 9fcc2a81f71a18f7495a6a6469e504803620a06f06e322651e72d0221d94da89 vendor/golang.org/x/sys/unix/zerrors_linux_arm64.go
++ f f9f5e4e15539bd76bb059e0291428ea8fbafa64bdda64b7dc1abdc28f14bc05e vendor/golang.org/x/sys/unix/zerrors_linux_arm64.go
+dmppatch 172
+@@ -311,16 +311,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -3000,32 +3000,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6117,16 +6117,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7572,16 +7572,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8845,24 +8845,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10739,24 +10739,126 @@
+    = 0x2000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11911,16 +11911,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -13980,16 +13980,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14213,16 +14213,67 @@
+ = 0x600%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14899,16 +14899,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15761,16 +15761,63 @@
+ = 0x400%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15938,32 +15938,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21442,16 +21442,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21770,16 +21770,67 @@
+ 5585401%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -22407,16 +22407,67 @@
+  0x1000%0A
++%09FPSIMD_MAGIC                         = 0x46508001%0A
+ %09FS_ENCR
+@@ -23367,16 +23367,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27972,16 +27972,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39434,16 +39434,63 @@
+   = 0x1%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39758,16 +39758,63 @@
+ = 0x400%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -44099,24 +44099,259 @@
+       = 0x4%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DETACH 
+@@ -44466,24 +44466,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47297,16 +47297,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47393,16 +47393,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48942,16 +48942,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50481,16 +50481,118 @@
+  = 0x80%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50895,16 +50895,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50986,16 +50986,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55226,16 +55226,67 @@
+  0x2405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55409,16 +55409,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60167,32 +60167,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -62439,32 +62439,280 @@
+           = 0x0%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_AS      
+@@ -71077,16 +71077,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -75118,16 +75118,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -75799,16 +75799,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -80832,24 +80832,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -81893,16 +81893,118 @@
+ 0000000%0A
++%09SVE_MAGIC                            = 0x53564501%0A%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -90314,16 +90314,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -90410,16 +90410,67 @@
+ = 0x100%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -91832,16 +91832,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -91927,16 +91927,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -92076,16 +92076,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -98056,16 +98056,67 @@
+   = 0x4%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -98154,16 +98154,67 @@
+  0x1800%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f f4e9b96e076563e7c5a510e39f6c52b157d52cf832d7fca4f115677031eecb8c vendor/golang.org/x/sys/unix/zerrors_linux_mips.go
++ f 6771977051088e33d3b5354df8bf6cb912354dd40597a67571cab5efd9016cdb vendor/golang.org/x/sys/unix/zerrors_linux_mips.go
+dmppatch 168
+@@ -282,16 +282,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -2971,32 +2971,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6088,16 +6088,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7543,16 +7543,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8868,24 +8868,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10762,24 +10762,126 @@
+    = 0x2000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11934,16 +11934,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -14003,16 +14003,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14236,16 +14236,67 @@
+ = 0x600%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14922,16 +14922,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15784,16 +15784,63 @@
+ = 0x400%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15960,32 +15960,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21413,16 +21413,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21690,16 +21690,67 @@
+ 0x10000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -23236,16 +23236,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27849,16 +27849,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39314,16 +39314,63 @@
+   = 0x1%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39638,16 +39638,63 @@
+ = 0x400%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -44029,24 +44029,259 @@
+       = 0x4%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DETACH 
+@@ -44396,24 +44396,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47227,16 +47227,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47323,16 +47323,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48872,16 +48872,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50411,16 +50411,118 @@
+  = 0x80%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50825,16 +50825,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50916,16 +50916,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55170,16 +55170,67 @@
+ 0002405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55353,16 +55353,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60103,32 +60103,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -62913,32 +62913,280 @@
+           = 0x0%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_AS      
+@@ -71551,16 +71551,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -75604,16 +75604,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -76285,16 +76285,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -81400,24 +81400,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -82461,16 +82461,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -90918,16 +90918,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -91015,16 +91015,67 @@
+  0x8000%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -92437,16 +92437,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -92532,16 +92532,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -92681,16 +92681,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -98706,16 +98706,67 @@
+   = 0x4%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -98804,16 +98804,67 @@
+  0x1800%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f 5a724d610f399678600d968ebc72309987ca6ff5dbf60fa60c6a4a221f632be6 vendor/golang.org/x/sys/unix/zerrors_linux_mips64.go
++ f 7584acd98682ab9d11fbaaa61224d9210152c755094ca6dee10e9366bf5a85c7 vendor/golang.org/x/sys/unix/zerrors_linux_mips64.go
+dmppatch 168
+@@ -284,16 +284,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -2973,32 +2973,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6090,16 +6090,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7545,16 +7545,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8870,24 +8870,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10764,24 +10764,126 @@
+    = 0x2000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11936,16 +11936,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -14005,16 +14005,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14238,16 +14238,67 @@
+ = 0x600%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14924,16 +14924,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15786,16 +15786,63 @@
+ = 0x400%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15962,32 +15962,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21415,16 +21415,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21692,16 +21692,67 @@
+ 0x10000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -23238,16 +23238,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27845,16 +27845,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39310,16 +39310,63 @@
+   = 0x1%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39634,16 +39634,63 @@
+ = 0x400%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -44025,24 +44025,259 @@
+       = 0x4%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DETACH 
+@@ -44392,24 +44392,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47223,16 +47223,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47319,16 +47319,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48868,16 +48868,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50407,16 +50407,118 @@
+  = 0x80%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50821,16 +50821,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50912,16 +50912,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55163,16 +55163,67 @@
+ 0002405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55346,16 +55346,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60104,32 +60104,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -62914,32 +62914,280 @@
+           = 0x0%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_AS      
+@@ -71552,16 +71552,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -75605,16 +75605,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -76286,16 +76286,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -81401,24 +81401,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -82462,16 +82462,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -90919,16 +90919,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -91016,16 +91016,67 @@
+  0x8000%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -92438,16 +92438,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -92533,16 +92533,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -92682,16 +92682,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -98707,16 +98707,67 @@
+   = 0x4%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -98805,16 +98805,67 @@
+  0x1800%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f ab5686898ab4335ae0104cbcd05dd9eb92a9ce8aef0b07d92043a4505d045093 vendor/golang.org/x/sys/unix/zerrors_linux_mips64le.go
++ f b12aa6655e5628736746d335247bd353a95642675c042316bcfcd38e8352838f vendor/golang.org/x/sys/unix/zerrors_linux_mips64le.go
+dmppatch 168
+@@ -286,16 +286,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -2975,32 +2975,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6092,16 +6092,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7547,16 +7547,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8872,24 +8872,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10766,24 +10766,126 @@
+    = 0x2000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11938,16 +11938,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -14007,16 +14007,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14240,16 +14240,67 @@
+ = 0x600%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14926,16 +14926,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15788,16 +15788,63 @@
+ = 0x400%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15964,32 +15964,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21417,16 +21417,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21694,16 +21694,67 @@
+ 0x10000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -23240,16 +23240,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27847,16 +27847,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39312,16 +39312,63 @@
+   = 0x1%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39636,16 +39636,63 @@
+ = 0x400%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -44027,24 +44027,259 @@
+       = 0x4%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DETACH 
+@@ -44394,24 +44394,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47225,16 +47225,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47321,16 +47321,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48870,16 +48870,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50409,16 +50409,118 @@
+  = 0x80%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50823,16 +50823,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50914,16 +50914,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55165,16 +55165,67 @@
+ 0002405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55348,16 +55348,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60106,32 +60106,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -62916,32 +62916,280 @@
+           = 0x0%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_AS      
+@@ -71554,16 +71554,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -75607,16 +75607,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -76288,16 +76288,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -81403,24 +81403,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -82464,16 +82464,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -90921,16 +90921,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -91018,16 +91018,67 @@
+  0x8000%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -92440,16 +92440,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -92535,16 +92535,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -92684,16 +92684,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -98709,16 +98709,67 @@
+   = 0x4%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -98807,16 +98807,67 @@
+  0x1800%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f c923495ff48800b2e2ba55af7bd2fa4b8ea19bf6f90e55c83a4dc43000f8cdc1 vendor/golang.org/x/sys/unix/zerrors_linux_mipsle.go
++ f db8ab3779e5f23caeb2a639c571bc75927cdda8cbb741b532e04c7c9f364c568 vendor/golang.org/x/sys/unix/zerrors_linux_mipsle.go
+dmppatch 168
+@@ -284,16 +284,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -2973,32 +2973,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6090,16 +6090,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7545,16 +7545,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8870,24 +8870,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10764,24 +10764,126 @@
+    = 0x2000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11936,16 +11936,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -14005,16 +14005,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14238,16 +14238,67 @@
+ = 0x600%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14924,16 +14924,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15786,16 +15786,63 @@
+ = 0x400%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15962,32 +15962,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21415,16 +21415,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21692,16 +21692,67 @@
+ 0x10000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -23238,16 +23238,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27851,16 +27851,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39316,16 +39316,63 @@
+   = 0x1%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39640,16 +39640,63 @@
+ = 0x400%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -44031,24 +44031,259 @@
+       = 0x4%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DETACH 
+@@ -44398,24 +44398,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47229,16 +47229,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47325,16 +47325,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48874,16 +48874,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50413,16 +50413,118 @@
+  = 0x80%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50827,16 +50827,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50918,16 +50918,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55172,16 +55172,67 @@
+ 0002405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55355,16 +55355,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60105,32 +60105,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -62915,32 +62915,280 @@
+           = 0x0%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_AS      
+@@ -71553,16 +71553,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -75606,16 +75606,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -76287,16 +76287,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -81402,24 +81402,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -82463,16 +82463,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -90920,16 +90920,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -91017,16 +91017,67 @@
+  0x8000%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -92439,16 +92439,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -92534,16 +92534,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -92683,16 +92683,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -98708,16 +98708,67 @@
+   = 0x4%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -98806,16 +98806,67 @@
+  0x1800%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f 8c8a3c5f3e3cd078cefcbd305af43220b2217984bb463fc7a356ff316a9d9eb7 vendor/golang.org/x/sys/unix/zerrors_linux_ppc64.go
++ f 6746320be2d0bf1f05ad933fa7fe2df50ec4715265c0083473e67cdd7f515b08 vendor/golang.org/x/sys/unix/zerrors_linux_ppc64.go
+dmppatch 168
+@@ -283,16 +283,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -2972,32 +2972,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6089,16 +6089,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7514,16 +7514,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8837,24 +8837,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10731,24 +10731,126 @@
+    = 0x8000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11898,16 +11898,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -13966,16 +13966,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14202,16 +14202,67 @@
+  0x3000%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14895,16 +14895,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15751,16 +15751,63 @@
+  = 0x20%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15928,32 +15928,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21381,16 +21381,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21661,16 +21661,67 @@
+ 0000000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -23209,16 +23209,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27814,16 +27814,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39284,16 +39284,63 @@
+  = 0x80%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39608,16 +39608,63 @@
+ = 0x200%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -43958,16 +43958,251 @@
+  0x8000%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DET
+@@ -44321,24 +44321,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47152,16 +47152,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47248,16 +47248,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48797,16 +48797,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50434,16 +50434,118 @@
+ 0000000%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50848,16 +50848,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50939,16 +50939,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55205,16 +55205,67 @@
+ 0002405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55388,16 +55388,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60191,32 +60191,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -65424,16 +65424,264 @@
+  = 0x25%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_
+@@ -74054,16 +74054,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -78103,16 +78103,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -78784,16 +78784,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -83817,24 +83817,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -84878,16 +84878,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -93525,16 +93525,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -93624,16 +93624,67 @@
+ x400000%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -95046,16 +95046,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -95141,16 +95141,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -95290,16 +95290,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -101275,16 +101275,67 @@
+  0x4000%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -101372,16 +101372,67 @@
+ = 0xc00%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f 7a6cb54ccf3d520dd6669421a6fd8bfa6d1858a7d81852e1a69cabb8106f44df vendor/golang.org/x/sys/unix/zerrors_linux_ppc64le.go
++ f d093014b9cdfbd0275b7c5a561625fc26c4b037455ebe57a713b1db2db484ee6 vendor/golang.org/x/sys/unix/zerrors_linux_ppc64le.go
+dmppatch 168
+@@ -285,16 +285,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -2974,32 +2974,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6091,16 +6091,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7516,16 +7516,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8839,24 +8839,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10733,24 +10733,126 @@
+    = 0x8000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11900,16 +11900,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -13968,16 +13968,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14204,16 +14204,67 @@
+  0x3000%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14897,16 +14897,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15753,16 +15753,63 @@
+  = 0x20%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15930,32 +15930,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21383,16 +21383,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21663,16 +21663,67 @@
+ 0000000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -23211,16 +23211,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27816,16 +27816,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39286,16 +39286,63 @@
+  = 0x80%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39610,16 +39610,63 @@
+ = 0x200%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -43960,16 +43960,251 @@
+  0x8000%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DET
+@@ -44323,24 +44323,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47154,16 +47154,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47250,16 +47250,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48799,16 +48799,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50436,16 +50436,118 @@
+ 0000000%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50850,16 +50850,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50941,16 +50941,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55207,16 +55207,67 @@
+ 0002405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55390,16 +55390,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60193,32 +60193,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -65426,16 +65426,264 @@
+  = 0x25%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_
+@@ -74056,16 +74056,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -78105,16 +78105,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -78786,16 +78786,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -83819,24 +83819,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -84880,16 +84880,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -93527,16 +93527,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -93626,16 +93626,67 @@
+ x400000%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -95048,16 +95048,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -95143,16 +95143,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -95292,16 +95292,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -101277,16 +101277,67 @@
+  0x4000%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -101374,16 +101374,67 @@
+ = 0xc00%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f 875132ac08a3ba2570ec2aebd9fc2c9b59e2902c5528466bdaf13e27ba822310 vendor/golang.org/x/sys/unix/zerrors_linux_s390x.go
++ f 0efdf0b67cec1109fbc9c6d0381fcd2fb3d78d0b7a2246705388f2677b46492d vendor/golang.org/x/sys/unix/zerrors_linux_s390x.go
+dmppatch 168
+@@ -311,16 +311,263 @@
+ const (%0A
++%09AAFS_MAGIC                           = 0x5a3c69f0%0A%09ADFS_SUPER_MAGIC                     = 0xadf5%0A%09AFFS_SUPER_MAGIC                     = 0xadff%0A%09AFS_FS_MAGIC                         = 0x6b414653%0A%09AFS_SUPER_MAGIC                      = 0x5346414f%0A
+ %09AF_ALG 
+@@ -3000,32 +3000,82 @@
+           = 0x3%0A
++%09ANON_INODE_FS_MAGIC                  = 0x9041934%0A
+ %09ARPHRD_6LOWPAN 
+@@ -6117,16 +6117,62 @@
+ = 0x10f%0A
++%09AUTOFS_SUPER_MAGIC                   = 0x187%0A
+ %09B0     
+@@ -7572,16 +7572,169 @@
+   = 0xd%0A
++%09BALLOON_KVM_MAGIC                    = 0x13661366%0A%09BDEVFS_MAGIC                         = 0x62646576%0A%09BINFMTFS_MAGIC                       = 0x42494e4d%0A
+ %09BLKBSZG
+@@ -8845,24 +8845,75 @@
+      = 0x30%0A
++%09BPF_FS_MAGIC                         = 0xcafe4a11%0A
+ %09BPF_H      
+@@ -10739,24 +10739,126 @@
+    = 0x2000%0A
++%09BTRFS_SUPER_MAGIC                    = 0x9123683e%0A%09BTRFS_TEST_MAGIC                     = 0x73727279%0A
+ %09CAN_BCM    
+@@ -11911,16 +11911,116 @@
+   = 0xf%0A
++%09CGROUP2_SUPER_MAGIC                  = 0x63677270%0A%09CGROUP_SUPER_MAGIC                   = 0x27e0eb%0A
+ %09CIBAUD 
+@@ -13980,16 +13980,67 @@
+ 0000000%0A
++%09CODA_SUPER_MAGIC                     = 0x73757245%0A
+ %09CR0    
+@@ -14213,16 +14213,67 @@
+ = 0x600%0A
++%09CRAMFS_MAGIC                         = 0x28cd3d45%0A
+ %09CRDLY  
+@@ -14899,16 +14899,165 @@
+  = 0x1a%0A
++%09DAXFS_MAGIC                          = 0x64646178%0A%09DEBUGFS_MAGIC                        = 0x64626720%0A%09DEVPTS_SUPER_MAGIC                   = 0x1cd1%0A
+ %09DT_BLK 
+@@ -15761,16 +15761,63 @@
+ = 0x400%0A
++%09ECRYPTFS_SUPER_MAGIC                 = 0xf15f%0A
+ %09EFD_CLO
+@@ -15938,32 +15938,132 @@
+           = 0x1%0A
++%09EFIVARFS_MAGIC                       = 0xde5e81e4%0A%09EFS_SUPER_MAGIC                      = 0x414a53%0A
+ %09ENCODING_DEFAUL
+@@ -21391,16 +21391,157 @@
+  = 0xf0%0A
++%09EXT2_SUPER_MAGIC                     = 0xef53%0A%09EXT3_SUPER_MAGIC                     = 0xef53%0A%09EXT4_SUPER_MAGIC                     = 0xef53%0A
+ %09EXTA   
+@@ -21668,16 +21668,67 @@
+ 0x10000%0A
++%09F2FS_SUPER_MAGIC                     = 0xf2f52010%0A
+ %09FALLOC_
+@@ -23214,16 +23214,66 @@
+   = 0x3%0A
++%09FUTEXFS_SUPER_MAGIC                  = 0xbad1dea%0A
+ %09F_ADD_S
+@@ -27819,16 +27819,167 @@
+ = 0x32a%0A
++%09HOSTFS_SUPER_MAGIC                   = 0xc0ffee%0A%09HPFS_SUPER_MAGIC                     = 0xf995e849%0A%09HUGETLBFS_MAGIC                      = 0x958458f6%0A
+ %09HUPCL  
+@@ -39281,16 +39281,63 @@
+   = 0x1%0A
++%09ISOFS_SUPER_MAGIC                    = 0x9660%0A
+ %09ISTRIP 
+@@ -39605,16 +39605,63 @@
+ = 0x400%0A
++%09JFFS2_SUPER_MAGIC                    = 0x72b6%0A
+ %09KEYCTL_
+@@ -43946,24 +43946,259 @@
+       = 0x4%0A
++%09MINIX2_SUPER_MAGIC                   = 0x2468%0A%09MINIX2_SUPER_MAGIC2                  = 0x2478%0A%09MINIX3_SUPER_MAGIC                   = 0x4d5a%0A%09MINIX_SUPER_MAGIC                    = 0x137f%0A%09MINIX_SUPER_MAGIC2                   = 0x138f%0A
+ %09MNT_DETACH 
+@@ -44313,24 +44313,71 @@
+       = 0x1%0A
++%09MSDOS_SUPER_MAGIC                    = 0x4d44%0A
+ %09MSG_BATCH  
+@@ -47144,16 +47144,67 @@
+  0x8000%0A
++%09MTD_INODE_FS_MAGIC                   = 0x11307854%0A
+ %09NAME_MA
+@@ -47240,16 +47240,63 @@
+  = 0xff%0A
++%09NCP_SUPER_MAGIC                      = 0x564c%0A
+ %09NETLINK
+@@ -48789,16 +48789,110 @@
+   = 0x6%0A
++%09NFS_SUPER_MAGIC                      = 0x6969%0A%09NILFS_SUPER_MAGIC                    = 0x3434%0A
+ %09NL0    
+@@ -50328,16 +50328,118 @@
+  = 0x80%0A
++%09NSFS_MAGIC                           = 0x6e736673%0A%09OCFS2_SUPER_MAGIC                    = 0x7461636f%0A
+ %09OCRNL  
+@@ -50742,16 +50742,63 @@
+  = 0x10%0A
++%09OPENPROM_SUPER_MAGIC                 = 0x9fa1%0A
+ %09OPOST  
+@@ -50833,16 +50833,67 @@
+   = 0x1%0A
++%09OVERLAYFS_SUPER_MAGIC                = 0x794c7630%0A
+ %09O_ACCMO
+@@ -55074,16 +55074,67 @@
+  0x2405%0A
++%09PIPEFS_MAGIC                         = 0x50495045%0A
+ %09PRIO_PG
+@@ -55257,16 +55257,63 @@
+   = 0x2%0A
++%09PROC_SUPER_MAGIC                     = 0x9fa0%0A
+ %09PROT_EX
+@@ -60015,32 +60015,83 @@
+           = 0x2%0A
++%09PSTOREFS_MAGIC                       = 0x6165676c%0A
+ %09PTRACE_ATTACH  
+@@ -65611,32 +65611,280 @@
+           = 0x0%0A
++%09QNX4_SUPER_MAGIC                     = 0x2f%0A%09QNX6_SUPER_MAGIC                     = 0x68191122%0A%09RAMFS_MAGIC                          = 0x858458f6%0A%09RDTGROUP_SUPER_MAGIC                 = 0x7655821%0A%09REISERFS_SUPER_MAGIC                 = 0x52654973%0A
+ %09RLIMIT_AS      
+@@ -74249,16 +74249,118 @@
+   = 0x1%0A
++%09SECURITYFS_MAGIC                     = 0x73636673%0A%09SELINUX_MAGIC                        = 0xf97cff8c%0A
+ %09SHUT_RD
+@@ -78290,16 +78290,67 @@
+  0x894a%0A
++%09SMACK_MAGIC                          = 0x43415d53%0A
+ %09SMART_A
+@@ -78971,16 +78971,114 @@
+  = 0xd7%0A
++%09SMB_SUPER_MAGIC                      = 0x517b%0A%09SOCKFS_MAGIC                         = 0x534f434b%0A
+ %09SOCK_CL
+@@ -84004,24 +84004,126 @@
+       = 0x2%0A
++%09SQUASHFS_MAGIC                       = 0x73717368%0A%09STACK_END_MAGIC                      = 0x57ac6e9d%0A
+ %09STATX_ALL  
+@@ -85065,16 +85065,67 @@
+ 0000000%0A
++%09SYSFS_MAGIC                          = 0x62656572%0A
+ %09S_BLKSI
+@@ -93435,16 +93435,66 @@
+  0x5437%0A
++%09TMPFS_MAGIC                          = 0x1021994%0A
+ %09TOSTOP 
+@@ -93531,16 +93531,67 @@
+ = 0x100%0A
++%09TRACEFS_MAGIC                        = 0x74726163%0A
+ %09TS_COMM
+@@ -94953,16 +94953,67 @@
+ 00454dc%0A
++%09UDF_SUPER_MAGIC                      = 0x15013346%0A
+ %09UMOUNT_
+@@ -95048,16 +95048,63 @@
+   = 0x8%0A
++%09USBDEVICE_SUPER_MAGIC                = 0x9fa2%0A
+ %09UTIME_N
+@@ -95197,16 +95197,66 @@
+ ffffffe%0A
++%09V9FS_MAGIC                           = 0x1021997%0A
+ %09VDISCAR
+@@ -101177,16 +101177,67 @@
+   = 0x4%0A
++%09XENFS_SUPER_MAGIC                    = 0xabba1974%0A
+ %09XTABS  
+@@ -101275,16 +101275,67 @@
+  0x1800%0A
++%09ZSMALLOC_MAGIC                       = 0x58295829%0A
+ )%0A%0A// Er
+- f d72f496cddbd7b49228dc2691732f0bfd4d40d7ac2bdae2bd0a0c6b6e97b1ae9 vendor/golang.org/x/sys/unix/ztypes_linux_386.go
++ f c9bfc5df1dfb3a6191ad951ab9f12454d8d5098b87106b9c5254f0149cf74a8c vendor/golang.org/x/sys/unix/ztypes_linux_386.go
+dmppatch 7
+@@ -1736,221 +1736,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int32%0A%09Bsize   int32%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int32%0A%09Frsize  int32%0A%09Flags   int32%0A%09Spare   %5B4%5Dint32%0A%7D%0A%0A
+ type
+@@ -26876,16 +26876,447 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int32%0A%09Bsize   int32%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int32%0A%09Frsize  int32%0A%09Flags   int32%0A%09Spare   %5B4%5Dint32%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f d7aa1151b5c9d51e65d508fb81aa6f60fd5a4e06845322653954c2bfcc3428df vendor/golang.org/x/sys/unix/ztypes_linux_amd64.go
++ f a4e975ec66a9eaa293d1c2f175a3cb84f0f2995ce00be1ee18f9ecdf62f45749 vendor/golang.org/x/sys/unix/ztypes_linux_amd64.go
+dmppatch 7
+@@ -1746,221 +1746,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Frsize  int64%0A%09Flags   int64%0A%09Spare   %5B4%5Dint64%0A%7D%0A%0A
+ type
+@@ -27237,16 +27237,447 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Frsize  int64%0A%09Flags   int64%0A%09Spare   %5B4%5Dint64%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f ddc3bc74ce22b929dadc81e1f466757f7c66f5f6ac6fc55daae5fc217fdbb898 vendor/golang.org/x/sys/unix/ztypes_linux_arm.go
++ f f80f99b0334d9ead485a494008ca8db16062eb6c70d4f48cfeeb6ac6d87ac195 vendor/golang.org/x/sys/unix/ztypes_linux_arm.go
+dmppatch 7
+@@ -1748,238 +1748,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int32%0A%09Bsize   int32%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int32%0A%09Frsize  int32%0A%09Flags   int32%0A%09Spare   %5B4%5Dint32%0A%09_       %5B4%5Dbyte%0A%7D%0A%0A
+ type
+@@ -26688,16 +26688,464 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int32%0A%09Bsize   int32%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int32%0A%09Frsize  int32%0A%09Flags   int32%0A%09Spare   %5B4%5Dint32%0A%09_       %5B4%5Dbyte%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f 1be660bd89d8479c95a964957c63c1c6fbe2ac7649b37607bcb977ccc5f5bddd vendor/golang.org/x/sys/unix/ztypes_linux_arm64.go
++ f ebe4b1d73632b157bf1e523e4700a4e05803d21310b634a00df554def98d6a1b vendor/golang.org/x/sys/unix/ztypes_linux_arm64.go
+dmppatch 7
+@@ -1771,221 +1771,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Frsize  int64%0A%09Flags   int64%0A%09Spare   %5B4%5Dint64%0A%7D%0A%0A
+ type
+@@ -26881,16 +26881,447 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Frsize  int64%0A%09Flags   int64%0A%09Spare   %5B4%5Dint64%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f d8ba367398a22162099072191437bb268f9c49cc55f210a05e136af966b060a0 vendor/golang.org/x/sys/unix/ztypes_linux_mips.go
++ f 011e549cb5e28712beef779cfa49249d248513d60fce8b7978b225417b949253 vendor/golang.org/x/sys/unix/ztypes_linux_mips.go
+dmppatch 7
+@@ -1720,255 +1720,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int32%0A%09Bsize   int32%0A%09Frsize  int32%0A%09_       %5B4%5Dbyte%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Bavail  uint64%0A%09Fsid    Fsid%0A%09Namelen int32%0A%09Flags   int32%0A%09Spare   %5B5%5Dint32%0A%09_       %5B4%5Dbyte%0A%7D%0A%0A
+ type
+@@ -26757,16 +26757,481 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int32%0A%09Bsize   int32%0A%09Frsize  int32%0A%09_       %5B4%5Dbyte%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Bavail  uint64%0A%09Fsid    Fsid%0A%09Namelen int32%0A%09Flags   int32%0A%09Spare   %5B5%5Dint32%0A%09_       %5B4%5Dbyte%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f c2e169edb040a1f4ec5c6f379f4ebeafa3e1420d548bf2353d02500e16ed7938 vendor/golang.org/x/sys/unix/ztypes_linux_mips64.go
++ f ff862a67943de3306c5972576763073eb24a5789b039c0ff38beb427a49db85b vendor/golang.org/x/sys/unix/ztypes_linux_mips64.go
+dmppatch 7
+@@ -1764,221 +1764,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Frsize  int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Bavail  uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Flags   int64%0A%09Spare   %5B5%5Dint64%0A%7D%0A%0A
+ type
+@@ -26919,16 +26919,447 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Frsize  int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Bavail  uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Flags   int64%0A%09Spare   %5B5%5Dint64%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f bf7f19a55c4c75510743ed9f34d0c03d60887dac1e0007cd9695e188e6faf130 vendor/golang.org/x/sys/unix/ztypes_linux_mips64le.go
++ f e216266f91fc18d72ce5ede52e4dfcd55d547f6f8b2b16bbe96b10db04857002 vendor/golang.org/x/sys/unix/ztypes_linux_mips64le.go
+dmppatch 7
+@@ -1766,221 +1766,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Frsize  int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Bavail  uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Flags   int64%0A%09Spare   %5B5%5Dint64%0A%7D%0A%0A
+ type
+@@ -26921,16 +26921,447 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Frsize  int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Bavail  uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Flags   int64%0A%09Spare   %5B5%5Dint64%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f e8ef2d35210a4012d0174b18696d7343f3e3380945e4d8c202b55183f5605d23 vendor/golang.org/x/sys/unix/ztypes_linux_mipsle.go
++ f bf007ab7db0a6eee0b02f8999e065375b27753cb7c57e62f7f485cd888168aed vendor/golang.org/x/sys/unix/ztypes_linux_mipsle.go
+dmppatch 7
+@@ -1722,255 +1722,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int32%0A%09Bsize   int32%0A%09Frsize  int32%0A%09_       %5B4%5Dbyte%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Bavail  uint64%0A%09Fsid    Fsid%0A%09Namelen int32%0A%09Flags   int32%0A%09Spare   %5B5%5Dint32%0A%09_       %5B4%5Dbyte%0A%7D%0A%0A
+ type
+@@ -26759,16 +26759,481 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int32%0A%09Bsize   int32%0A%09Frsize  int32%0A%09_       %5B4%5Dbyte%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Bavail  uint64%0A%09Fsid    Fsid%0A%09Namelen int32%0A%09Flags   int32%0A%09Spare   %5B5%5Dint32%0A%09_       %5B4%5Dbyte%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f 92bd2b9f8454443b749b42a4fa73e494a8a54397ab5fbfba9174abaa79d9ab55 vendor/golang.org/x/sys/unix/ztypes_linux_ppc64.go
++ f ec326b7d6ce7456772d8a7d3e1a1328cbfdd92609d1e9a87c3f17725b36ee1f0 vendor/golang.org/x/sys/unix/ztypes_linux_ppc64.go
+dmppatch 7
+@@ -1771,221 +1771,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Frsize  int64%0A%09Flags   int64%0A%09Spare   %5B4%5Dint64%0A%7D%0A%0A
+ type
+@@ -27063,16 +27063,447 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Frsize  int64%0A%09Flags   int64%0A%09Spare   %5B4%5Dint64%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f 10de613a8fa04c0566a5b26cd95abc381b338b6fd7e57d22ca6ad58e6794c95a vendor/golang.org/x/sys/unix/ztypes_linux_ppc64le.go
++ f de8a9f562f919a1e23b6fe32afe9fa0343d75cf9f6e86e338f57648d8ba8208c vendor/golang.org/x/sys/unix/ztypes_linux_ppc64le.go
+dmppatch 7
+@@ -1773,221 +1773,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Frsize  int64%0A%09Flags   int64%0A%09Spare   %5B4%5Dint64%0A%7D%0A%0A
+ type
+@@ -27065,16 +27065,447 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    int64%0A%09Bsize   int64%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen int64%0A%09Frsize  int64%0A%09Flags   int64%0A%09Spare   %5B4%5Dint64%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f a2d60c464d0c0d1177bc601b5a46209b4a1cafcd4094f24d8ec19e20ac881cdb vendor/golang.org/x/sys/unix/ztypes_linux_s390x.go
++ f 51770f6ac9832802a81a9c51c80718a0da245156481fa1b2b786002f72a4c018 vendor/golang.org/x/sys/unix/ztypes_linux_s390x.go
+dmppatch 7
+@@ -1755,244 +1755,8 @@
+ %0A%7D%0A%0A
+-type Statfs_t struct %7B%0A%09Type    uint32%0A%09Bsize   uint32%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen uint32%0A%09Frsize  uint32%0A%09Flags   uint32%0A%09Spare   %5B4%5Duint32%0A%09_       %5B4%5Dbyte%0A%7D%0A%0A
+ type
+@@ -27434,16 +27434,470 @@
+ y_word uint16%0A%7D%0A
++%0Atype Statfs_t struct %7B%0A%09Type    uint32%0A%09Bsize   uint32%0A%09Blocks  uint64%0A%09Bfree   uint64%0A%09Bavail  uint64%0A%09Files   uint64%0A%09Ffree   uint64%0A%09Fsid    Fsid%0A%09Namelen uint32%0A%09Frsize  uint32%0A%09Flags   uint32%0A%09Spare   %5B4%5Duint32%0A%09_       %5B4%5Dbyte%0A%7D%0A%0Aconst (%0A%09ST_MANDLOCK    = 0x40%0A%09ST_NOATIME     = 0x400%0A%09ST_NODEV       = 0x4%0A%09ST_NODIRATIME  = 0x800%0A%09ST_NOEXEC      = 0x8%0A%09ST_NOSUID      = 0x2%0A%09ST_RDONLY      = 0x1%0A%09ST_RELATIME    = 0x1000%0A%09ST_SYNCHRONOUS = 0x10%0A)%0A
+- f 4153176ab3b276972f5d5dbb0d605c6a814d26c004f0dcd89558504141e1979c vendor/golang.org/x/sys/windows/asm_windows_386.s
++ f c69cfe49a7379d33fa15c5ffc878178672252782f6d353aadef3eef4a266b3ec vendor/golang.org/x/sys/windows/asm_windows_386.s
+dmppatch 10
+@@ -244,43 +244,44 @@
+ //%0A%0A
+-TEXT %C2%B7getprocaddress(SB), 7, $0-8%0A
++TEXT %C2%B7getprocaddress(SB), 7, $0-16%0A
+ %09JMP
+@@ -314,40 +314,41 @@
+ B)%0A%0A
+-TEXT %C2%B7loadlibrary(SB), 7, $0-4%0A
++TEXT %C2%B7loadlibrary(SB), 7, $0-12%0A
+ %09JMP
+treehash 68ea56983785166d9cd31a28bd4edce9450a4f612517a082adef4c1a4f7cad78

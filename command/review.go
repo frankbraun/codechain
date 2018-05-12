@@ -16,9 +16,17 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func showPatchInfo(c *hashchain.HashChain, i, idx int, treeHashes, treeComments []string) {
+func showPatchInfo(
+	c *hashchain.HashChain, i, idx int,
+	treeHashes, treeComments []string,
+	foundBarrier int,
+) {
 	pub, comment := c.SignerInfo(treeHashes[i])
-	fmt.Printf("patch %d/%d\n", i-idx, len(treeHashes)-idx-1)
+	if foundBarrier > 0 {
+		fmt.Printf("patch %d/%d\n", i-foundBarrier+1, idx-foundBarrier+1)
+	} else { // after barrier
+		fmt.Printf("patch %d/%d\n", i-idx, len(treeHashes)-idx-1)
+	}
 	if treeComments[i] != "" {
 		fmt.Println(treeComments[i])
 	}
@@ -122,10 +130,14 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string, detached, useGi
 
 	// show commits which have been signed, but not by this signer
 	barrier := c.SignerBarrier(pubKey)
+	var foundBarrier int
 outer:
 	for i := 1; i <= idx; i++ {
 		if c.SourceLine(treeHashes[i]) > barrier {
-			showPatchInfo(c, i, idx, treeHashes, treeComments)
+			if foundBarrier == 0 {
+				foundBarrier = i
+			}
+			showPatchInfo(c, i, idx, treeHashes, treeComments, foundBarrier)
 			err := terminal.Confirm("review already signed patch (no continues)?")
 			if err != nil {
 				if err == terminal.ErrAbort {
@@ -140,7 +152,7 @@ outer:
 	}
 
 	for i := idx + 1; i < len(treeHashes); i++ {
-		showPatchInfo(c, i, idx, treeHashes, treeComments)
+		showPatchInfo(c, i, idx, treeHashes, treeComments, 0)
 		if err := terminal.Confirm("review patch (no aborts)?"); err != nil {
 			return err
 		}

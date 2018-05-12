@@ -19,8 +19,8 @@ func (c *HashChain) DeepVerify(treeDir, patchDir string, excludePaths []string) 
 	if err := file.RemoveAll(treeDir, excludePaths); err != nil {
 		return err
 	}
-	log.Printf("mkdir %s", treeDir)
-	if err := os.Mkdir(treeDir, 0755); err != nil {
+	log.Printf("mkdir -p %s", treeDir)
+	if err := os.MkdirAll(treeDir, 0755); err != nil {
 		return err
 	}
 

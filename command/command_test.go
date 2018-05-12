@@ -17,18 +17,53 @@ const (
 )
 
 func TestKey(t *testing.T) {
+	tmpdirDist, err := ioutil.TempDir("", "command_test")
+	if err != nil {
+		t.Fatalf("TempDir() failed: %v", err)
+	}
+	defer os.RemoveAll(tmpdirDist)
 	tmpdir, err := ioutil.TempDir("", "command_test")
 	if err != nil {
 		t.Fatalf("TempDir() failed: %v", err)
 	}
 	defer os.RemoveAll(tmpdir)
+
 	err = file.Copy(filepath.Join("testdata", "testkey.bin"),
 		filepath.Join(tmpdir, "testkey.bin"))
 	if err != nil {
 		t.Fatalf("file.Copy() failed: %v", err)
 	}
+
+	if err := os.Chdir(".."); err != nil {
+		t.Fatalf("os.Chdir() failed: %v", err)
+	}
+	err = os.MkdirAll(filepath.Join(tmpdirDist, def.CodechainDir), 0755)
+	if err != nil {
+		t.Fatalf("os.MkdirAll() failed: %v", err)
+	}
+	distFile := filepath.Join(tmpdirDist, def.CodechainDir, "dist.tar.gz")
+	// codechain createdist -f
+	err = CreateDist("createdist", "-f", distFile)
+	if err != nil {
+		t.Fatalf("DistFile() failed: %v ", err)
+	}
+
+	if err := os.Chdir(tmpdirDist); err != nil {
+		t.Fatalf("os.Chdir() failed: %v", err)
+	}
+
+	// codechain apply -f
+	err = Apply("apply", "-f", distFile)
+	if err != nil {
+		t.Fatalf("Apply() failed: %v ", err)
+	}
+
 	if err := os.Chdir(tmpdir); err != nil {
 		t.Fatalf("os.Chdir() failed: %v", err)
+	}
+
+	if err = os.RemoveAll(filepath.Join(tmpdir, def.CodechainDir)); err != nil {
+		t.Fatalf("os.RemoveAll() failed: %v", err)
 	}
 	// codechain treehash
 	err = TreeHash("treehash")
@@ -42,7 +77,7 @@ func TestKey(t *testing.T) {
 	}
 	testPass = "passphrase"
 	testComment = "John Doe"
-	// codechain keyge -s seckey.bin
+	// codechain keygen -s seckey.bin
 	err = KeyGen("keygen", "-s", "seckey.bin")
 	if err != nil {
 		t.Fatalf("KeyGen() failed: %v ", err)
@@ -69,8 +104,28 @@ func TestKey(t *testing.T) {
 	if err != nil {
 		t.Errorf("AddKey() failed: %v ", err)
 	}
+	// codechain sigctl -m 3
+	err = SigCtl("sigctl", "-m", "3")
+	if err != nil {
+		t.Errorf("AddKey() failed: %v ", err)
+	}
+	// codechain sigctl -m 1
+	err = SigCtl("sigctl", "-m", "1")
+	if err != nil {
+		t.Errorf("AddKey() failed: %v ", err)
+	}
+	// codechain remkey pubkey
+	err = RemKey("remkey", testPubkey)
+	if err != nil {
+		t.Errorf("RemKey() failed: %v ", err)
+	}
 	// codechain status
 	err = Status("status")
+	if err != nil {
+		t.Errorf("Status() failed: %v ", err)
+	}
+	// codechain status -deep-verify
+	err = Status("status", "-deep-verify")
 	if err != nil {
 		t.Errorf("Status() failed: %v ", err)
 	}
@@ -121,6 +176,11 @@ func TestHelp(t *testing.T) {
 	err = SigCtl("codechain sigctl", "-h")
 	if err != flag.ErrHelp {
 		t.Errorf("codechain sigctl -h should fail with flag.ErrHelp: %v", err)
+	}
+	// codechain createdist -h
+	err = CreateDist("codechain createdist", "-h")
+	if err != flag.ErrHelp {
+		t.Errorf("codechain createdist -h should fail with flag.ErrHelp: %v", err)
 	}
 	// codechain apply -h
 	err = Apply("codechain apply", "-h")

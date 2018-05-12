@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/util/file"
 )
 
 func TestDeepVerify(t *testing.T) {
@@ -16,7 +17,14 @@ func TestDeepVerify(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpdir)
 
-	c, err := ReadFile(filepath.Join("..", def.HashchainFile))
+	hashChainFile := filepath.Join("..", def.HashchainFile)
+	hashChainTmp := filepath.Join(tmpdir, "hashchain")
+	err = file.Copy(hashChainFile, hashChainTmp)
+	if err != nil {
+		t.Fatalf("file.Copy() failed: %v", err)
+	}
+
+	c, err := ReadFile(hashChainTmp)
 	if err != nil {
 		t.Fatalf("ReadFile() failed: %v", err)
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/sync"
+	"github.com/frankbraun/codechain/util/file"
 )
 
 func TestDir(t *testing.T) {
@@ -18,7 +19,18 @@ func TestDir(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpdir)
 
-	c, err := hashchain.ReadFile(filepath.Join("..", def.HashchainFile))
+	hashChainFile := filepath.Join("..", def.HashchainFile)
+	err = os.Mkdir(filepath.Join(tmpdir, def.CodechainDir), 0755)
+	if err != nil {
+		t.Fatalf("os.Mkdir() failed: %v", err)
+	}
+	hashChainTmp := filepath.Join(tmpdir, def.HashchainFile)
+	err = file.Copy(hashChainFile, hashChainTmp)
+	if err != nil {
+		t.Fatalf("file.Copy() failed: %v", err)
+	}
+
+	c, err := hashchain.ReadFile(hashChainTmp)
 	if err != nil {
 		t.Fatalf("hashchain.ReadFile() failed: %v", err)
 	}

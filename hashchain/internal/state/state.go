@@ -313,15 +313,9 @@ func (s *State) Sign(linkHash, pubKey [32]byte) error {
 	if !ok {
 		return errors.New("state: Sign(): unknown pubKey")
 	}
-	// make sure this pubkey hasn't already signed
 	log.Printf("state.Sign(): pubKey=%s", pub)
 	log.Printf("state.Sign(): line=%d", line)
 	log.Printf("state.Sign(): signerBarrier=%d", s.signerBarriers[pub])
-	/* let him sign again?
-	if line <= s.signerBarriers[pub]+1 {
-		return errors.New("this pubkey has already signed")
-	}
-	*/
 	// sign lines not signed by this signer yet
 	for i := s.signerBarriers[pub] + 1; i <= line; i++ {
 		s.unconfirmedOPs[i].sign(weight)

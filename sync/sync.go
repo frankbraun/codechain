@@ -2,7 +2,6 @@
 package sync
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -65,7 +64,7 @@ func Dir(
 	}
 	if i == idx {
 		if !canRemoveDir {
-			return errors.New("sync: could not find a valid start to apply, try with empty dir")
+			return ErrCannotRemove
 		}
 		log.Println("could not find a valid start to apply, trying with empty dir...")
 		if err := os.RemoveAll(treeDir); err != nil {

@@ -44,3 +44,9 @@ var ErrWrongSigAddKey = errors.New("hashchain: addkey signature doesn't validate
 
 // ErrWrongSigSignature is returned when the signature of a signature entry doesn't validate.
 var ErrWrongSigSignature = errors.New("hashchain: signature signature doesn't validate")
+
+// ErrCannotMerge is returned if two hash chains cannot be merged.
+var ErrCannotMerge = errors.New("hashchain: cannot merge")
+
+// ErrNothingToMerge is returned if there is nothing to merge.
+var ErrNothingToMerge = errors.New("hashchain: nothing to merge")

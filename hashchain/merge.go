@@ -1,7 +1,6 @@
 package hashchain
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -10,11 +9,11 @@ func (c *HashChain) Merge(src *HashChain) error {
 	i := 0
 	for ; i < len(c.chain) && i < len(src.chain); i++ {
 		if !linkEqual(c.chain[i], src.chain[i]) {
-			return errors.New("hashchain: cannot merge")
+			return ErrCannotMerge
 		}
 	}
 	if len(src.chain) < len(c.chain) {
-		return errors.New("hashchain: nothing to merge")
+		return ErrNothingToMerge
 	}
 	for ; i < len(src.chain); i++ {
 		var l link

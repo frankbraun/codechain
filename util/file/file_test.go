@@ -61,6 +61,21 @@ func TestCopyDir(t *testing.T) {
 	if exists {
 		t.Error("exists should be false")
 	}
+
+	// remove everything except codechain directory
+	err = file.RemoveAll(dst, def.ExcludePaths)
+	if err != nil {
+		t.Fatalf("RemoveAll() failed: %v", err)
+	}
+
+	// make sure codechain directory still exists
+	exists, err = file.Exists(filepath.Join(dst, def.CodechainDir))
+	if err != nil {
+		t.Fatalf("Exists() failed: %v", err)
+	}
+	if !exists {
+		t.Error("exists should be true")
+	}
 }
 
 func TestIsBinaryTrue(t *testing.T) {
@@ -80,15 +95,5 @@ func TestIsBinaryFalse(t *testing.T) {
 	}
 	if isBinary {
 		t.Error("isBinary should be false")
-	}
-}
-
-func TestExistsTrue(t *testing.T) {
-	exists, err := file.Exists(filepath.Join("testdata", "foo.txt"))
-	if err != nil {
-		t.Fatalf("Exists() failed: %v", err)
-	}
-	if !exists {
-		t.Error("exists should be true")
 	}
 }

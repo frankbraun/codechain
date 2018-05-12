@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/terminal"
 )
@@ -17,13 +18,13 @@ func cleanSlate() error {
 	if err != nil {
 		return err
 	}
-outerA:
+outer:
 	for _, fi := range files {
 		if def.ExcludePaths != nil {
 			canonical := filepath.ToSlash(fi.Name())
 			for _, excludePath := range def.ExcludePaths {
 				if excludePath == canonical {
-					continue outerA
+					continue outer
 				}
 			}
 		}
@@ -39,22 +40,7 @@ outerA:
 		return err
 	}
 
-outerB:
-	for _, fi := range files {
-		if def.ExcludePaths != nil {
-			canonical := filepath.ToSlash(fi.Name())
-			for _, excludePath := range def.ExcludePaths {
-				if excludePath == canonical {
-					continue outerB
-				}
-			}
-		}
-		if err := os.RemoveAll(fi.Name()); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return file.RemoveAll(".", def.ExcludePaths)
 }
 
 // CleanSlate implements the 'cleanslate' command.

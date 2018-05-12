@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
@@ -94,10 +95,12 @@ func Apply(hashchainFile, patchDir string, r io.Reader) error {
 		}
 		log.Printf("archive: read %s", hdr.Name)
 		if hdr.Name == globalHashchainFile {
+			log.Printf("hashchainFile: %s", hashchainFile)
 			exists, err := file.Exists(hashchainFile)
 			if err != nil {
 				return err
 			}
+			log.Printf("exists: %s", strconv.FormatBool(exists))
 			if exists {
 				// try to merge hashchain files
 				c, err := hashchain.ReadFile(hashchainFile)
@@ -118,6 +121,9 @@ func Apply(hashchainFile, patchDir string, r io.Reader) error {
 					return err
 				}
 			} else {
+				if err := os.MkdirAll(filepath.Dir(hashchainFile), 0755); err != nil {
+					return err
+				}
 				if err := os.MkdirAll(patchDir, 0755); err != nil {
 					return err
 				}

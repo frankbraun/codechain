@@ -157,3 +157,27 @@ func CopyDir(src, dst string) error {
 func CopyDirExclude(src, dst string, excludePaths []string) error {
 	return copyDir(src, dst, excludePaths)
 }
+
+// RemoveAll removes all files and directories in path except the ones given
+// in excludePaths.
+func RemoveAll(path string, excludePaths []string) error {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
+outer:
+	for _, fi := range files {
+		if excludePaths != nil {
+			canonical := filepath.ToSlash(fi.Name())
+			for _, excludePath := range excludePaths {
+				if excludePath == canonical {
+					continue outer
+				}
+			}
+		}
+		if err := os.RemoveAll(fi.Name()); err != nil {
+			return err
+		}
+	}
+	return nil
+}

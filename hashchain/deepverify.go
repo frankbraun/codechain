@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/sync"
+	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -15,7 +16,7 @@ func (c *HashChain) DeepVerify(treeDir, patchDir string, excludePaths []string) 
 
 	// remove treeDir first
 	log.Printf("rm -rf %s", treeDir)
-	if err := os.RemoveAll(treeDir); err != nil {
+	if err := file.RemoveAll(treeDir, excludePaths); err != nil {
 		return err
 	}
 	log.Printf("mkdir %s", treeDir)

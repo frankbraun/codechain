@@ -1,0 +1,60 @@
+codechain patchfile version 1
+treehash 68ea56983785166d9cd31a28bd4edce9450a4f612517a082adef4c1a4f7cad78
+- f b847bbc2e297776f2d47cb8c00d6dd9b2ac815753f51b94a4050e804e8b4d493 Gopkg.lock
++ f d85d8c79ea9927df624061ccdaba3d5e627e6bb0fc4dccd968340843033cf353 Gopkg.lock
+dmppatch 9
+@@ -534,32 +534,187 @@
+ %22%0A%0A%5B%5Bprojects%5D%5D%0A
++  branch = %22master%22%0A  name = %22github.com/mutecomm/mute%22%0A  packages = %5B%22util/fuzzer%22%5D%0A  revision = %228124193e6371a55a2f2adea4158084d514561a51%22%0A%0A%5B%5Bprojects%5D%5D%0A
+   name = %22github
+@@ -1380,93 +1380,93 @@
+ = 1%0A
+-  inputs-digest = %22db38a8b17c792ec111ccd425ad5b41fb0ccd7f1da258868d8fee6879b19ed436%22%0A
++  inputs-digest = %22eba0cf7bcedd98584f04ccc7ab8b051df38cdd53b95713e3fb58c762ae5b85f2%22%0A
+   so
+- f 31af541c2b169105062d9234aa5bda3b0e98daf9b30358984622c2dd081b94fe README.md
++ f ed2db0013bc701e4d6e32bccf9fd444b6085b2ca04a9e76558688d0b787ccf0d README.md
+dmppatch 10
+@@ -583,103 +583,541 @@
+ *!%0A%0A
+-Codechain establishes code trust via multi-party reviews recorded in%0Aunmodifiable hash chains.%0A
++In code we trust: Secure multiparty code reviews with signatures and%0Ahash chains.%0A%0AThe most common signing mechanism for open-source software is using GPG%0Asignatures. For example, GPG is used to sign Git commits and Debian%0Apackages. There is no built-in mechanism for key rotation and key%0Acompromise. And if forced to, a single developer can subvert all%0Amachines which trust the corresponding GPG key.%0A%0AThat's where the Codechain tool comes in. It establishes code trust via%0Amulti-party reviews recorded in unmodifiable hash chains.%0A
+ %0ACod
+@@ -1754,513 +1754,496 @@
+ pe%0A%0A
+-- Source code management. Git and other VCS systems are good for that, Codechain%0A  can be used alongside them and solves a different problem.%0A- Single source of truth (SSOT). Codechain requires a SSOT to distribute the%0A  current hash chain head, but that's outside of the scope for now. DNS (plus%0A  DNSCrypt) or DNSSEC could be used. Gossiping of the current head would also%0A  work.%0A- Code distribution.%0A%0A### Walkthrough%0A%0A%5B!%5Basciicast%5D(https://asciinema.org/a/181075.png)%5D(https://asciinema.org/a/181075)%0A
++- Source code management. Git and other VCS systems are good for that,%0A  Codechain can be used alongside them and solves a different problem.%0A- Single source of truth (SSOT). Codechain requires a SSOT to distribute%0A  the current hash chain head, but that's outside of the scope for now.%0A  DNS (plus DNSCrypt) or DNSSEC could be used. Gossiping of the current%0A  head would also work.%0A- Code distribution (minimal support is provided via %60codechain%0A  createdist%60 and %60codechain apply -f%60).%0A
+ %0A###
+- f a20fd452cce442bdc9f6077d4adfe68de22ffe910f38575ae2a09ecd6d6e326b hashchain/doc.go
++ f c4a2bbee0f39783249ab2135a860f244bcb196051b75f8df2b116bd4475ac44e hashchain/doc.go
+dmppatch 5
+@@ -532,264 +532,300 @@
+ ).%0A%0A
+-All hashes in a hash chain are SHA256 hashes encoded in hex notation. All%0Apublic keys are Ed25519 keys and they and their signatures are encoded in%0Abase64 (URL encoding without padding). Comments are arbitrary UTF-8 sequences,%0Abut cannot contain newlines.%0A
++All hashes in a hash chain are SHA256 hashes encoded in hex notation.%0AHex encodings have to be lowercase. All public keys are Ed25519 keys and they%0Aand their signatures are encoded in base64 (URL encoding without padding).%0AComments are arbitrary UTF-8 sequences, but cannot contain newlines.%0A
+ %0AThe
++ f c40e00a906340ba858ccee97749a3334b92d31d9e0d717308cb276205694f605 hashchain/fuzzer_test.go
+dmppatch 2
+@@ -0,0 +1,1611 @@
++package hashchain%0A%0Aimport (%0A%09%22bytes%22%0A%09%22errors%22%0A%09%22io/ioutil%22%0A%09%22path/filepath%22%0A%09%22testing%22%0A%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/mutecomm/mute/util/fuzzer%22%0A)%0A%0Afunc ignoreWindow(buf %5B%5Dbyte) (int, int, error) %7B%0A%09// determine position of last date field to exclude it from fuzzing%0A%09c, err := Read(bytes.NewBuffer(buf))%0A%09if err != nil %7B%0A%09%09return 0, 0, err%0A%09%7D%0A%09var length int%0A%09for i := 0; i %3C len(c.chain)-1; i++ %7B%0A%09%09length += len(c.chain%5Bi%5D.String()) + 1%0A%09%7D%0A%09length += 65 // linkhash + white space%0A%09ignoreStart := length * 8%0A%09ignoreEnd := (length + 20 - 1) * 8 // 20 = length of date field%0A%09return ignoreStart, ignoreEnd, nil%0A%7D%0A%0Afunc TestFuzzer(t *testing.T) %7B%0A%09buf, err := ioutil.ReadFile(filepath.Join(%22..%22, def.HashchainFile))%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ioutil.ReadFile() failed: %25v%22, err)%0A%09%7D%0A%0A%09ignoreStart, ignoreEnd, err := ignoreWindow(buf)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ignoreWindow() failed: %25v%22, err)%0A%09%7D%0A%0A%09// Fuzz entire hash chain.%0A%09var currentBit int%0A%09var failedBits int%0A%09fzzr := &fuzzer.SequentialFuzzer%7B%0A%09%09Data: buf,%0A%09%09// Let's not consider the last newline and the character before,%0A%09%09// base64 can be modified somewhat without changing the byte sequence.%0A%09%09End: (len(buf) - 2) * 8,%0A%09%09TestFunc: func(buf %5B%5Dbyte) error %7B%0A%09%09%09defer func() %7B%0A%09%09%09%09currentBit++%0A%09%09%09%7D()%0A%09%09%09if ignoreStart %3C= currentBit && currentBit %3C= ignoreEnd %7B%0A%09%09%09%09return errors.New(%22ignore bit%22)%0A%09%09%09%7D%0A%09%09%09if _, err := Read(bytes.NewBuffer(buf)); err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09failedBits++%0A%09%09%09return nil%0A%09%09%7D,%0A%09%7D%0A%09if ok := fzzr.Fuzz(); !ok %7B%0A%09%09t.Errorf(%22fuzzer failed (%25d bits of %25d)%22, failedBits, fzzr.End)%0A%09%7D%0A%7D%0A
+- f 96b349a06359125426cd894c91f1bb4fb39e87b0a7ad7f2abbd1d2de0bc4d9cf internal/hex/hex.go
++ f 63c5782111160b024f11097ae875659b3a79a8da8941a6c0b17367e52b0e44e2 internal/hex/hex.go
+dmppatch 9
+@@ -230,153 +230,163 @@
+ %0A%7D%0A%0A
+-// Decode returns the bytes represented by the hexadecimal string s.%0A// Decode expects that src contain only hexadecimal characters and that the%0A
++// Decode returns the bytes represented by the hexadecimal string s. Decode%0A// expects that src contain only lowercase hexadecimal characters and that the%0A
+ // r
+@@ -466,16 +466,166 @@
+ rror) %7B%0A
++%09for _, c := range %5B%5Dbyte(s) %7B%0A%09%09if 'A' %3C= c && c %3C= 'F' %7B%0A%09%09%09return nil, fmt.Errorf(%22hex: only lowercase hexadecimal characters are allowed%22)%0A%09%09%7D%0A%09%7D%0A
+ %09r, err 
++ f 237ff9241a7c71fec5396f17ddd384d522e85b7c7a7d8b5bdd1b24ef243bdccc vendor/github.com/mutecomm/mute/LICENSE
+dmppatch 2
+@@ -0,0 +1,1501 @@
++Copyright (c) 2015 Mute Communications Ltd. All rights reserved.%0A%0ARedistribution and use in source and binary forms, with or without%0Amodification, are permitted provided that the following conditions are%0Amet:%0A%0A   * Redistributions of source code must retain the above copyright%0Anotice, this list of conditions and the following disclaimer.%0A   * Redistributions in binary form must reproduce the above%0Acopyright notice, this list of conditions and the following disclaimer%0Ain the documentation and/or other materials provided with the%0Adistribution.%0A   * Neither the name of Mute Communications Ltd. nor the names of its%0Acontributors may be used to endorse or promote products derived from%0Athis software without specific prior written permission.%0A%0ATHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS%0A%22AS IS%22 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT%0ALIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR%0AA PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT%0AOWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,%0ASPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT%0ALIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,%0ADATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY%0ATHEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT%0A(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE%0AOF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.%0A
++ f 01a6001a64ca976be7cf4fd228f53e0021e3739798e8b67bd23918d388522a83 vendor/github.com/mutecomm/mute/util/fuzzer/fuzzer.go
+dmppatch 2
+@@ -0,0 +1,1618 @@
++// Copyright (c) 2015 Mute Communications Ltd.%0A// Use of this source code is governed by a BSD-style%0A// license that can be found in the LICENSE file.%0A%0A// Package fuzzer provides a sequential fuzzer for testing purposes.%0Apackage fuzzer%0A%0A// SequentialFuzzer fuzzes data one bit at a time, sequentially%0Atype SequentialFuzzer struct %7B%0A%09Data       %5B%5Dbyte             // Data to fuzz%0A%09Start, End int                // Range to fuzz%0A%09Errors     %5B%5Derror            // Errors returned%0A%09ErrorCount int                // Total number of errors%0A%09TestCount  int                // Total number of tests%0A%09TestFunc   func(%5B%5Dbyte) error // The test function%0A%7D%0A%0A// Fuzz runs a fuzzing test on a SequentialFuzzer and returns false if less%0A// errors were returned than tests run.%0Afunc (sf *SequentialFuzzer) Fuzz() bool %7B%0A%09if sf.Data == nil %7C%7C len(sf.Data) == 0 %7C%7C sf.TestFunc == nil %7B%0A%09%09panic(%22Fuzz setup failed%22)%0A%09%7D%0A%09sf.ErrorCount, sf.TestCount = 0, 0%0A%09l := len(sf.Data) * 8%0A%09if sf.End %3E l %7C%7C sf.End == 0 %7B%0A%09%09sf.End = l%0A%09%7D%0A%09if sf.Start %3C 0 %7C%7C sf.Start %3E l %7B%0A%09%09sf.Start = 0%0A%09%7D%0A%09numTests := sf.End - sf.Start%0A%09sf.Errors = make(%5B%5Derror, numTests)%0A%09for i := sf.Start; i %3C sf.End; i++ %7B%0A%09%09err := sf.TestFunc(switchBit(sf.Data, i))%0A%09%09sf.Errors%5Bi-sf.Start%5D = err%0A%09%09sf.TestCount++%0A%09%09if err != nil %7B%0A%09%09%09sf.ErrorCount++%0A%09%09%7D%0A%09%7D%0A%09if sf.TestCount != sf.ErrorCount %7B%0A%09%09return false%0A%09%7D%0A%09return true%0A%7D%0A%0A// switchBit negates a single bit in d%0Afunc switchBit(d %5B%5Dbyte, pos int) %5B%5Dbyte %7B%0A%09mask := %5B8%5Dbyte%7B1, 2, 4, 8, 16, 32, 64, 128%7D%0A%09x := make(%5B%5Dbyte, len(d))%0A%09copy(x, d) // Work on copies since %5B%5Dbyte are pointers%0A%09x%5Bpos/8%5D %5E= mask%5Bpos%258%5D%0A%09return x%0A%7D%0A
+treehash 2dff260f6b465b60d83dc9dcc18b82bde55e38bb78ba5ef459e289ae38aab99e

@@ -1,0 +1,254 @@
+codechain patchfile version 1
+treehash de35625ca58bba08bc8b1a9e5e1673f05ce0e7709f7f286f148a74137ac2d518
+- f c3ca88a06b842c9edf72ba9014bf4288a03526d82d8e349eeb333c9e854f3c5c archive/archive.go
++ f 23614eb76f23f35f7212be5e936b659e3be1de93d472dbb5ea88e14b2982369d archive/archive.go
+dmppatch 22
+@@ -2001,72 +2001,166 @@
+ ed.%0A
+-func Apply(hashchainFile, patchDir string, r io.Reader) error %7B%0A
++// If head is not nil the hash chain read from r must contain the given head.%0Afunc Apply(hashchainFile, patchDir string, r io.Reader, head *%5B32%5Dbyte) error %7B%0A
+ %09zr,
+@@ -2867,24 +2867,141 @@
+ n err%0A%09%09%09%09%7D%0A
++%09%09%09%09if head != nil %7B%0A%09%09%09%09%09if err := src.CheckHead(*head); err != nil %7B%0A%09%09%09%09%09%09c.Close()%0A%09%09%09%09%09%09return err%0A%09%09%09%09%09%7D%0A%09%09%09%09%7D%0A
+ %09%09%09%09err = c.
+@@ -3311,24 +3311,202 @@
+ n err%0A%09%09%09%09%7D%0A
++%09%09%09%09src, err := hashchain.Read(tr)%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09if head != nil %7B%0A%09%09%09%09%09if err := src.CheckHead(*head); err != nil %7B%0A%09%09%09%09%09%09return err%0A%09%09%09%09%09%7D%0A%09%09%09%09%7D%0A
+ %09%09%09%09// save 
+@@ -3609,54 +3609,50 @@
+ %09%09%7D%0A
+-%09%09%09%09if _, err := io.Copy(f, tr); err != nil %7B%0A
++%09%09%09%09if err := src.Fprint(f); err != nil %7B%0A
+ %09%09%09%09
+@@ -3654,32 +3654,57 @@
+ %0A%09%09%09%09%09f.Close()%0A
++%09%09%09%09%09os.Remove(f.Name())%0A
+ %09%09%09%09%09return err%0A
+- f bff0a11490ead8db5a1674b74820b3c938917ae2fe90f99aee14c7d52546639d archive/archive_test.go
++ f fbb17d941937e97c9eda5584910454466161dff67c33bebbafe37b24c44b90ba archive/archive_test.go
+dmppatch 45
+@@ -19,16 +19,25 @@
+ mport (%0A
++%09%22bytes%22%0A
+ %09%22io/iou
+@@ -169,18 +169,272 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/internal/hex%22%0A
+ )%0A
++%0Aconst headStr = %22cae03e83f3eb27d1f48a2a8f8a0687aa70118aa87291d7da7267324ee4324e8a%22%0A%0Avar head %5B32%5Dbyte%0A%0Afunc init() %7B%0A%09h, err := hex.Decode(headStr, 32)%0A%09if err != nil %7B%0A%09%09panic(err)%0A%09%7D%0A%09copy(head%5B:%5D, h)%0A%7D%0A
+ %0Afunc Te
+@@ -1404,46 +1404,56 @@
+ %09%7D%0A%0A
+-%09fpA, err := os.Open(archiveA.Name())%0A
++%09fileA, err := ioutil.ReadFile(archiveA.Name())%0A
+ %09if 
+@@ -1487,27 +1487,8 @@
+ %0A%09%7D%0A
+-%09defer fpA.Close()%0A
+ %0A%09ha
+@@ -1596,51 +1596,252 @@
+ ir)%0A
+-%09err = Apply(hashchainFile, patchDir, fpA)%0A
++%0A%09err = Apply(hashchainFile, patchDir, bytes.NewBuffer(fileA), &head)%0A%09if err != hashchain.ErrHeadNotFound %7B%0A%09%09t.Fatal(%22Apply() should fail with hashchain.ErrHeadNotFound%22)%0A%09%7D%0A%0A%09err = Apply(hashchainFile, patchDir, bytes.NewBuffer(fileA), nil)%0A
+ %09if 
+@@ -2586,46 +2586,56 @@
+ %09%7D%0A%0A
+-%09fpB, err := os.Open(archiveB.Name())%0A
++%09fileB, err := ioutil.ReadFile(archiveB.Name())%0A
+ %09if 
+@@ -2669,71 +2669,78 @@
+ %0A%09%7D%0A
+-%09defer fpB.Close()%0A
+ %0A
+-%09err = Apply(hashchainFile, patchDir, fpB)%0A
++%09err = Apply(hashchainFile, patchDir, bytes.NewBuffer(fileB), &head)%0A
+ %09if 
+@@ -2794,16 +2794,230 @@
+ rr)%0A%09%7D%0A%0A
++%09// wrong head%0A%09head%5B0%5D = 0%0A%09err = Apply(hashchainFile, patchDir, bytes.NewBuffer(fileB), &head)%0A%09if err != hashchain.ErrHeadNotFound %7B%0A%09%09t.Fatalf(%22Apply() should fail with hashchain.ErrHeadNotFound: %25v%22, err)%0A%09%7D%0A%0A
+ %09f, err 
+@@ -3127,49 +3127,54 @@
+ ()%0A%0A
+-%09err = Apply(hashchainFile, patchDir, f)%0A
++%09err = Apply(hashchainFile, patchDir, f, nil)%0A
+ %09if 
+- f 8a2c78cbcc38e621c0c0efb4fccea23133d035a0911883ef46bf2efbdcc7b41f command/apply.go
++ f 33ae37dbac8307b090ff3fbb3cdc22544acfae44b25fe8310adb0e8a4e0d1961 command/apply.go
+dmppatch 39
+@@ -177,16 +177,64 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/internal/hex%22%0A
+ %09%22github
+@@ -316,48 +316,64 @@
+ %0A)%0A%0A
+-func applyDist(filename string) error %7B%0A
++func applyDist(filename string, head *%5B32%5Dbyte) error %7B%0A
+ %09f, 
+@@ -503,112 +503,134 @@
+ me)%0A
+-%09return archive.Apply(def.HashchainFile, def.PatchDir, f)%0A
++%09return archive.Apply(def.HashchainFile, def.PatchDir, f, head)%0A
+ %7D%0A%0A
+-func apply(c *hashchain.HashChain) error %7B%0A
++func apply(c *hashchain.HashChain, head *%5B32%5Dbyte) error %7B%0A
+ %09tar
+@@ -696,16 +696,100 @@
+ ashes()%0A
++%09if head != nil %7B%0A%09%09if err := c.CheckHead(*head); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A
+ %09err := 
+@@ -1286,16 +1286,103 @@
+  file%22)%0A
++%09headStr := fs.String(%22head%22, %22%22, %22Check that the hash chain contains the given head%22)%0A
+ %09verbose
+@@ -1582,24 +1582,189 @@
+ .ErrHelp%0A%09%7D%0A
++%09var head *%5B32%5Dbyte%0A%09if *headStr != %22%22 %7B%0A%09%09h, err := hex.Decode(*headStr, 32)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09var ha %5B32%5Dbyte%0A%09%09copy(ha%5B:%5D, h)%0A%09%09head = &ha%0A%09%7D%0A
+ %09if *filenam
+@@ -1777,55 +1777,61 @@
+ %22 %7B%0A
+-%09%09if err := applyDist(*filename); err != nil %7B%0A
++%09%09if err := applyDist(*filename, head); err != nil %7B%0A
+ %09%09%09r
+@@ -1984,23 +1984,29 @@
+ %0A%09%7D%0A
+-%09return apply(c)%0A
++%09return apply(c, head)%0A
+ %7D%0A
+- f 843a5c43e8bcd2ba00fb357a20d093312980c13d12a56a66bd65df6ea35b4e43 command/command_test.go
++ f a39c0b7c5ed556423e775c1c6c83d0daef022f5d9fe6a5585b6bd079e6d1e4ec command/command_test.go
+dmppatch 8
+@@ -75,16 +75,61 @@
+ sting%22%0A%0A
++%09%22github.com/frankbraun/codechain/hashchain%22%0A
+ %09%22github
+@@ -1380,24 +1380,495 @@
+ : %25v%22, err)%0A
++%09%7D%0A%0A%09// codechain apply -f -head wrong%0A%09err = Apply(%22apply%22, %22-f%22, distFile, %22-head%22,%0A%09%09%220000000000000000000000000000000000000000000000000000000000000000%22)%0A%09if err != hashchain.ErrHeadNotFound %7B%0A%09%09t.Fatal(%22Apply() should fail with hashchain.ErrHeadNotFound%22)%0A%09%7D%0A%0A%09// codechain apply -f -head right%0A%09err = Apply(%22apply%22, %22-f%22, distFile, %22-head%22,%0A%09%09%22734d22f9408b36141f5fe898db45d7095be539210f13f562905cc05baef5fd24%22)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Apply() failed: %25v %22, err)%0A
+ %09%7D%0A%0A%09// code
+- f 940d2fa7ee3dc101a35456f11d2856b371fc23f7c58c85cd59bd3978269c0f4b command/review.go
++ f df75a2a99c6bf4d474effcfc7d16c647c9dc0f115a7a6906da2437e0afdb101e command/review.go
+dmppatch 5
+@@ -4370,39 +4370,30 @@
+ e %7B%0A
+-%09%09linkHash = c.LastEntryHash()%0A
++%09%09linkHash = c.Head()%0A
+ %09%7D%0A%09
+- f 1debe4e75a78f1a82474bffa2e932b8a2223fbb7de138c3310a60600357ef1b3 command/status.go
++ f e53951130f423e7cb588fe8a884bc56308c89047b84b3c8b21e699da36b27d74 command/status.go
+dmppatch 4
+@@ -1789,16 +1789,83 @@
+ intln()%0A
++%09fmt.Println(%22head:%22)%0A%09fmt.Printf(%22%25x%5Cn%22, c.Head())%0A%09fmt.Println()%0A
+ %09return 
+- f 99ee6ee5405ce1ae732c9eea249a181a3d91bf1036d6e610d6eae1f79e0a29a2 hashchain/addkey.go
++ f 6bfbe48d466a15ec1ae648b43682da1e09d4e62e06bcb571d75630e1298bae86 hashchain/addkey.go
+dmppatch 5
+@@ -784,41 +784,32 @@
+ nk%7B%0A
+-%09%09previous:   c.LastEntryHash(),%0A
++%09%09previous:   c.Head(),%0A
+ %09%09da
+- f cb50dc7da1edeab7ce730e1f95cf7376b9237b98d516769be8a7c690cb635841 hashchain/errors.go
++ f 0660761cba51023e790aad0cd8f2a14a892c23f12f353f0199ce29ba7b102bd2 hashchain/errors.go
+dmppatch 3
+@@ -2393,16 +2393,155 @@
+ hing to merge%22)%0A
++%0A// ErrHeadNotFound is returnd if the head could not be found in hash chain.%0Avar ErrHeadNotFound = errors.New(%22hashchain: head not found%22)%0A
+- f fdb4f1669339a1087d9a90343b6e5ba03ee4de62184bdd2d207f5b987018edf4 hashchain/hashchain.go
++ f da7ee3ee7bb5e9bdfc179e4ded94a55a4542ea68f1c334fd125a0e9c775c8787 hashchain/hashchain.go
+dmppatch 25
+@@ -21,16 +21,25 @@
+ mport (%0A
++%09%22bytes%22%0A
+ %09%22fmt%22%0A%09
+@@ -787,108 +787,90 @@
+ %0A%7D%0A%0A
+-// LastEntryHash returns the hash of the last entry.%0Afunc (c *HashChain) LastEntryHash() %5B32%5Dbyte %7B%0A
++// Head returns the hash of the last entry.%0Afunc (c *HashChain) Head() %5B32%5Dbyte %7B%0A
+ %09ret
+@@ -900,24 +900,280 @@
+ )-1%5D.Hash()%0A
++%7D%0A%0A// CheckHead checks wether the hash chain contains the given head as entry.%0Afunc (c *HashChain) CheckHead(head %5B32%5Dbyte) error %7B%0A%09for _, l := range c.chain %7B%0A%09%09h := l.Hash()%0A%09%09if bytes.Equal(h%5B:%5D, head%5B:%5D) %7B%0A%09%09%09return nil%0A%09%09%7D%0A%09%7D%0A%09return ErrHeadNotFound%0A
+ %7D%0A%0A// LastTr
+@@ -3572,50 +3572,56 @@
+  w.%0A
+-func (c *HashChain) Fprint(w io.Writer) %7B%0A
++func (c *HashChain) Fprint(w io.Writer) error %7B%0A
+ %09for
+@@ -3649,39 +3649,96 @@
+ n %7B%0A
+-%09%09fmt.Fprintln(w, l.String())%0A
++%09%09if _, err := fmt.Fprintln(w, l.String()); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A
+ %09%7D%0A
++%09return nil%0A
+ %7D%0A
+- f 97a24b2eb6a0bc6b4f66d74604d8525308c1df4f401dbeda87422be4044f1a7c hashchain/hashchain_test.go
++ f f08ae3c31a4e2f1f1f9793db4b2777219ec2a175edabe5b977c35336cd0046e0 hashchain/hashchain_test.go
+dmppatch 28
+@@ -2009,72 +2009,63 @@
+ ed)%0A
+-%09detachedSig, err := c.Signature(c.LastEntryHash(), secA, true)%0A
++%09detachedSig, err := c.Signature(c.Head(), secA, true)%0A
+ %09if 
+@@ -3195,62 +3195,53 @@
+ ner%0A
+-%09l, err = c.Signature(c.LastEntryHash(), secA, false)%0A
++%09l, err = c.Signature(c.Head(), secA, false)%0A
+ %09if 
+@@ -3709,62 +3709,53 @@
+ ctl%0A
+-%09l, err = c.Signature(c.LastEntryHash(), secB, false)%0A
++%09l, err = c.Signature(c.Head(), secB, false)%0A
+ %09if 
+@@ -4679,62 +4679,53 @@
+ ner%0A
+-%09l, err = c.Signature(c.LastEntryHash(), secA, false)%0A
++%09l, err = c.Signature(c.Head(), secA, false)%0A
+ %09if 
+@@ -5084,62 +5084,53 @@
+ ctl%0A
+-%09l, err = c.Signature(c.LastEntryHash(), secB, false)%0A
++%09l, err = c.Signature(c.Head(), secB, false)%0A
+ %09if 
+@@ -6032,8 +6032,773 @@
+ %22)%0A%09%7D%0A%7D%0A
++%0Aconst headStr = %220636b1e6faf8724ce3145b5de15ba4ffffacc6b852e1074d6a68721bfc0a8ecb%22%0A%0Avar head %5B32%5Dbyte%0A%0Afunc init() %7B%0A%09h, err := hex.Decode(headStr, 32)%0A%09if err != nil %7B%0A%09%09panic(err)%0A%09%7D%0A%09copy(head%5B:%5D, h)%0A%7D%0A%0Afunc TestCheckHead(t *testing.T) %7B%0A%09hashChainA = filepath.Join(%22testdata%22, %22hashchain_a%22)%0A%09hashChainB = filepath.Join(%22testdata%22, %22hashchain_b%22)%0A%0A%09c, err := ReadFile(hashChainA)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09c.Close()%0A%09err = c.CheckHead(head)%0A%09if err != ErrHeadNotFound %7B%0A%09%09t.Fatal(%22CheckHead() should fail with ErrHeadNotFound%22)%0A%09%7D%0A%0A%09c, err = ReadFile(hashChainB)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09c.Close()%0A%09err = c.CheckHead(head)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22CheckHead() failed: %25v%22, err)%0A%09%7D%0A%7D%0A
+- f 9cd698f6ccd55c3371eac6faa89b6765d1acd31627482672cc4b7ac1e7fca176 hashchain/remkey.go
++ f 1e5ec96cc5be6f8f473633db11c77b7158284478a8b11ac39f8d8a24e07181dc hashchain/remkey.go
+dmppatch 5
+@@ -395,41 +395,32 @@
+ nk%7B%0A
+-%09%09previous:   c.LastEntryHash(),%0A
++%09%09previous:   c.Head(),%0A
+ %09%09da
+- f 59f2c47d74a53c7f711a4a5b3004787273e6a4c17e77a101dd169f83b520613d hashchain/sigctl.go
++ f 1c604eda3fd7005e399309168cd8a646592e0cae0cea1dbbe4d9e86f7660daf8 hashchain/sigctl.go
+dmppatch 5
+@@ -448,41 +448,32 @@
+ nk%7B%0A
+-%09%09previous:   c.LastEntryHash(),%0A
++%09%09previous:   c.Head(),%0A
+ %09%09da
+- f acddc7d6054668043bf287b724d276ea37206d2fc4710cc56251f9a0313b5ca3 hashchain/signature.go
++ f c1158f7d12c6f75bd9ee20485493d65deb1a9643cf555cf5ba5b13546b2e20f7 hashchain/signature.go
+dmppatch 10
+@@ -1272,41 +1272,32 @@
+ nk%7B%0A
+-%09%09previous:   c.LastEntryHash(),%0A
++%09%09previous:   c.Head(),%0A
+ %09%09da
+@@ -2533,41 +2533,32 @@
+ nk%7B%0A
+-%09%09previous:   c.LastEntryHash(),%0A
++%09%09previous:   c.Head(),%0A
+ %09%09da
+- f 38d3c6b2d90f0b7242d1d75ee1de57cc044fe49f58e94d7d603bc9cfbd21332e hashchain/source.go
++ f 4d20cf7e804a9aa6021ce0ab7274698d3755e8b13d52eb4592a2fda614c0f0ce hashchain/source.go
+dmppatch 5
+@@ -1173,41 +1173,32 @@
+ nk%7B%0A
+-%09%09previous:   c.LastEntryHash(),%0A
++%09%09previous:   c.Head(),%0A
+ %09%09da
+treehash 4b607a05e42694f851de25a480f5bc7a8d856851c0954b4a3866bfaa396f839a

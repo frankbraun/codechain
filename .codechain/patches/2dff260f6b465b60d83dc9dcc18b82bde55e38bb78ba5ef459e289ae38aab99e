@@ -1,0 +1,10 @@
+codechain patchfile version 1
+treehash 2dff260f6b465b60d83dc9dcc18b82bde55e38bb78ba5ef459e289ae38aab99e
+- f c43548cf21a56aca643fedaa9688ce976f2de5ce385ac3e4d1ea2d49d905bc70 hashchain/read.go
++ f a469a034a3680d2b0c14c3350a4b9ed1877eca843e2b400ff3d75ee34f899f20 hashchain/read.go
+dmppatch 4
+@@ -559,16 +559,121 @@
+ %22 %22, 4)%0A
++%09%09if len(line) != 4 %7B%0A%09%09%09return fmt.Errorf(%22could not split into 4 space separated parts: %25s%22, line)%0A%09%09%7D%0A
+ %09%09previo
+treehash de35625ca58bba08bc8b1a9e5e1673f05ce0e7709f7f286f148a74137ac2d518

@@ -22,6 +22,9 @@ func (c *HashChain) read(r io.Reader) error {
 		text := s.Text()
 		log.Println(text)
 		line := strings.SplitN(text, " ", 4)
+		if len(line) != 4 {
+			return fmt.Errorf("could not split into 4 space separated parts: %s", line)
+		}
 		previous, err := hex.Decode(line[0], 32)
 		if err != nil {
 			return err

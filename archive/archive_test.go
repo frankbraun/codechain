@@ -1,6 +1,7 @@
 package archive
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -8,7 +9,20 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/internal/hex"
 )
+
+const headStr = "cae03e83f3eb27d1f48a2a8f8a0687aa70118aa87291d7da7267324ee4324e8a"
+
+var head [32]byte
+
+func init() {
+	h, err := hex.Decode(headStr, 32)
+	if err != nil {
+		panic(err)
+	}
+	copy(head[:], h)
+}
 
 func TestCreateApply(t *testing.T) {
 	tmpdir, err := ioutil.TempDir("", "archive_test")
@@ -50,15 +64,20 @@ func TestCreateApply(t *testing.T) {
 		t.Fatalf("archiveA.Close() failed: %v", err)
 	}
 
-	fpA, err := os.Open(archiveA.Name())
+	fileA, err := ioutil.ReadFile(archiveA.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fpA.Close()
 
 	hashchainFile := filepath.Join(tmpdir, def.HashchainFile)
 	patchDir := filepath.Join(tmpdir, def.PatchDir)
-	err = Apply(hashchainFile, patchDir, fpA)
+
+	err = Apply(hashchainFile, patchDir, bytes.NewBuffer(fileA), &head)
+	if err != hashchain.ErrHeadNotFound {
+		t.Fatal("Apply() should fail with hashchain.ErrHeadNotFound")
+	}
+
+	err = Apply(hashchainFile, patchDir, bytes.NewBuffer(fileA), nil)
 	if err != nil {
 		t.Fatalf("Apply() failed: %v", err)
 	}
@@ -90,15 +109,21 @@ func TestCreateApply(t *testing.T) {
 		t.Fatalf("archiveB.Close() failed: %v", err)
 	}
 
-	fpB, err := os.Open(archiveB.Name())
+	fileB, err := ioutil.ReadFile(archiveB.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer fpB.Close()
 
-	err = Apply(hashchainFile, patchDir, fpB)
+	err = Apply(hashchainFile, patchDir, bytes.NewBuffer(fileB), &head)
 	if err != nil {
 		t.Fatalf("Apply() failed: %v", err)
+	}
+
+	// wrong head
+	head[0] = 0
+	err = Apply(hashchainFile, patchDir, bytes.NewBuffer(fileB), &head)
+	if err != hashchain.ErrHeadNotFound {
+		t.Fatalf("Apply() should fail with hashchain.ErrHeadNotFound: %v", err)
 	}
 
 	f, err := os.Open(filepath.Join("testdata", "empty.tar.gz"))
@@ -107,7 +132,7 @@ func TestCreateApply(t *testing.T) {
 	}
 	defer f.Close()
 
-	err = Apply(hashchainFile, patchDir, f)
+	err = Apply(hashchainFile, patchDir, f, nil)
 	if err != ErrUnknownFile {
 		t.Error("Apply() should fail with ErrUnknownFile")
 	}

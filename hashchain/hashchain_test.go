@@ -97,7 +97,7 @@ func TestStartSourceSign(t *testing.T) {
 	fmt.Println(l)
 
 	// sign hello.go (detached)
-	detachedSig, err := c.Signature(c.LastEntryHash(), secA, true)
+	detachedSig, err := c.Signature(c.Head(), secA, true)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
@@ -144,7 +144,7 @@ func TestStartAddKeySignSigCtlSign(t *testing.T) {
 	}
 
 	// sign other signer
-	l, err = c.Signature(c.LastEntryHash(), secA, false)
+	l, err = c.Signature(c.Head(), secA, false)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
@@ -168,7 +168,7 @@ func TestStartAddKeySignSigCtlSign(t *testing.T) {
 	fmt.Println(l)
 
 	// sign sigctl
-	l, err = c.Signature(c.LastEntryHash(), secB, false)
+	l, err = c.Signature(c.Head(), secB, false)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
@@ -208,7 +208,7 @@ func TestStartAddKeySignRemKeySign(t *testing.T) {
 	}
 
 	// sign other signer
-	l, err = c.Signature(c.LastEntryHash(), secA, false)
+	l, err = c.Signature(c.Head(), secA, false)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
@@ -228,7 +228,7 @@ func TestStartAddKeySignRemKeySign(t *testing.T) {
 	fmt.Println(l)
 
 	// sign sigctl
-	l, err = c.Signature(c.LastEntryHash(), secB, false)
+	l, err = c.Signature(c.Head(), secB, false)
 	if err != nil {
 		t.Fatalf("c.Signature() failed: %v", err)
 	}
@@ -269,5 +269,42 @@ func TestStartAddSameKey(t *testing.T) {
 	_, err = c.AddKey(1, pubA, signature, nil)
 	if err == nil {
 		t.Fatalf("c.AddKey() should failv")
+	}
+}
+
+const headStr = "0636b1e6faf8724ce3145b5de15ba4ffffacc6b852e1074d6a68721bfc0a8ecb"
+
+var head [32]byte
+
+func init() {
+	h, err := hex.Decode(headStr, 32)
+	if err != nil {
+		panic(err)
+	}
+	copy(head[:], h)
+}
+
+func TestCheckHead(t *testing.T) {
+	hashChainA = filepath.Join("testdata", "hashchain_a")
+	hashChainB = filepath.Join("testdata", "hashchain_b")
+
+	c, err := ReadFile(hashChainA)
+	if err != nil {
+		t.Fatalf("ReadFile() failed: %v", err)
+	}
+	c.Close()
+	err = c.CheckHead(head)
+	if err != ErrHeadNotFound {
+		t.Fatal("CheckHead() should fail with ErrHeadNotFound")
+	}
+
+	c, err = ReadFile(hashChainB)
+	if err != nil {
+		t.Fatalf("ReadFile() failed: %v", err)
+	}
+	c.Close()
+	err = c.CheckHead(head)
+	if err != nil {
+		t.Fatalf("CheckHead() failed: %v", err)
 	}
 }

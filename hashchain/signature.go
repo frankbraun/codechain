@@ -44,7 +44,7 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte, detached bool)
 		base64.Encode(sig),
 	}
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   c.Head(),
 		datum:      time.Now(),
 		linkType:   linktype.Signature,
 		typeFields: typeFields,
@@ -102,7 +102,7 @@ func (c *HashChain) DetachedSignature(linkHash, pubKey, signature string) (strin
 	// create entry
 	typeFields := []string{linkHash, pubKey, signature}
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   c.Head(),
 		datum:      time.Now(),
 		linkType:   linktype.Signature,
 		typeFields: typeFields,

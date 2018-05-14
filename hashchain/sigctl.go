@@ -20,7 +20,7 @@ func (c *HashChain) SignatureControl(m int) (string, error) {
 
 	// create entry
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   c.Head(),
 		datum:      time.Now(),
 		linkType:   linktype.SignatureControl,
 		typeFields: []string{strconv.Itoa(m)},

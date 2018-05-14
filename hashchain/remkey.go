@@ -15,7 +15,7 @@ func (c *HashChain) RemoveKey(pubKey [32]byte) (string, error) {
 
 	// create entry
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   c.Head(),
 		datum:      time.Now(),
 		linkType:   linktype.RemoveKey,
 		typeFields: []string{base64.Encode(pubKey[:])},

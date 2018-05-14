@@ -178,7 +178,7 @@ outer:
 	if treeHash != "" {
 		linkHash = c.LinkHash(treeHash)
 	} else {
-		linkHash = c.LastEntryHash()
+		linkHash = c.Head()
 	}
 	entry, err := c.Signature(linkHash, *secKey, detached)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/file"
 )
@@ -50,6 +51,20 @@ func TestKey(t *testing.T) {
 
 	if err := os.Chdir(tmpdirDist); err != nil {
 		t.Fatalf("os.Chdir() failed: %v", err)
+	}
+
+	// codechain apply -f -head wrong
+	err = Apply("apply", "-f", distFile, "-head",
+		"0000000000000000000000000000000000000000000000000000000000000000")
+	if err != hashchain.ErrHeadNotFound {
+		t.Fatal("Apply() should fail with hashchain.ErrHeadNotFound")
+	}
+
+	// codechain apply -f -head right
+	err = Apply("apply", "-f", distFile, "-head",
+		"734d22f9408b36141f5fe898db45d7095be539210f13f562905cc05baef5fd24")
+	if err != nil {
+		t.Fatalf("Apply() failed: %v ", err)
 	}
 
 	// codechain apply -f

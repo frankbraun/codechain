@@ -78,7 +78,8 @@ func Create(w io.Writer, c *hashchain.HashChain, patchDir string) error {
 // Apply the archive read from r to the given hashchainFile and patchDir.
 // If the hashchainFile is already present it must be transformable by
 // appending to the hashchain present in r, otherwise an error is returned.
-func Apply(hashchainFile, patchDir string, r io.Reader) error {
+// If head is not nil the hash chain read from r must contain the given head.
+func Apply(hashchainFile, patchDir string, r io.Reader, head *[32]byte) error {
 	zr, err := gzip.NewReader(r)
 	if err != nil {
 		return err
@@ -112,6 +113,12 @@ func Apply(hashchainFile, patchDir string, r io.Reader) error {
 					c.Close()
 					return err
 				}
+				if head != nil {
+					if err := src.CheckHead(*head); err != nil {
+						c.Close()
+						return err
+					}
+				}
 				err = c.Merge(src)
 				if err != nil {
 					c.Close()
@@ -127,13 +134,23 @@ func Apply(hashchainFile, patchDir string, r io.Reader) error {
 				if err := os.MkdirAll(patchDir, 0755); err != nil {
 					return err
 				}
+				src, err := hashchain.Read(tr)
+				if err != nil {
+					return err
+				}
+				if head != nil {
+					if err := src.CheckHead(*head); err != nil {
+						return err
+					}
+				}
 				// save new hashchain file
 				f, err := os.Create(hashchainFile)
 				if err != nil {
 					return err
 				}
-				if _, err := io.Copy(f, tr); err != nil {
+				if err := src.Fprint(f); err != nil {
 					f.Close()
+					os.Remove(f.Name())
 					return err
 				}
 				if err := f.Close(); err != nil {

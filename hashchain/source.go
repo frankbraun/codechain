@@ -43,7 +43,7 @@ func (c *HashChain) Source(treeHash [32]byte, secKey [64]byte, comment []byte) (
 		typeFields = append(typeFields, string(comment))
 	}
 	l := &link{
-		previous:   c.LastEntryHash(),
+		previous:   c.Head(),
 		datum:      time.Now(),
 		linkType:   linktype.Source,
 		typeFields: typeFields,

@@ -1,6 +1,7 @@
 package hashchain
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -41,9 +42,20 @@ func (c *HashChain) N() int {
 	return c.state.N()
 }
 
-// LastEntryHash returns the hash of the last entry.
-func (c *HashChain) LastEntryHash() [32]byte {
+// Head returns the hash of the last entry.
+func (c *HashChain) Head() [32]byte {
 	return c.chain[len(c.chain)-1].Hash()
+}
+
+// CheckHead checks wether the hash chain contains the given head as entry.
+func (c *HashChain) CheckHead(head [32]byte) error {
+	for _, l := range c.chain {
+		h := l.Hash()
+		if bytes.Equal(h[:], head[:]) {
+			return nil
+		}
+	}
+	return ErrHeadNotFound
 }
 
 // LastTreeHash returns the most current tree hash (can be unsigned).
@@ -121,8 +133,11 @@ func (c *HashChain) Print() {
 }
 
 // Fprint hash chain to w.
-func (c *HashChain) Fprint(w io.Writer) {
+func (c *HashChain) Fprint(w io.Writer) error {
 	for _, l := range c.chain {
-		fmt.Fprintln(w, l.String())
+		if _, err := fmt.Fprintln(w, l.String()); err != nil {
+			return err
+		}
 	}
+	return nil
 }

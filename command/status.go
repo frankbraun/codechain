@@ -79,6 +79,9 @@ func status(c *hashchain.HashChain) error {
 		return err
 	}
 	fmt.Println()
+	fmt.Println("head:")
+	fmt.Printf("%x\n", c.Head())
+	fmt.Println()
 	return showTreeStatus(c)
 }
 

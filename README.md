@@ -5,8 +5,7 @@
 This is a **beta** release of Codechain — everything is fairly stable,
 but there is still a small risk that **the hash chain might be reset**!
 
-In code we trust: Secure multiparty code reviews with signatures and
-hash chains.
+### In code we trust: Secure multiparty code reviews with signatures and hash chains.
 
 The most common signing mechanism for open-source software is using GPG
 signatures. For example, GPG is used to sign Git commits and Debian

@@ -51,5 +51,5 @@ var ErrCannotMerge = errors.New("hashchain: cannot merge")
 // ErrNothingToMerge is returned if there is nothing to merge.
 var ErrNothingToMerge = errors.New("hashchain: nothing to merge")
 
-// ErrHeadNotFound is returnd if the head could not be found in hash chain.
+// ErrHeadNotFound is returned if the head could not be found in hash chain.
 var ErrHeadNotFound = errors.New("hashchain: head not found")

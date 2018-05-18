@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// SHA256 returns the SHA256 of file with given path.
+// SHA256 returns the SHA256 hash of file with given path.
 func SHA256(path string) (*[32]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -39,7 +39,7 @@ type ListEntry struct {
 const EmptyHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 // List returns a list in lexical order of ListEntry structs of all files in
-// the file tree rooted at root. See List function for details.
+// the file tree rooted at root. See ListHash function for details.
 func List(root string, excludePaths []string) ([]ListEntry, error) {
 	var entries []ListEntry
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {

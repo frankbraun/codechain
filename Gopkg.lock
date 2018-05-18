@@ -4,8 +4,8 @@
 [[projects]]
   name = "github.com/fatih/color"
   packages = ["."]
-  revision = "507f6050b8568533fb3f5504de8e5205fa62a114"
-  version = "v1.6.0"
+  revision = "5b77d2a35fb0ede96d138fc9a99f5c9b6aef11b4"
+  version = "v1.7.0"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -44,7 +44,7 @@
     "salsa20/salsa",
     "ssh/terminal"
   ]
-  revision = "2d027ae1dddd4694d54f7a8b6cbe78dca8720226"
+  revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
 
 [[projects]]
   branch = "master"
@@ -54,7 +54,7 @@
     "unix",
     "windows"
   ]
-  revision = "d0faeb539838e250bd0a9db4182d48d4a1915181"
+  revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
 
 [solve-meta]
   analyzer-name = "dep"

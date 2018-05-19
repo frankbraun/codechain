@@ -58,4 +58,4 @@ Codechain depends on the `git` binary (for `git diff`), but that's optional.
 
 Codechain has been heavily influenced by discussions with
 [Jonathan Logan](https://github.com/JonathanLogan) of
-[Cryptohippie](https://secure.cryptohippie.com/).
+[Cryptohippie](https://secure.cryptohippie.com/), Inc.

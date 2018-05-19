@@ -49,6 +49,8 @@ Codechain depends on the `git` binary (for `git diff`), but that's optional.
   head would also work.
 - Code distribution (minimal support is provided via `codechain
   createdist` and `codechain apply -f`).
+- [Reproducible builds](https://reproducible-builds.org/).
+
 
 ### Documentation
 

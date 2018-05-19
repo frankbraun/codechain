@@ -3,7 +3,7 @@ Package hashchain implements a hash chain of signatures over a chain of code
 changes.
 
 A hash chain is stored in a simple newline separated text file where each hash
-chain entry corresponds to a line and has the following form:
+chain entry corresponds to a single line and has the following form:
 
   hash-of-previous current-time type type-fields ...
 
@@ -17,7 +17,7 @@ Hex encodings have to be lowercase. All public keys are Ed25519 keys and they
 and their signatures are encoded in base64 (URL encoding without padding).
 Comments are arbitrary UTF-8 sequences, but cannot contain newlines.
 
-Their are six different types of hash chain entries:
+There are six different types of hash chain entries:
 
   cstart
   source
@@ -70,7 +70,7 @@ maintaining the hash chain. This avoids merge conflicts.
 
 Type addkey
 
-An addkey entry adds a signature pubkey to be added to the list of approved
+An addkey entry marks a signature pubkey for addition to the list of approved
 signature keys.
 
   hash-of-previous current-time addkey pubkey-add w pubkey signature [comment]
@@ -84,7 +84,8 @@ pubkey.
 
 Type remkey
 
-A remkey entry marks a signature pubkey for removal.
+A remkey entry marks a signature pubkey for removal from the list of approved
+signature keys.
 
   hash-of-previous current-time remkey pubkey
 
@@ -101,8 +102,11 @@ Example
 
 An example of a hash chain.
 
-  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-12T01:50:44Z cstart 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg 5GQKPh8TdrM8-9oaqGbLmHU114vfGNzr NJtS4MVm8WIc2YhMPqJzXGD4i6LBkdxpRP6WeQoG9PfFRdi1F7pKdvQxgB9d3X1J9L3VgZsfhBm910zfET0eBQ John Doe <john.doe@mailinator.com>
-  94d49adf9bad1104ab2f7117d45fa177bc416ea0ad5a44b4569e89f04728ff94 2018-05-12T01:51:03Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg KWWplv94ziYZsxjtnf4sGuzC2bvA-LSB0-fSbTGfCCt9aAf7rgn3SKSidyACWtQLKoY4qrvRDZYDNEAdqhT0Cg initial release
-  170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 2018-05-12T01:51:24Z signtr 170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb 36h_YdLNmKo8AYBWRQrTK_JbGLUpp3tBkfWLBwWLoEg VBpOkf3PAQhGe67cgaxn4eDQBSzsv-w1lFIQhw02pfvoLLIVZ_fHBZHO2wQUfOiVEfI4uhHfrB7KkDzliY05DQ
+  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-19T00:07:02Z cstart KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 sVnVenzHyCOV6nLUkCKg6ARllkYsTV-n 0UmUcDFZ2j3WWnqzEdxX-wzofWlhF3O0Rm1tT6qMUwLu8a1R5MwbK5zDongYZKccpA37Vp6Sp3m0xSreGskzCg Alice <alice@example.com>
+  40c7e5ca4be98e9cae6931afa4ac09e11ecb1ce20fa18d0faaabfac7e8fad071 2018-05-19T00:09:44Z addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag Bob <bob@example.com>
+  34cd10effd93e67ba96fefb29ea751d013459a6de11cc117cf1deacd77d6b7be 2018-05-19T00:10:25Z sigctl 2
+  92d2fc6687b0d36d045adaf34a1615e513ef0e2dc60384cfe19863e9753567f8 2018-05-19T00:11:44Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 r5aZCYGwWCFppaMDV7XSOHoyCl3qbUKGiSuYzjsTl4C0W9n0tCa0MXDy_fOwspV9f4_o0kMcb6XZS706ml3FAQ first release
+  d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 2018-05-19T00:12:48Z signtr d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 HKlLKnYSCVzc4b-erETK50EN5gKRKZQsT16grv7eFBklFqXBFoSXSmcY99HLWhAP9BJcA6c3Px1trNBns3KkDA
+  2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 2018-05-19T00:34:51Z signtr 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw
 */
 package hashchain

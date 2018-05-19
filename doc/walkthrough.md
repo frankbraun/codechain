@@ -1,131 +1,247 @@
 ## Codechain walkthrough
 
+Start Codechain walkthrough with example project:
+
 ```
-# [single tmux window]
-# let's assume you have `go` installed and $GOPATH set
-# otherwise go to https://golang.org/dl/
+$ cd doc/hellproject
+$ ls
+hello.go README.md
+```
 
-# get Codechain repository from GitHub
-go get -u -v github.com/frankbraun/codechain
+Let's generate a key pair for Alice:
+```
+$ codechain keygen
+passphrase: 
+confirm passphrase: 
+comment (e.g., name; can be empty):
+Alice <alice@example.com>
+secret key file created:
+/home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70
+public key with signature and optional comment:
+KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 JNBIdjLOu20He3c-Dn7sjpspO8bmKFxTlOItfZkqieb8h218t3g-QooDATGGbrzYzVNbDqb7LCFFnJxEH7hcBA 'Alice <alice@example.com>'
+```
 
-# change to Codechain directory
-cd $GOPATH/src/github.com/frankbraun/codechain
+Let's start using Codechain for our example project:
+```
+$ codechain start -s ~/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70
+passphrase: 
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-19T00:07:02Z cstart KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 sVnVenzHyCOV6nLUkCKg6ARllkYsTV-n 0UmUcDFZ2j3WWnqzEdxX-wzofWlhF3O0Rm1tT6qMUwLu8a1R5MwbK5zDongYZKccpA37Vp6Sp3m0xSreGskzCg Alice <alice@example.com>
+```
 
-# use Codechain to verify Codechain code and switch to latest published version
-codechain cleanslate
-codechain apply
-go install github.com/frankbraun/codechain
+Let's add Bob (who already has a key) as reviewer:
 
-# start Codechain walkthrough with example project
-cd doc/hellproject
-ls
-cat README.md
-cat hello.go
+```
+$ codechain addkey 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag 'Bob <bob@example.com>'
+40c7e5ca4be98e9cae6931afa4ac09e11ecb1ce20fa18d0faaabfac7e8fad071 2018-05-19T00:09:44Z addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag Bob <bob@example.com>
+```
 
-# Codechain has various commands
-codechain -h
+Increase number of necessary signers to two:
 
-# `codechain treehash` computes the hash of a directory tree
-codechain treehash
+```
+$ codechain sigctl -m 2
+34cd10effd93e67ba96fefb29ea751d013459a6de11cc117cf1deacd77d6b7be 2018-05-19T00:10:25Z sigctl 2
+```
 
-# the hash is computed by hashing a deterministic tree list
-codechain treehash -l
-codechain treehash -l | sha256sum
+Publish first release:
 
-# let's generate a key pair
-codechain keygen
+```
+$ codechain publish
+opening keyfile: /home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70
+passphrase: 
+diff --git a/.codechain/tree/b/README.md b/.codechain/tree/b/README.md
+new file mode 100644
+index 0000000..841852c
+--- /dev/null
++++ b/.codechain/tree/b/README.md
+@@ -0,0 +1 @@
++## Example project for Codechain walkthrough
+diff --git a/.codechain/tree/b/hello.go b/.codechain/tree/b/hello.go
+new file mode 100644
+index 0000000..c40eee0
+--- /dev/null
++++ b/.codechain/tree/b/hello.go
+@@ -0,0 +1,9 @@
++package main
++
++import (
++       "fmt"
++)
++
++func main() {
++       fmt.Println("hello world!")
++}
+publish patch? [y/n]: y
+comment describing code change (can be empty):
+first release
+92d2fc6687b0d36d045adaf34a1615e513ef0e2dc60384cfe19863e9753567f8 2018-05-19T00:11:44Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 r5aZCYGwWCFppaMDV7XSOHoyCl3qbUKGiSuYzjsTl4C0W9n0tCa0MXDy_fOwspV9f4_o0kMcb6XZS706ml3FAQ first release
+```
 
-# let's start using Codechain for our example project
-codechain start -s ~/.config/codechain/secrets/...
+Review changes:
 
-# this started the hash chain
-cat .codechain/hashchain
+```
+$ codechain review
+opening keyfile: /home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70
+passphrase: 
+signer/sigctl changes:
+0 addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Bob <bob@example.com>
+0 sigctl 2
+confirm signer/sigctl changes? [y/n]: y
+patch 1/1
+first release
+developer: KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70
+Alice <alice@example.com>
+review patch (no aborts)? [y/n]: y
+diff --git a/.codechain/tree/b/README.md b/.codechain/tree/b/README.md
+new file mode 100644
+index 0000000..841852c
+--- /dev/null
++++ b/.codechain/tree/b/README.md
+@@ -0,0 +1 @@
++## Example project for Codechain walkthrough
+diff --git a/.codechain/tree/b/hello.go b/.codechain/tree/b/hello.go
+new file mode 100644
+index 0000000..c40eee0
+--- /dev/null
++++ b/.codechain/tree/b/hello.go
+@@ -0,0 +1,9 @@
++package main
++
++import (
++       "fmt"
++)
++
++func main() {
++       fmt.Println("hello world!")
++}
+sign patch? [y/n]: y
+d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 2018-05-19T00:12:48Z signtr d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 HKlLKnYSCVzc4b-erETK50EN5gKRKZQsT16grv7eFBklFqXBFoSXSmcY99HLWhAP9BJcA6c3Px1trNBns3KkDA
+```
 
-# also:
-codechain status -p
+See current status of project:
 
-# see current status of project
-codechain status
+```
+$ codechain status
+no signed releases yet
 
-# let's publish our first release
-codechain publish
+signers (2-of-2 required):
+1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Bob <bob@example.com>
+1 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 Alice <alice@example.com>
 
-# the first release has been published, but is not signed yet
-codechain status
+unsigned entries:
+1 source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 first release
 
-# let's review and sign it
-codechain review
+head:
+2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e
 
-# now we have our first signed release
-codechain status
+tree matches d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716
+```
 
-# let's bring a second reviewer on board
-# [switch tmux window ctrl+b n]
-# the reviewer already has Codechain installed
-# generate a key
-codechain keygen
+Because Bob was added as the second reviewer first, we still need his signature for the first release. Let's build a distribution for him:
 
-# [switch tmux window ctrl+b n]
-# add second signer
-codechain addkey ...
+```
+$ codechain createdist -f /tmp/dist.tar.gz
+```
 
-# increase number of necessary signers
-codechain sigctl -m 2
-codechain status
+Now as Bob, apply the distribution in an empty `~/helloproject` directory:
 
-# sign-off on second signer
-codechain review
-codechain status
+```
+$ cd ~/helloproject
+$ codechain apply -f /tmp/dist.tar.gz
+$ find . -type f
+./.codechain/hashchain
+./.codechain/patches/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+```
 
-# add UNLICENSE to project
-cp ../../UNLICENSE .
+Now Bob reviews the changes and creates a detached signature:
 
-# publish new version
-codechain publish
-codechain status
+```
+$ codechain review -d
+opening keyfile: /home/frank/bob.bin
+passphrase: 
+patch 1/1
+first release
+developer: KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70
+Alice <alice@example.com>
+review patch (no aborts)? [y/n]: y
+diff --git a/.codechain/tree/b/README.md b/.codechain/tree/b/README.md
+new file mode 100644
+index 0000000..841852c
+--- /dev/null
++++ b/.codechain/tree/b/README.md
+@@ -0,0 +1 @@
++## Example project for Codechain walkthrough
+diff --git a/.codechain/tree/b/hello.go b/.codechain/tree/b/hello.go
+new file mode 100644
+index 0000000..c40eee0
+--- /dev/null
++++ b/.codechain/tree/b/hello.go
+@@ -0,0 +1,9 @@
++package main
++
++import (
++       "fmt"
++)
++
++func main() {
++       fmt.Println("hello world!")
++}
+sign patch? [y/n]: y
+2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw
+```
 
-# sign new release
-codechain review
-codechain status
+Now Alice can add the detached signature:
 
-# we still need the second signature, create distribution
-codechain createdist -f /tmp/dist.tar.gz
+```
+$ codechain review -a 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw
+2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 2018-05-19T00:34:51Z signtr 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw
+```
 
-# [switch tmux window]
-# apply new distribution
-codechain apply -f /tmp/dist.tar.gz
+Which gives us our first signed release:
 
-# create detached signature and send it to John
-codechain review -d
+```
+$ codechain status
+signed releases:
+d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 first release
 
-# [switch tmux window]
-# add detached signature
-codechain review -a ...
+signers (2-of-2 required):
+1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Bob <bob@example.com>
+1 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 Alice <alice@example.com>
 
-# now we a new signed release
-codechain status
+no unsigned entries
 
-# let's remove the second reviewer again
-codechain sigctl -m 1
-codechain remkey ...
-codechain review
+head:
+9f97737b292f66e52c06027871be328006f125a9d86fbe1fc4f03ff98303e36f
 
-# of course, Jane has to sign off on it
-codechain status
-codechain createdist -f /tmp/dist2.tar.gz
+tree matches d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716
+```
 
-# [switch tmux window]
-# apply new distribution
-codechain apply -f /tmp/dist.tar.gz
+Which we can publish now:
+```
+$ codechain createdist -f /tmp/helloproject.tar.gz
+```
 
-# create detached signature and send it to John
-codechain review -d
+Users can apply it a directory `~/helloproject` and verify the hash chain
+contains the head with:
 
-# [switch tmux window]
-# add detached signature
-codechain review -a ...
+```
+$ cd ~/helloproject
+$ codechain apply -f /tmp/helloproject.tar.gz -head 9f97737b292f66e52c06027871be328006f125a9d86fbe1fc4f03ff98303e36f
+```
 
-# now we are back to one reviewer
-codechain status
+The tree hash now matches the first signed release:
+```
+$ codechain treehash
+d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716
+```
 
+Show the complete hash chain:
+
+```
+$ codechain status -p
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-19T00:07:02Z cstart KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 sVnVenzHyCOV6nLUkCKg6ARllkYsTV-n 0UmUcDFZ2j3WWnqzEdxX-wzofWlhF3O0Rm1tT6qMUwLu8a1R5MwbK5zDongYZKccpA37Vp6Sp3m0xSreGskzCg Alice <alice@example.com>
+40c7e5ca4be98e9cae6931afa4ac09e11ecb1ce20fa18d0faaabfac7e8fad071 2018-05-19T00:09:44Z addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag Bob <bob@example.com>
+34cd10effd93e67ba96fefb29ea751d013459a6de11cc117cf1deacd77d6b7be 2018-05-19T00:10:25Z sigctl 2
+92d2fc6687b0d36d045adaf34a1615e513ef0e2dc60384cfe19863e9753567f8 2018-05-19T00:11:44Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 r5aZCYGwWCFppaMDV7XSOHoyCl3qbUKGiSuYzjsTl4C0W9n0tCa0MXDy_fOwspV9f4_o0kMcb6XZS706ml3FAQ first release
+d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 2018-05-19T00:12:48Z signtr d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 HKlLKnYSCVzc4b-erETK50EN5gKRKZQsT16grv7eFBklFqXBFoSXSmcY99HLWhAP9BJcA6c3Px1trNBns3KkDA
+2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 2018-05-19T00:34:51Z signtr 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw
 ```

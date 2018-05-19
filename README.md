@@ -50,6 +50,10 @@ Codechain depends on the `git` binary (for `git diff`), but that's optional.
 - Code distribution (minimal support is provided via `codechain
   createdist` and `codechain apply -f`).
 
+### Documentation
+
+- [Walkthrough](doc/walkthrough.md)
+
 ### Acknowledgments
 
 Codechain has been heavily influenced by discussions with

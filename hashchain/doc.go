@@ -50,9 +50,9 @@ A source entry marks a new source tree state for publication from the
 developer owning the signing pubkey. The optional comment can be used to
 describe the change to the reviewers.
 
-  hash-of-previous current-time source source-hash pubkey signature [comment]
+  hash-of-previous current-time source tree-hash pubkey signature [comment]
 
-The signature by pubkey is over the source-hash and the optional comment.
+The signature by pubkey is over the source tree hash and the optional comment.
 See the tree package for a detailed description of source tree hashes.
 
 
@@ -73,7 +73,7 @@ Type addkey
 An addkey entry marks a signature pubkey for addition to the list of approved
 signature keys.
 
-  hash-of-previous current-time addkey pubkey-add w pubkey signature [comment]
+  hash-of-previous current-time addkey w pubkey signature [comment]
 
 The weight of the key towards the minimum number of necessary signatures m is
 denoted by w. The pubkey can be accompanied by an optional comment, but the

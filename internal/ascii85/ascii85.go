@@ -1,3 +1,4 @@
+// Package ascii85 implements ascii85 encoding related utility functions.
 package ascii85
 
 import (

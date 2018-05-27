@@ -52,29 +52,6 @@ const (
 	argon2id
 )
 
-// Key derives a key from the password, salt, and cost parameters using Argon2i
-// returning a byte slice of length keyLen that can be used as cryptographic
-// key. The CPU cost and parallelism degree must be greater than zero.
-//
-// For example, you can get a derived key for e.g. AES-256 (which needs a
-// 32-byte key) by doing:
-//
-//      key := argon2.Key([]byte("some password"), salt, 3, 32*1024, 4, 32)
-//
-// The draft RFC recommends[2] time=3, and memory=32*1024 is a sensible number.
-// If using that amount of memory (32 MB) is not possible in some contexts then
-// the time parameter can be increased to compensate.
-//
-// The time parameter specifies the number of passes over the memory and the
-// memory parameter specifies the size of the memory in KiB. For example
-// memory=32*1024 sets the memory cost to ~32 MB. The number of threads can be
-// adjusted to the number of available CPUs. The cost parameters should be
-// increased as memory latency and CPU parallelism increases. Remember to get a
-// good random salt.
-func Key(password, salt []byte, time, memory uint32, threads uint8, keyLen uint32) []byte {
-	return deriveKey(argon2i, password, salt, nil, nil, time, memory, threads, keyLen)
-}
-
 // IDKey derives a key from the password, salt, and cost parameters using
 // Argon2id returning a byte slice of length keyLen that can be used as
 // cryptographic key. The CPU cost and parallelism degree must be greater than

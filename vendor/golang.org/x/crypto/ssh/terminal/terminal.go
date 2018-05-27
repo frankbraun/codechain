@@ -21,19 +21,6 @@ type EscapeCodes struct {
 	Reset []byte
 }
 
-var vt100EscapeCodes = EscapeCodes{
-	Black:   []byte{keyEscape, '[', '3', '0', 'm'},
-	Red:     []byte{keyEscape, '[', '3', '1', 'm'},
-	Green:   []byte{keyEscape, '[', '3', '2', 'm'},
-	Yellow:  []byte{keyEscape, '[', '3', '3', 'm'},
-	Blue:    []byte{keyEscape, '[', '3', '4', 'm'},
-	Magenta: []byte{keyEscape, '[', '3', '5', 'm'},
-	Cyan:    []byte{keyEscape, '[', '3', '6', 'm'},
-	White:   []byte{keyEscape, '[', '3', '7', 'm'},
-
-	Reset: []byte{keyEscape, '[', '0', 'm'},
-}
-
 // Terminal contains the state for running a VT100 terminal that is capable of
 // reading lines of input.
 type Terminal struct {
@@ -92,22 +79,6 @@ type Terminal struct {
 	// the incomplete, initial line. That value is stored in
 	// historyPending.
 	historyPending string
-}
-
-// NewTerminal runs a VT100 terminal on the given ReadWriter. If the ReadWriter is
-// a local terminal, that terminal must first have been put into raw mode.
-// prompt is a string that is written at the start of each input line (i.e.
-// "> ").
-func NewTerminal(c io.ReadWriter, prompt string) *Terminal {
-	return &Terminal{
-		Escape:       &vt100EscapeCodes,
-		c:            c,
-		prompt:       []rune(prompt),
-		termWidth:    80,
-		termHeight:   24,
-		echo:         true,
-		historyIndex: -1,
-	}
 }
 
 const (
@@ -222,7 +193,6 @@ func (t *Terminal) queue(data []rune) {
 	t.outBuf = append(t.outBuf, []byte(string(data))...)
 }
 
-var eraseUnderCursor = []rune{' ', keyEscape, '[', 'D'}
 var space = []rune{' '}
 
 func isPrintable(key rune) bool {
@@ -295,11 +265,6 @@ func (t *Terminal) move(up, down, left, right int) {
 	}
 
 	t.queue(movement)
-}
-
-func (t *Terminal) clearLineToRight() {
-	op := []rune{keyEscape, '[', 'K'}
-	t.queue(op)
 }
 
 const maxLineLength = 4096
@@ -596,80 +561,6 @@ func (t *Terminal) writeLine(line []rune) {
 	}
 }
 
-// writeWithCRLF writes buf to w but replaces all occurrences of \n with \r\n.
-func writeWithCRLF(w io.Writer, buf []byte) (n int, err error) {
-	for len(buf) > 0 {
-		i := bytes.IndexByte(buf, '\n')
-		todo := len(buf)
-		if i >= 0 {
-			todo = i
-		}
-
-		var nn int
-		nn, err = w.Write(buf[:todo])
-		n += nn
-		if err != nil {
-			return n, err
-		}
-		buf = buf[todo:]
-
-		if i >= 0 {
-			if _, err = w.Write(crlf); err != nil {
-				return n, err
-			}
-			n++
-			buf = buf[1:]
-		}
-	}
-
-	return n, nil
-}
-
-func (t *Terminal) Write(buf []byte) (n int, err error) {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-
-	if t.cursorX == 0 && t.cursorY == 0 {
-		// This is the easy case: there's nothing on the screen that we
-		// have to move out of the way.
-		return writeWithCRLF(t.c, buf)
-	}
-
-	// We have a prompt and possibly user input on the screen. We
-	// have to clear it first.
-	t.move(0 /* up */, 0 /* down */, t.cursorX /* left */, 0 /* right */)
-	t.cursorX = 0
-	t.clearLineToRight()
-
-	for t.cursorY > 0 {
-		t.move(1 /* up */, 0, 0, 0)
-		t.cursorY--
-		t.clearLineToRight()
-	}
-
-	if _, err = t.c.Write(t.outBuf); err != nil {
-		return
-	}
-	t.outBuf = t.outBuf[:0]
-
-	if n, err = writeWithCRLF(t.c, buf); err != nil {
-		return
-	}
-
-	t.writeLine(t.prompt)
-	if t.echo {
-		t.writeLine(t.line)
-	}
-
-	t.moveCursorToPos(t.pos)
-
-	if _, err = t.c.Write(t.outBuf); err != nil {
-		return
-	}
-	t.outBuf = t.outBuf[:0]
-	return
-}
-
 // ReadPassword temporarily changes the prompt and reads a password, without
 // echo, from the terminal.
 func (t *Terminal) ReadPassword(prompt string) (line string, err error) {
@@ -686,14 +577,6 @@ func (t *Terminal) ReadPassword(prompt string) (line string, err error) {
 	t.echo = true
 
 	return
-}
-
-// ReadLine returns a line of input from the terminal.
-func (t *Terminal) ReadLine() (line string, err error) {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-
-	return t.readLine()
 }
 
 func (t *Terminal) readLine() (line string, err error) {
@@ -774,88 +657,6 @@ func (t *Terminal) readLine() (line string, err error) {
 	}
 }
 
-// SetPrompt sets the prompt to be used when reading subsequent lines.
-func (t *Terminal) SetPrompt(prompt string) {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-
-	t.prompt = []rune(prompt)
-}
-
-func (t *Terminal) clearAndRepaintLinePlusNPrevious(numPrevLines int) {
-	// Move cursor to column zero at the start of the line.
-	t.move(t.cursorY, 0, t.cursorX, 0)
-	t.cursorX, t.cursorY = 0, 0
-	t.clearLineToRight()
-	for t.cursorY < numPrevLines {
-		// Move down a line
-		t.move(0, 1, 0, 0)
-		t.cursorY++
-		t.clearLineToRight()
-	}
-	// Move back to beginning.
-	t.move(t.cursorY, 0, 0, 0)
-	t.cursorX, t.cursorY = 0, 0
-
-	t.queue(t.prompt)
-	t.advanceCursor(visualLength(t.prompt))
-	t.writeLine(t.line)
-	t.moveCursorToPos(t.pos)
-}
-
-func (t *Terminal) SetSize(width, height int) error {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-
-	if width == 0 {
-		width = 1
-	}
-
-	oldWidth := t.termWidth
-	t.termWidth, t.termHeight = width, height
-
-	switch {
-	case width == oldWidth:
-		// If the width didn't change then nothing else needs to be
-		// done.
-		return nil
-	case len(t.line) == 0 && t.cursorX == 0 && t.cursorY == 0:
-		// If there is nothing on current line and no prompt printed,
-		// just do nothing
-		return nil
-	case width < oldWidth:
-		// Some terminals (e.g. xterm) will truncate lines that were
-		// too long when shinking. Others, (e.g. gnome-terminal) will
-		// attempt to wrap them. For the former, repainting t.maxLine
-		// works great, but that behaviour goes badly wrong in the case
-		// of the latter because they have doubled every full line.
-
-		// We assume that we are working on a terminal that wraps lines
-		// and adjust the cursor position based on every previous line
-		// wrapping and turning into two. This causes the prompt on
-		// xterms to move upwards, which isn't great, but it avoids a
-		// huge mess with gnome-terminal.
-		if t.cursorX >= t.termWidth {
-			t.cursorX = t.termWidth - 1
-		}
-		t.cursorY *= 2
-		t.clearAndRepaintLinePlusNPrevious(t.maxLine * 2)
-	case width > oldWidth:
-		// If the terminal expands then our position calculations will
-		// be wrong in the future because we think the cursor is
-		// |t.pos| chars into the string, but there will be a gap at
-		// the end of any wrapped line.
-		//
-		// But the position will actually be correct until we move, so
-		// we can move back to the beginning and repaint everything.
-		t.clearAndRepaintLinePlusNPrevious(t.maxLine)
-	}
-
-	_, err := t.c.Write(t.outBuf)
-	t.outBuf = t.outBuf[:0]
-	return err
-}
-
 type pasteIndicatorError struct{}
 
 func (pasteIndicatorError) Error() string {
@@ -867,19 +668,6 @@ func (pasteIndicatorError) Error() string {
 // that the returned line consists only of pasted data. Programs may wish to
 // interpret pasted data more literally than typed data.
 var ErrPasteIndicator = pasteIndicatorError{}
-
-// SetBracketedPasteMode requests that the terminal bracket paste operations
-// with markers. Not all terminals support this but, if it is supported, then
-// enabling this mode will stop any autocomplete callback from running due to
-// pastes. Additionally, any lines that are completely pasted will be returned
-// from ReadLine with the error set to ErrPasteIndicator.
-func (t *Terminal) SetBracketedPasteMode(on bool) {
-	if on {
-		io.WriteString(t.c, "\x1b[?2004h")
-	} else {
-		io.WriteString(t.c, "\x1b[?2004l")
-	}
-}
 
 // stRingBuffer is a ring buffer of strings.
 type stRingBuffer struct {

@@ -7,9 +7,3 @@
 // For Unix, get the pagesize from the runtime.
 
 package unix
-
-import "syscall"
-
-func Getpagesize() int {
-	return syscall.Getpagesize()
-}

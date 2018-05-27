@@ -26,6 +26,18 @@
 
 
 [[constraint]]
+  name = "github.com/fatih/color"
+  version = "1.7.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/mutecomm/mute"
+
+[[constraint]]
+  name = "github.com/sergi/go-diff"
+  version = "1.0.0"
+
+[[constraint]]
   branch = "master"
   name = "golang.org/x/crypto"
 

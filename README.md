@@ -55,6 +55,7 @@ Codechain depends on the `git` binary (for `git diff`), but that's optional.
 ### Documentation
 
 - [Walkthrough](doc/walkthrough.md)
+- [Presentation about Codechain](http://frankbraun.org/in-code-we-trust.pdf)
 
 ### Acknowledgments
 

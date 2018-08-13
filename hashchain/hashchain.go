@@ -63,7 +63,8 @@ func (c *HashChain) LastTreeHash() string {
 	return c.state.LastTreeHash()
 }
 
-// LastSignedTreeHash returns the last signed tree hash.
+// LastSignedTreeHash returns the last signed tree hash and its index.
+// The first signed tree hash is tree.EmptyHash with index 0.
 func (c *HashChain) LastSignedTreeHash() (string, int) {
 	return c.state.LastSignedTreeHash()
 }

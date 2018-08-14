@@ -39,12 +39,13 @@
     "blake2b",
     "ed25519",
     "ed25519/internal/edwards25519",
+    "internal/subtle",
     "nacl/secretbox",
     "poly1305",
     "salsa20/salsa",
     "ssh/terminal"
   ]
-  revision = "a3beeb748656e13e54256fd2cde19e058f41f60f"
+  revision = "de0752318171da717af4ce24d0a2e8626afaeb11"
 
 [[projects]]
   branch = "master"
@@ -54,7 +55,7 @@
     "unix",
     "windows"
   ]
-  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
+  revision = "4e1fef5609515ec7a2cee7b5de30ba6d9b438cbf"
 
 [solve-meta]
   analyzer-name = "dep"

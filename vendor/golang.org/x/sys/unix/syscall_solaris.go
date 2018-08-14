@@ -16,7 +16,7 @@ import (
 	"unsafe"
 )
 
-func IoctlSetTermios(fd int, req uint, value *Termios) (err error) {
+func ioctlSetTermios(fd int, req uint, value *Termios) (err error) {
 	return ioctl(fd, req, uintptr(unsafe.Pointer(value)))
 }
 

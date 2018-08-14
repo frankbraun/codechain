@@ -58,6 +58,7 @@ func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte, detached bool)
 
 	// detached signature?
 	if detached {
+		c.chain = c.chain[:len(c.chain)-1] // remove chain entry again
 		return fmt.Sprintf("%s %s %s", typeFields[0], typeFields[1], typeFields[2]), nil
 	}
 

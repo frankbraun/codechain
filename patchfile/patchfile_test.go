@@ -179,6 +179,7 @@ func TestDiffApply(t *testing.T) {
 	helloDir := filepath.Join("testdata", "hello")
 	hello2Dir := filepath.Join("testdata", "hello2")
 	helloMoveDir := filepath.Join("testdata", "hellomove")
+	helloMove2Dir := filepath.Join("testdata", "hellomove2")
 	helloExecDir := filepath.Join(tmpdir, "helloexec")
 	if err := file.CopyDir(helloDir, helloExecDir); err != nil {
 		t.Fatalf("file.Copy() failed: %v", err)
@@ -277,6 +278,19 @@ dmppatch 2
 @@ -0,0 +1,78 @@
 +package main%0A%0Aimport (%0A%09%22fmt%22%0A)%0A%0Afunc main() %7B%0A%09fmt.Println(%22hello world!%22)%0A%7D%0A
 treehash 5d0d150f44985c9500c43785e7a9f3cce1c458053906d4aef709e8dae19247b6
+`,
+		},
+		{
+			helloDir,
+			helloMove2Dir,
+			`codechain patchfile version 1
+treehash 5998c63aca42e471297c0fa353538a93d4d4cfafe9a672df6989e694188b4a92
+- f ad125cc5c1fb680be130908a0838ca2235db04285bcdd29e8e25087927e7dd0d hello.go
++ f 1b239e494fa201667627de82f0e4dc27b7b00b6ec06146e4d062730bf3762141 hellomove.go
+dmppatch 2
+@@ -0,0 +1,94 @@
++package main%0A%0Aimport (%0A%09%22fmt%22%0A)%0A%0Afunc main() %7B%0A%09fmt.Println(%22hello world, second version!%22)%0A%7D%0A
+treehash a0b37dfb7b79f877a922aa4aecc4d9d2a91c4db0f6e337caddbee6bf89f5f0fd
 `,
 		},
 		{

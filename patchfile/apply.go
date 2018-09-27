@@ -15,6 +15,7 @@ import (
 	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // state machine used to apply patch files.
@@ -240,6 +241,7 @@ type diffInfo struct {
 
 // Apply applies the given patch r to the directory tree dir.
 func Apply(dir string, r io.Reader, excludePaths []string) error {
+	log.Println("patchfile.Apply()")
 	var (
 		prevDiffInfo *diffInfo
 		curDiffInfo  *diffInfo
@@ -251,19 +253,23 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 	state := start
 	for s.Scan() {
 		line := s.Text()
-		//fmt.Println(line)
+		log.Println("line:")
+		log.Println(line)
 		switch state {
 		case start:
+			log.Println("state: start")
 			state, err = procStart(line)
 			if err != nil {
 				return err
 			}
 		case treehash:
+			log.Println("state: treehash")
 			state, err = procTreeHash(line, dir, excludePaths)
 			if err != nil {
 				return err
 			}
 		case fileDiff:
+			log.Println("state: fileDiff")
 			fields := strings.SplitN(line, " ", 2)
 			lookAhead := fields[0]
 			if lookAhead == "treehash" {
@@ -279,6 +285,7 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 				}
 			}
 		case secondFileDiff:
+			log.Println("state: secondFileDiff")
 			fields := strings.SplitN(line, " ", 2)
 			lookAhead := fields[0]
 			if lookAhead == "-" || lookAhead == "treehash" {
@@ -311,8 +318,10 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 				}
 			}
 		case addFile:
+			log.Println("state: addFile (fallthrough)")
 			fallthrough
 		case diffFile:
+			log.Println("state: diffFile")
 			fields := strings.SplitN(line, " ", 2)
 			lookAhead := fields[0]
 			numLines, err := strconv.Atoi(fields[1])
@@ -371,8 +380,10 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 			}
 			state = fileDiff
 		case terminal:
+			log.Println("state: terminal")
 			return ErrNotTerminal
 		default:
+			log.Println("state: unknown")
 			return errors.New("patchfile: unknown state") // cannot happen
 		}
 	}

@@ -114,8 +114,10 @@ func procFileDiff(line string, dir string, prevDiffInfo *diffInfo) (state, *diff
 		mode = binaryFile
 	}
 	if prevDiffInfo != nil {
+		// We read to two file info lines after another ('-' followed by '+').
 		if name != prevDiffInfo.name {
-			// move, make sure target doesn't exist
+			// The file names changed, we have to "move" the file.
+			// First make sure target doesn't exist.
 			fn := filepath.Join(dir, name)
 			exists, err := file.Exists(fn)
 			if err != nil {
@@ -124,8 +126,18 @@ func procFileDiff(line string, dir string, prevDiffInfo *diffInfo) (state, *diff
 			if exists {
 				return 0, nil, ErrMoveTargetFileExists
 			}
+			// Instead of "moving", we delete the previous file and then add
+			// the current file again.
+			oldpath := filepath.Join(dir, prevDiffInfo.name)
+			if err := os.Remove(oldpath); err != nil {
+				return 0, nil, err
+			}
+			return addFile, &diffInfo{mode, hash, name}, nil
 		}
+		// The two files have the same name, check if their hash differs.
 		if bytes.Equal(hash[:], prevDiffInfo.hash) {
+			// The hashes do not differ, check if we have to change the file
+			// permissions.
 			if mode != prevDiffInfo.mode {
 				// chmod
 				var perm os.FileMode
@@ -138,17 +150,11 @@ func procFileDiff(line string, dir string, prevDiffInfo *diffInfo) (state, *diff
 					return 0, nil, err
 				}
 			}
-			if name != prevDiffInfo.name {
-				// delete and then add
-				oldpath := filepath.Join(dir, prevDiffInfo.name)
-				if err := os.Remove(oldpath); err != nil {
-					return 0, nil, err
-				}
-				return addFile, &diffInfo{mode, hash, name}, nil
-			}
+			// Because the files have the same names and the same hash we do
+			// not process a diff next, but expect another file line.
 			return fileDiff, nil, nil
 		}
-		// diff
+		// The hash differs, we have to process a diff next.
 		return diffFile, &diffInfo{mode, hash, name}, nil
 	} else if fields[0] == "+" {
 		// add file

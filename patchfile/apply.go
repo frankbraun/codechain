@@ -17,17 +17,18 @@ import (
 	"github.com/frankbraun/codechain/util/file"
 )
 
+// state machine used to apply patch files.
 type state int
 
+// all possible state:
 const (
-	start state = iota + 1
-	treehash
-	fileDiff
-	secondFileDiff
-	addFile
-	diffFile
-	result
-	terminal
+	start          state = iota + 1 // start state
+	treehash                        // tree hash
+	fileDiff                        // first file diff
+	secondFileDiff                  // second file diff
+	addFile                         // add file state
+	diffFile                        // diff file state
+	terminal                        // end state
 )
 
 // codechain patchfile version 1

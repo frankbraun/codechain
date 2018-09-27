@@ -10,8 +10,13 @@ package diffmatchpatch
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
+	"html"
 	"math"
+	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -205,6 +210,14 @@ func (dmp *DiffMatchPatch) diffLineMode(text1, text2 []rune, deadline time.Time)
 	return diffs[:len(diffs)-1] // Remove the dummy entry at the end.
 }
 
+// DiffBisect finds the 'middle snake' of a diff, split the problem in two and return the recursively constructed diff.
+// If an invalid UTF-8 sequence is encountered, it will be replaced by the Unicode replacement character.
+// See Myers 1986 paper: An O(ND) Difference Algorithm and Its Variations.
+func (dmp *DiffMatchPatch) DiffBisect(text1, text2 string, deadline time.Time) []Diff {
+	// Unused in this code, but retained for interface compatibility.
+	return dmp.diffBisect([]rune(text1), []rune(text2), deadline)
+}
+
 // diffBisect finds the 'middle snake' of a diff, splits the problem in two and returns the recursively constructed diff.
 // See Myers's 1986 paper: An O(ND) Difference Algorithm and Its Variations.
 func (dmp *DiffMatchPatch) diffBisect(runes1, runes2 []rune, deadline time.Time) []Diff {
@@ -336,6 +349,13 @@ func (dmp *DiffMatchPatch) diffBisectSplit(runes1, runes2 []rune, x, y int,
 	return append(diffs, diffsb...)
 }
 
+// DiffLinesToChars splits two texts into a list of strings, and educes the texts to a string of hashes where each Unicode character represents one line.
+// It's slightly faster to call DiffLinesToRunes first, followed by DiffMainRunes.
+func (dmp *DiffMatchPatch) DiffLinesToChars(text1, text2 string) (string, string, []string) {
+	chars1, chars2, lineArray := dmp.DiffLinesToRunes(text1, text2)
+	return string(chars1), string(chars2), lineArray
+}
+
 // DiffLinesToRunes splits two texts into a list of runes. Each rune represents one line.
 func (dmp *DiffMatchPatch) DiffLinesToRunes(text1, text2 string) ([]rune, []rune, []string) {
 	// '\x00' is a valid character, but various debuggers don't like it. So we'll insert a junk entry to avoid generating a null character.
@@ -398,6 +418,12 @@ func (dmp *DiffMatchPatch) DiffCharsToLines(diffs []Diff, lineArray []string) []
 		hydrated = append(hydrated, aDiff)
 	}
 	return hydrated
+}
+
+// DiffCommonPrefix determines the common prefix length of two strings.
+func (dmp *DiffMatchPatch) DiffCommonPrefix(text1, text2 string) int {
+	// Unused in this code, but retained for interface compatibility.
+	return commonPrefixLength([]rune(text1), []rune(text2))
 }
 
 // DiffCommonSuffix determines the common suffix length of two strings.
@@ -490,6 +516,21 @@ func (dmp *DiffMatchPatch) DiffCommonOverlap(text1 string, text2 string) int {
 	}
 
 	return best
+}
+
+// DiffHalfMatch checks whether the two texts share a substring which is at least half the length of the longer text. This speedup can produce non-minimal diffs.
+func (dmp *DiffMatchPatch) DiffHalfMatch(text1, text2 string) []string {
+	// Unused in this code, but retained for interface compatibility.
+	runeSlices := dmp.diffHalfMatch([]rune(text1), []rune(text2))
+	if runeSlices == nil {
+		return nil
+	}
+
+	result := make([]string, len(runeSlices))
+	for i, r := range runeSlices {
+		result[i] = string(r)
+	}
+	return result
 }
 
 func (dmp *DiffMatchPatch) diffHalfMatch(text1, text2 []rune) [][]rune {
@@ -1113,6 +1154,53 @@ func (dmp *DiffMatchPatch) DiffXIndex(diffs []Diff, loc int) int {
 	return lastChars2 + (loc - lastChars1)
 }
 
+// DiffPrettyHtml converts a []Diff into a pretty HTML report.
+// It is intended as an example from which to write one's own display functions.
+func (dmp *DiffMatchPatch) DiffPrettyHtml(diffs []Diff) string {
+	var buff bytes.Buffer
+	for _, diff := range diffs {
+		text := strings.Replace(html.EscapeString(diff.Text), "\n", "&para;<br>", -1)
+		switch diff.Type {
+		case DiffInsert:
+			_, _ = buff.WriteString("<ins style=\"background:#e6ffe6;\">")
+			_, _ = buff.WriteString(text)
+			_, _ = buff.WriteString("</ins>")
+		case DiffDelete:
+			_, _ = buff.WriteString("<del style=\"background:#ffe6e6;\">")
+			_, _ = buff.WriteString(text)
+			_, _ = buff.WriteString("</del>")
+		case DiffEqual:
+			_, _ = buff.WriteString("<span>")
+			_, _ = buff.WriteString(text)
+			_, _ = buff.WriteString("</span>")
+		}
+	}
+	return buff.String()
+}
+
+// DiffPrettyText converts a []Diff into a colored text report.
+func (dmp *DiffMatchPatch) DiffPrettyText(diffs []Diff) string {
+	var buff bytes.Buffer
+	for _, diff := range diffs {
+		text := diff.Text
+
+		switch diff.Type {
+		case DiffInsert:
+			_, _ = buff.WriteString("\x1b[32m")
+			_, _ = buff.WriteString(text)
+			_, _ = buff.WriteString("\x1b[0m")
+		case DiffDelete:
+			_, _ = buff.WriteString("\x1b[31m")
+			_, _ = buff.WriteString(text)
+			_, _ = buff.WriteString("\x1b[0m")
+		case DiffEqual:
+			_, _ = buff.WriteString(text)
+		}
+	}
+
+	return buff.String()
+}
+
 // DiffText1 computes and returns the source text (all equalities and deletions).
 func (dmp *DiffMatchPatch) DiffText1(diffs []Diff) string {
 	//StringBuilder text = new StringBuilder()
@@ -1160,4 +1248,97 @@ func (dmp *DiffMatchPatch) DiffLevenshtein(diffs []Diff) int {
 
 	levenshtein += max(insertions, deletions)
 	return levenshtein
+}
+
+// DiffToDelta crushes the diff into an encoded string which describes the operations required to transform text1 into text2.
+// E.g. =3\t-2\t+ing  -> Keep 3 chars, delete 2 chars, insert 'ing'. Operations are tab-separated.  Inserted text is escaped using %xx notation.
+func (dmp *DiffMatchPatch) DiffToDelta(diffs []Diff) string {
+	var text bytes.Buffer
+	for _, aDiff := range diffs {
+		switch aDiff.Type {
+		case DiffInsert:
+			_, _ = text.WriteString("+")
+			_, _ = text.WriteString(strings.Replace(url.QueryEscape(aDiff.Text), "+", " ", -1))
+			_, _ = text.WriteString("\t")
+			break
+		case DiffDelete:
+			_, _ = text.WriteString("-")
+			_, _ = text.WriteString(strconv.Itoa(utf8.RuneCountInString(aDiff.Text)))
+			_, _ = text.WriteString("\t")
+			break
+		case DiffEqual:
+			_, _ = text.WriteString("=")
+			_, _ = text.WriteString(strconv.Itoa(utf8.RuneCountInString(aDiff.Text)))
+			_, _ = text.WriteString("\t")
+			break
+		}
+	}
+	delta := text.String()
+	if len(delta) != 0 {
+		// Strip off trailing tab character.
+		delta = delta[0 : utf8.RuneCountInString(delta)-1]
+		delta = unescaper.Replace(delta)
+	}
+	return delta
+}
+
+// DiffFromDelta given the original text1, and an encoded string which describes the operations required to transform text1 into text2, comAdde the full diff.
+func (dmp *DiffMatchPatch) DiffFromDelta(text1 string, delta string) (diffs []Diff, err error) {
+	i := 0
+	runes := []rune(text1)
+
+	for _, token := range strings.Split(delta, "\t") {
+		if len(token) == 0 {
+			// Blank tokens are ok (from a trailing \t).
+			continue
+		}
+
+		// Each token begins with a one character parameter which specifies the operation of this token (delete, insert, equality).
+		param := token[1:]
+
+		switch op := token[0]; op {
+		case '+':
+			// Decode would Diff all "+" to " "
+			param = strings.Replace(param, "+", "%2b", -1)
+			param, err = url.QueryUnescape(param)
+			if err != nil {
+				return nil, err
+			}
+			if !utf8.ValidString(param) {
+				return nil, fmt.Errorf("invalid UTF-8 token: %q", param)
+			}
+
+			diffs = append(diffs, Diff{DiffInsert, param})
+		case '=', '-':
+			n, err := strconv.ParseInt(param, 10, 0)
+			if err != nil {
+				return nil, err
+			} else if n < 0 {
+				return nil, errors.New("Negative number in DiffFromDelta: " + param)
+			}
+
+			i += int(n)
+			// Break out if we are out of bounds, go1.6 can't handle this very well
+			if i > len(runes) {
+				break
+			}
+			// Remember that string slicing is by byte - we want by rune here.
+			text := string(runes[i-int(n) : i])
+
+			if op == '=' {
+				diffs = append(diffs, Diff{DiffEqual, text})
+			} else {
+				diffs = append(diffs, Diff{DiffDelete, text})
+			}
+		default:
+			// Anything else is an error.
+			return nil, errors.New("Invalid diff operation in DiffFromDelta: " + string(token[0]))
+		}
+	}
+
+	if i != len(runes) {
+		return nil, fmt.Errorf("Delta length (%v) is different from source text length (%v)", i, len(text1))
+	}
+
+	return diffs, nil
 }

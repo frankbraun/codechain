@@ -7,11 +7,17 @@
 
 package cpu
 
+//extern gccgoGetCpuidCount
+func gccgoGetCpuidCount(eaxArg, ecxArg uint32, eax, ebx, ecx, edx *uint32)
+
 func cpuid(eaxArg, ecxArg uint32) (eax, ebx, ecx, edx uint32) {
 	var a, b, c, d uint32
 	gccgoGetCpuidCount(eaxArg, ecxArg, &a, &b, &c, &d)
 	return a, b, c, d
 }
+
+//extern gccgoXgetbv
+func gccgoXgetbv(eax, edx *uint32)
 
 func xgetbv() (eax, edx uint32) {
 	var a, d uint32

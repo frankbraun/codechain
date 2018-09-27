@@ -1928,3 +1928,215 @@ const (
 	EXDEV           = syscall.Errno(0x12)
 	EXFULL          = syscall.Errno(0x68)
 )
+
+// Signals
+const (
+	SIGABRT   = syscall.Signal(0x6)
+	SIGALRM   = syscall.Signal(0xe)
+	SIGBUS    = syscall.Signal(0xa)
+	SIGCHLD   = syscall.Signal(0x14)
+	SIGCLD    = syscall.Signal(0x14)
+	SIGCONT   = syscall.Signal(0x13)
+	SIGEMT    = syscall.Signal(0x7)
+	SIGFPE    = syscall.Signal(0x8)
+	SIGHUP    = syscall.Signal(0x1)
+	SIGILL    = syscall.Signal(0x4)
+	SIGINT    = syscall.Signal(0x2)
+	SIGIO     = syscall.Signal(0x17)
+	SIGIOT    = syscall.Signal(0x6)
+	SIGKILL   = syscall.Signal(0x9)
+	SIGLOST   = syscall.Signal(0x1d)
+	SIGPIPE   = syscall.Signal(0xd)
+	SIGPOLL   = syscall.Signal(0x17)
+	SIGPROF   = syscall.Signal(0x1b)
+	SIGPWR    = syscall.Signal(0x1d)
+	SIGQUIT   = syscall.Signal(0x3)
+	SIGSEGV   = syscall.Signal(0xb)
+	SIGSTOP   = syscall.Signal(0x11)
+	SIGSYS    = syscall.Signal(0xc)
+	SIGTERM   = syscall.Signal(0xf)
+	SIGTRAP   = syscall.Signal(0x5)
+	SIGTSTP   = syscall.Signal(0x12)
+	SIGTTIN   = syscall.Signal(0x15)
+	SIGTTOU   = syscall.Signal(0x16)
+	SIGURG    = syscall.Signal(0x10)
+	SIGUSR1   = syscall.Signal(0x1e)
+	SIGUSR2   = syscall.Signal(0x1f)
+	SIGVTALRM = syscall.Signal(0x1a)
+	SIGWINCH  = syscall.Signal(0x1c)
+	SIGXCPU   = syscall.Signal(0x18)
+	SIGXFSZ   = syscall.Signal(0x19)
+)
+
+// Error table
+var errors = [...]string{
+	1:   "operation not permitted",
+	2:   "no such file or directory",
+	3:   "no such process",
+	4:   "interrupted system call",
+	5:   "input/output error",
+	6:   "no such device or address",
+	7:   "argument list too long",
+	8:   "exec format error",
+	9:   "bad file descriptor",
+	10:  "no child processes",
+	11:  "resource temporarily unavailable",
+	12:  "cannot allocate memory",
+	13:  "permission denied",
+	14:  "bad address",
+	15:  "block device required",
+	16:  "device or resource busy",
+	17:  "file exists",
+	18:  "invalid cross-device link",
+	19:  "no such device",
+	20:  "not a directory",
+	21:  "is a directory",
+	22:  "invalid argument",
+	23:  "too many open files in system",
+	24:  "too many open files",
+	25:  "inappropriate ioctl for device",
+	26:  "text file busy",
+	27:  "file too large",
+	28:  "no space left on device",
+	29:  "illegal seek",
+	30:  "read-only file system",
+	31:  "too many links",
+	32:  "broken pipe",
+	33:  "numerical argument out of domain",
+	34:  "numerical result out of range",
+	36:  "operation now in progress",
+	37:  "operation already in progress",
+	38:  "socket operation on non-socket",
+	39:  "destination address required",
+	40:  "message too long",
+	41:  "protocol wrong type for socket",
+	42:  "protocol not available",
+	43:  "protocol not supported",
+	44:  "socket type not supported",
+	45:  "operation not supported",
+	46:  "protocol family not supported",
+	47:  "address family not supported by protocol",
+	48:  "address already in use",
+	49:  "cannot assign requested address",
+	50:  "network is down",
+	51:  "network is unreachable",
+	52:  "network dropped connection on reset",
+	53:  "software caused connection abort",
+	54:  "connection reset by peer",
+	55:  "no buffer space available",
+	56:  "transport endpoint is already connected",
+	57:  "transport endpoint is not connected",
+	58:  "cannot send after transport endpoint shutdown",
+	59:  "too many references: cannot splice",
+	60:  "connection timed out",
+	61:  "connection refused",
+	62:  "too many levels of symbolic links",
+	63:  "file name too long",
+	64:  "host is down",
+	65:  "no route to host",
+	66:  "directory not empty",
+	67:  "too many processes",
+	68:  "too many users",
+	69:  "disk quota exceeded",
+	70:  "stale file handle",
+	71:  "object is remote",
+	72:  "device not a stream",
+	73:  "timer expired",
+	74:  "out of streams resources",
+	75:  "no message of desired type",
+	76:  "bad message",
+	77:  "identifier removed",
+	78:  "resource deadlock avoided",
+	79:  "no locks available",
+	80:  "machine is not on the network",
+	81:  "unknown error 81",
+	82:  "link has been severed",
+	83:  "advertise error",
+	84:  "srmount error",
+	85:  "communication error on send",
+	86:  "protocol error",
+	87:  "multihop attempted",
+	88:  "RFS specific error",
+	89:  "remote address changed",
+	90:  "function not implemented",
+	91:  "streams pipe error",
+	92:  "value too large for defined data type",
+	93:  "file descriptor in bad state",
+	94:  "channel number out of range",
+	95:  "level 2 not synchronized",
+	96:  "level 3 halted",
+	97:  "level 3 reset",
+	98:  "link number out of range",
+	99:  "protocol driver not attached",
+	100: "no CSI structure available",
+	101: "level 2 halted",
+	102: "invalid exchange",
+	103: "invalid request descriptor",
+	104: "exchange full",
+	105: "no anode",
+	106: "invalid request code",
+	107: "invalid slot",
+	108: "file locking deadlock error",
+	109: "bad font file format",
+	110: "cannot exec a shared library directly",
+	111: "no data available",
+	112: "accessing a corrupted shared library",
+	113: "package not installed",
+	114: "can not access a needed shared library",
+	115: "name not unique on network",
+	116: "interrupted system call should be restarted",
+	117: "structure needs cleaning",
+	118: "not a XENIX named type file",
+	119: "no XENIX semaphores available",
+	120: "is a named type file",
+	121: "remote I/O error",
+	122: "invalid or incomplete multibyte or wide character",
+	123: "attempting to link in too many shared libraries",
+	124: ".lib section in a.out corrupted",
+	125: "no medium found",
+	126: "wrong medium type",
+	127: "operation canceled",
+	128: "required key not available",
+	129: "key has expired",
+	130: "key has been revoked",
+	131: "key was rejected by service",
+	132: "owner died",
+	133: "state not recoverable",
+	134: "operation not possible due to RF-kill",
+	135: "memory page has hardware error",
+}
+
+// Signal table
+var signals = [...]string{
+	1:  "hangup",
+	2:  "interrupt",
+	3:  "quit",
+	4:  "illegal instruction",
+	5:  "trace/breakpoint trap",
+	6:  "aborted",
+	7:  "EMT trap",
+	8:  "floating point exception",
+	9:  "killed",
+	10: "bus error",
+	11: "segmentation fault",
+	12: "bad system call",
+	13: "broken pipe",
+	14: "alarm clock",
+	15: "terminated",
+	16: "urgent I/O condition",
+	17: "stopped (signal)",
+	18: "stopped",
+	19: "continued",
+	20: "child exited",
+	21: "stopped (tty input)",
+	22: "stopped (tty output)",
+	23: "I/O possible",
+	24: "CPU time limit exceeded",
+	25: "file size limit exceeded",
+	26: "virtual timer expired",
+	27: "profiling timer expired",
+	28: "window changed",
+	29: "resource lost",
+	30: "user defined signal 1",
+	31: "user defined signal 2",
+}

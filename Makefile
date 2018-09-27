@@ -1,5 +1,5 @@
 all:
-	go install -v github.com/frankbraun/codechain/...
+	env GO111MODULE=on go install -mod vendor -v ./...
 
 .PHONY: test update-vendor
 test:
@@ -7,7 +7,6 @@ test:
 	gocheck -g -c
 
 update-vendor:
-	rm -f Gopkg.lock Gopkg.toml
 	rm -rf vendor
-	dep init -v
-	slimdep -r -v -a github.com/frankbraun/codechain
+	env GO111MODULE=on go get -u
+	env GO111MODULE=on go mod vendor

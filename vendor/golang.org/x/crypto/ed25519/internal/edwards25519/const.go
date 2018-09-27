@@ -22,6 +22,11 @@ var SqrtM1 = FieldElement{
 	-32595792, -7943725, 9377950, 3500415, 12389472, -272473, -25146209, -2005654, 326686, 11406482,
 }
 
+// A is a constant in the Montgomery-form of curve25519.
+var A = FieldElement{
+	486662, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+}
+
 // bi contains precomputed multiples of the base-point. See the Ed25519 paper
 // for a discussion about how these values are used.
 var bi = [8]PreComputedGroupElement{

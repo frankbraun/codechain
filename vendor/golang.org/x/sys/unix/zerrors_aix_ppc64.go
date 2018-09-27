@@ -1138,3 +1138,236 @@ const (
 	EWRPROTECT      = syscall.Errno(0x2f)
 	EXDEV           = syscall.Errno(0x12)
 )
+
+// Signals
+const (
+	SIGABRT     = syscall.Signal(0x6)
+	SIGAIO      = syscall.Signal(0x17)
+	SIGALRM     = syscall.Signal(0xe)
+	SIGALRM1    = syscall.Signal(0x26)
+	SIGBUS      = syscall.Signal(0xa)
+	SIGCAPI     = syscall.Signal(0x31)
+	SIGCHLD     = syscall.Signal(0x14)
+	SIGCLD      = syscall.Signal(0x14)
+	SIGCONT     = syscall.Signal(0x13)
+	SIGCPUFAIL  = syscall.Signal(0x3b)
+	SIGDANGER   = syscall.Signal(0x21)
+	SIGEMT      = syscall.Signal(0x7)
+	SIGFPE      = syscall.Signal(0x8)
+	SIGGRANT    = syscall.Signal(0x3c)
+	SIGHUP      = syscall.Signal(0x1)
+	SIGILL      = syscall.Signal(0x4)
+	SIGINT      = syscall.Signal(0x2)
+	SIGIO       = syscall.Signal(0x17)
+	SIGIOINT    = syscall.Signal(0x10)
+	SIGIOT      = syscall.Signal(0x6)
+	SIGKAP      = syscall.Signal(0x3c)
+	SIGKILL     = syscall.Signal(0x9)
+	SIGLOST     = syscall.Signal(0x6)
+	SIGMAX      = syscall.Signal(0xff)
+	SIGMAX32    = syscall.Signal(0x3f)
+	SIGMIGRATE  = syscall.Signal(0x23)
+	SIGMSG      = syscall.Signal(0x1b)
+	SIGPIPE     = syscall.Signal(0xd)
+	SIGPOLL     = syscall.Signal(0x17)
+	SIGPRE      = syscall.Signal(0x24)
+	SIGPROF     = syscall.Signal(0x20)
+	SIGPTY      = syscall.Signal(0x17)
+	SIGPWR      = syscall.Signal(0x1d)
+	SIGQUIT     = syscall.Signal(0x3)
+	SIGRECONFIG = syscall.Signal(0x3a)
+	SIGRETRACT  = syscall.Signal(0x3d)
+	SIGSAK      = syscall.Signal(0x3f)
+	SIGSEGV     = syscall.Signal(0xb)
+	SIGSOUND    = syscall.Signal(0x3e)
+	SIGSTOP     = syscall.Signal(0x11)
+	SIGSYS      = syscall.Signal(0xc)
+	SIGSYSERROR = syscall.Signal(0x30)
+	SIGTALRM    = syscall.Signal(0x26)
+	SIGTERM     = syscall.Signal(0xf)
+	SIGTRAP     = syscall.Signal(0x5)
+	SIGTSTP     = syscall.Signal(0x12)
+	SIGTTIN     = syscall.Signal(0x15)
+	SIGTTOU     = syscall.Signal(0x16)
+	SIGURG      = syscall.Signal(0x10)
+	SIGUSR1     = syscall.Signal(0x1e)
+	SIGUSR2     = syscall.Signal(0x1f)
+	SIGVIRT     = syscall.Signal(0x25)
+	SIGVTALRM   = syscall.Signal(0x22)
+	SIGWAITING  = syscall.Signal(0x27)
+	SIGWINCH    = syscall.Signal(0x1c)
+	SIGXCPU     = syscall.Signal(0x18)
+	SIGXFSZ     = syscall.Signal(0x19)
+)
+
+// Error table
+var errorList = [...]struct {
+	num  syscall.Errno
+	name string
+	desc string
+}{
+	{1, "EPERM", "not owner"},
+	{2, "ENOENT", "no such file or directory"},
+	{3, "ESRCH", "no such process"},
+	{4, "EINTR", "interrupted system call"},
+	{5, "EIO", "I/O error"},
+	{6, "ENXIO", "no such device or address"},
+	{7, "E2BIG", "arg list too long"},
+	{8, "ENOEXEC", "exec format error"},
+	{9, "EBADF", "bad file number"},
+	{10, "ECHILD", "no child processes"},
+	{11, "EWOULDBLOCK", "resource temporarily unavailable"},
+	{12, "ENOMEM", "not enough space"},
+	{13, "EACCES", "permission denied"},
+	{14, "EFAULT", "bad address"},
+	{15, "ENOTBLK", "block device required"},
+	{16, "EBUSY", "device busy"},
+	{17, "ENOTEMPTY", "file exists"},
+	{18, "EXDEV", "cross-device link"},
+	{19, "ENODEV", "no such device"},
+	{20, "ENOTDIR", "not a directory"},
+	{21, "EISDIR", "is a directory"},
+	{22, "EINVAL", "invalid argument"},
+	{23, "ENFILE", "file table overflow"},
+	{24, "EMFILE", "too many open files"},
+	{25, "ENOTTY", "not a typewriter"},
+	{26, "ETXTBSY", "text file busy"},
+	{27, "EFBIG", "file too large"},
+	{28, "ENOSPC", "no space left on device"},
+	{29, "ESPIPE", "illegal seek"},
+	{30, "EROFS", "read-only file system"},
+	{31, "EMLINK", "too many links"},
+	{32, "EPIPE", "broken pipe"},
+	{33, "EDOM", "argument out of domain"},
+	{34, "ERANGE", "result too large"},
+	{35, "ENOMSG", "no message of desired type"},
+	{36, "EIDRM", "identifier removed"},
+	{37, "ECHRNG", "channel number out of range"},
+	{38, "EL2NSYNC", "level 2 not synchronized"},
+	{39, "EL3HLT", "level 3 halted"},
+	{40, "EL3RST", "level 3 reset"},
+	{41, "ELNRNG", "link number out of range"},
+	{42, "EUNATCH", "protocol driver not attached"},
+	{43, "ENOCSI", "no CSI structure available"},
+	{44, "EL2HLT", "level 2 halted"},
+	{45, "EDEADLK", "deadlock condition if locked"},
+	{46, "ENOTREADY", "device not ready"},
+	{47, "EWRPROTECT", "write-protected media"},
+	{48, "EFORMAT", "unformatted or incompatible media"},
+	{49, "ENOLCK", "no locks available"},
+	{50, "ENOCONNECT", "cannot Establish Connection"},
+	{52, "ESTALE", "missing file or filesystem"},
+	{53, "EDIST", "requests blocked by Administrator"},
+	{55, "EINPROGRESS", "operation now in progress"},
+	{56, "EALREADY", "operation already in progress"},
+	{57, "ENOTSOCK", "socket operation on non-socket"},
+	{58, "EDESTADDREQ", "destination address required"},
+	{59, "EMSGSIZE", "message too long"},
+	{60, "EPROTOTYPE", "protocol wrong type for socket"},
+	{61, "ENOPROTOOPT", "protocol not available"},
+	{62, "EPROTONOSUPPORT", "protocol not supported"},
+	{63, "ESOCKTNOSUPPORT", "socket type not supported"},
+	{64, "EOPNOTSUPP", "operation not supported on socket"},
+	{65, "EPFNOSUPPORT", "protocol family not supported"},
+	{66, "EAFNOSUPPORT", "addr family not supported by protocol"},
+	{67, "EADDRINUSE", "address already in use"},
+	{68, "EADDRNOTAVAIL", "can't assign requested address"},
+	{69, "ENETDOWN", "network is down"},
+	{70, "ENETUNREACH", "network is unreachable"},
+	{71, "ENETRESET", "network dropped connection on reset"},
+	{72, "ECONNABORTED", "software caused connection abort"},
+	{73, "ECONNRESET", "connection reset by peer"},
+	{74, "ENOBUFS", "no buffer space available"},
+	{75, "EISCONN", "socket is already connected"},
+	{76, "ENOTCONN", "socket is not connected"},
+	{77, "ESHUTDOWN", "can't send after socket shutdown"},
+	{78, "ETIMEDOUT", "connection timed out"},
+	{79, "ECONNREFUSED", "connection refused"},
+	{80, "EHOSTDOWN", "host is down"},
+	{81, "EHOSTUNREACH", "no route to host"},
+	{82, "ERESTART", "restart the system call"},
+	{83, "EPROCLIM", "too many processes"},
+	{84, "EUSERS", "too many users"},
+	{85, "ELOOP", "too many levels of symbolic links"},
+	{86, "ENAMETOOLONG", "file name too long"},
+	{88, "EDQUOT", "disk quota exceeded"},
+	{89, "ECORRUPT", "invalid file system control data detected"},
+	{90, "ESYSERROR", "for future use "},
+	{93, "EREMOTE", "item is not local to host"},
+	{94, "ENOTRECOVERABLE", "state not recoverable "},
+	{95, "EOWNERDEAD", "previous owner died "},
+	{109, "ENOSYS", "function not implemented"},
+	{110, "EMEDIA", "media surface error"},
+	{111, "ESOFT", "I/O completed, but needs relocation"},
+	{112, "ENOATTR", "no attribute found"},
+	{113, "ESAD", "security Authentication Denied"},
+	{114, "ENOTRUST", "not a Trusted Program"},
+	{115, "ETOOMANYREFS", "too many references: can't splice"},
+	{116, "EILSEQ", "invalid wide character"},
+	{117, "ECANCELED", "asynchronous I/O cancelled"},
+	{118, "ENOSR", "out of STREAMS resources"},
+	{119, "ETIME", "system call timed out"},
+	{120, "EBADMSG", "next message has wrong type"},
+	{121, "EPROTO", "error in protocol"},
+	{122, "ENODATA", "no message on stream head read q"},
+	{123, "ENOSTR", "fd not associated with a stream"},
+	{124, "ENOTSUP", "unsupported attribute value"},
+	{125, "EMULTIHOP", "multihop is not allowed"},
+	{126, "ENOLINK", "the server link has been severed"},
+	{127, "EOVERFLOW", "value too large to be stored in data type"},
+}
+
+// Signal table
+var signalList = [...]struct {
+	num  syscall.Signal
+	name string
+	desc string
+}{
+	{1, "SIGHUP", "hangup"},
+	{2, "SIGINT", "interrupt"},
+	{3, "SIGQUIT", "quit"},
+	{4, "SIGILL", "illegal instruction"},
+	{5, "SIGTRAP", "trace/BPT trap"},
+	{6, "SIGIOT", "IOT/Abort trap"},
+	{7, "SIGEMT", "EMT trap"},
+	{8, "SIGFPE", "floating point exception"},
+	{9, "SIGKILL", "killed"},
+	{10, "SIGBUS", "bus error"},
+	{11, "SIGSEGV", "segmentation fault"},
+	{12, "SIGSYS", "bad system call"},
+	{13, "SIGPIPE", "broken pipe"},
+	{14, "SIGALRM", "alarm clock"},
+	{15, "SIGTERM", "terminated"},
+	{16, "SIGURG", "urgent I/O condition"},
+	{17, "SIGSTOP", "stopped (signal)"},
+	{18, "SIGTSTP", "stopped"},
+	{19, "SIGCONT", "continued"},
+	{20, "SIGCHLD", "child exited"},
+	{21, "SIGTTIN", "stopped (tty input)"},
+	{22, "SIGTTOU", "stopped (tty output)"},
+	{23, "SIGIO", "I/O possible/complete"},
+	{24, "SIGXCPU", "cputime limit exceeded"},
+	{25, "SIGXFSZ", "filesize limit exceeded"},
+	{27, "SIGMSG", "input device data"},
+	{28, "SIGWINCH", "window size changes"},
+	{29, "SIGPWR", "power-failure"},
+	{30, "SIGUSR1", "user defined signal 1"},
+	{31, "SIGUSR2", "user defined signal 2"},
+	{32, "SIGPROF", "profiling timer expired"},
+	{33, "SIGDANGER", "paging space low"},
+	{34, "SIGVTALRM", "virtual timer expired"},
+	{35, "SIGMIGRATE", "signal 35"},
+	{36, "SIGPRE", "signal 36"},
+	{37, "SIGVIRT", "signal 37"},
+	{38, "SIGTALRM", "signal 38"},
+	{39, "SIGWAITING", "signal 39"},
+	{48, "SIGSYSERROR", "signal 48"},
+	{49, "SIGCAPI", "signal 49"},
+	{58, "SIGRECONFIG", "signal 58"},
+	{59, "SIGCPUFAIL", "CPU Failure Predicted"},
+	{60, "SIGGRANT", "monitor mode granted"},
+	{61, "SIGRETRACT", "monitor mode retracted"},
+	{62, "SIGSOUND", "sound completed"},
+	{63, "SIGMAX32", "secure attention"},
+	{255, "SIGMAX", "signal 255"},
+}

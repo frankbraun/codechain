@@ -44,6 +44,22 @@ type PublicKey []byte
 // PrivateKey is the type of Ed25519 private keys. It implements crypto.Signer.
 type PrivateKey []byte
 
+// Public returns the PublicKey corresponding to priv.
+func (priv PrivateKey) Public() crypto.PublicKey {
+	publicKey := make([]byte, PublicKeySize)
+	copy(publicKey, priv[32:])
+	return PublicKey(publicKey)
+}
+
+// Seed returns the private key seed corresponding to priv. It is provided for
+// interoperability with RFC 8032. RFC 8032's private keys correspond to seeds
+// in this package.
+func (priv PrivateKey) Seed() []byte {
+	seed := make([]byte, SeedSize)
+	copy(seed, priv[:32])
+	return seed
+}
+
 // Sign signs the given message with priv.
 // Ed25519 performs two passes over messages to be signed and therefore cannot
 // handle pre-hashed messages. Thus opts.HashFunc() must return zero to

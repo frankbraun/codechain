@@ -1304,3 +1304,229 @@ const (
 	EXDEV           = syscall.Errno(0x12)
 	EXFULL          = syscall.Errno(0x34)
 )
+
+// Signals
+const (
+	SIGABRT    = syscall.Signal(0x6)
+	SIGALRM    = syscall.Signal(0xe)
+	SIGBUS     = syscall.Signal(0xa)
+	SIGCANCEL  = syscall.Signal(0x24)
+	SIGCHLD    = syscall.Signal(0x12)
+	SIGCLD     = syscall.Signal(0x12)
+	SIGCONT    = syscall.Signal(0x19)
+	SIGEMT     = syscall.Signal(0x7)
+	SIGFPE     = syscall.Signal(0x8)
+	SIGFREEZE  = syscall.Signal(0x22)
+	SIGHUP     = syscall.Signal(0x1)
+	SIGILL     = syscall.Signal(0x4)
+	SIGINFO    = syscall.Signal(0x29)
+	SIGINT     = syscall.Signal(0x2)
+	SIGIO      = syscall.Signal(0x16)
+	SIGIOT     = syscall.Signal(0x6)
+	SIGJVM1    = syscall.Signal(0x27)
+	SIGJVM2    = syscall.Signal(0x28)
+	SIGKILL    = syscall.Signal(0x9)
+	SIGLOST    = syscall.Signal(0x25)
+	SIGLWP     = syscall.Signal(0x21)
+	SIGPIPE    = syscall.Signal(0xd)
+	SIGPOLL    = syscall.Signal(0x16)
+	SIGPROF    = syscall.Signal(0x1d)
+	SIGPWR     = syscall.Signal(0x13)
+	SIGQUIT    = syscall.Signal(0x3)
+	SIGSEGV    = syscall.Signal(0xb)
+	SIGSTOP    = syscall.Signal(0x17)
+	SIGSYS     = syscall.Signal(0xc)
+	SIGTERM    = syscall.Signal(0xf)
+	SIGTHAW    = syscall.Signal(0x23)
+	SIGTRAP    = syscall.Signal(0x5)
+	SIGTSTP    = syscall.Signal(0x18)
+	SIGTTIN    = syscall.Signal(0x1a)
+	SIGTTOU    = syscall.Signal(0x1b)
+	SIGURG     = syscall.Signal(0x15)
+	SIGUSR1    = syscall.Signal(0x10)
+	SIGUSR2    = syscall.Signal(0x11)
+	SIGVTALRM  = syscall.Signal(0x1c)
+	SIGWAITING = syscall.Signal(0x20)
+	SIGWINCH   = syscall.Signal(0x14)
+	SIGXCPU    = syscall.Signal(0x1e)
+	SIGXFSZ    = syscall.Signal(0x1f)
+	SIGXRES    = syscall.Signal(0x26)
+)
+
+// Error table
+var errorList = [...]struct {
+	num  syscall.Errno
+	name string
+	desc string
+}{
+	{1, "EPERM", "not owner"},
+	{2, "ENOENT", "no such file or directory"},
+	{3, "ESRCH", "no such process"},
+	{4, "EINTR", "interrupted system call"},
+	{5, "EIO", "I/O error"},
+	{6, "ENXIO", "no such device or address"},
+	{7, "E2BIG", "arg list too long"},
+	{8, "ENOEXEC", "exec format error"},
+	{9, "EBADF", "bad file number"},
+	{10, "ECHILD", "no child processes"},
+	{11, "EAGAIN", "resource temporarily unavailable"},
+	{12, "ENOMEM", "not enough space"},
+	{13, "EACCES", "permission denied"},
+	{14, "EFAULT", "bad address"},
+	{15, "ENOTBLK", "block device required"},
+	{16, "EBUSY", "device busy"},
+	{17, "EEXIST", "file exists"},
+	{18, "EXDEV", "cross-device link"},
+	{19, "ENODEV", "no such device"},
+	{20, "ENOTDIR", "not a directory"},
+	{21, "EISDIR", "is a directory"},
+	{22, "EINVAL", "invalid argument"},
+	{23, "ENFILE", "file table overflow"},
+	{24, "EMFILE", "too many open files"},
+	{25, "ENOTTY", "inappropriate ioctl for device"},
+	{26, "ETXTBSY", "text file busy"},
+	{27, "EFBIG", "file too large"},
+	{28, "ENOSPC", "no space left on device"},
+	{29, "ESPIPE", "illegal seek"},
+	{30, "EROFS", "read-only file system"},
+	{31, "EMLINK", "too many links"},
+	{32, "EPIPE", "broken pipe"},
+	{33, "EDOM", "argument out of domain"},
+	{34, "ERANGE", "result too large"},
+	{35, "ENOMSG", "no message of desired type"},
+	{36, "EIDRM", "identifier removed"},
+	{37, "ECHRNG", "channel number out of range"},
+	{38, "EL2NSYNC", "level 2 not synchronized"},
+	{39, "EL3HLT", "level 3 halted"},
+	{40, "EL3RST", "level 3 reset"},
+	{41, "ELNRNG", "link number out of range"},
+	{42, "EUNATCH", "protocol driver not attached"},
+	{43, "ENOCSI", "no CSI structure available"},
+	{44, "EL2HLT", "level 2 halted"},
+	{45, "EDEADLK", "deadlock situation detected/avoided"},
+	{46, "ENOLCK", "no record locks available"},
+	{47, "ECANCELED", "operation canceled"},
+	{48, "ENOTSUP", "operation not supported"},
+	{49, "EDQUOT", "disc quota exceeded"},
+	{50, "EBADE", "bad exchange descriptor"},
+	{51, "EBADR", "bad request descriptor"},
+	{52, "EXFULL", "message tables full"},
+	{53, "ENOANO", "anode table overflow"},
+	{54, "EBADRQC", "bad request code"},
+	{55, "EBADSLT", "invalid slot"},
+	{56, "EDEADLOCK", "file locking deadlock"},
+	{57, "EBFONT", "bad font file format"},
+	{58, "EOWNERDEAD", "owner of the lock died"},
+	{59, "ENOTRECOVERABLE", "lock is not recoverable"},
+	{60, "ENOSTR", "not a stream device"},
+	{61, "ENODATA", "no data available"},
+	{62, "ETIME", "timer expired"},
+	{63, "ENOSR", "out of stream resources"},
+	{64, "ENONET", "machine is not on the network"},
+	{65, "ENOPKG", "package not installed"},
+	{66, "EREMOTE", "object is remote"},
+	{67, "ENOLINK", "link has been severed"},
+	{68, "EADV", "advertise error"},
+	{69, "ESRMNT", "srmount error"},
+	{70, "ECOMM", "communication error on send"},
+	{71, "EPROTO", "protocol error"},
+	{72, "ELOCKUNMAPPED", "locked lock was unmapped "},
+	{73, "ENOTACTIVE", "facility is not active"},
+	{74, "EMULTIHOP", "multihop attempted"},
+	{77, "EBADMSG", "not a data message"},
+	{78, "ENAMETOOLONG", "file name too long"},
+	{79, "EOVERFLOW", "value too large for defined data type"},
+	{80, "ENOTUNIQ", "name not unique on network"},
+	{81, "EBADFD", "file descriptor in bad state"},
+	{82, "EREMCHG", "remote address changed"},
+	{83, "ELIBACC", "can not access a needed shared library"},
+	{84, "ELIBBAD", "accessing a corrupted shared library"},
+	{85, "ELIBSCN", ".lib section in a.out corrupted"},
+	{86, "ELIBMAX", "attempting to link in more shared libraries than system limit"},
+	{87, "ELIBEXEC", "can not exec a shared library directly"},
+	{88, "EILSEQ", "illegal byte sequence"},
+	{89, "ENOSYS", "operation not applicable"},
+	{90, "ELOOP", "number of symbolic links encountered during path name traversal exceeds MAXSYMLINKS"},
+	{91, "ERESTART", "error 91"},
+	{92, "ESTRPIPE", "error 92"},
+	{93, "ENOTEMPTY", "directory not empty"},
+	{94, "EUSERS", "too many users"},
+	{95, "ENOTSOCK", "socket operation on non-socket"},
+	{96, "EDESTADDRREQ", "destination address required"},
+	{97, "EMSGSIZE", "message too long"},
+	{98, "EPROTOTYPE", "protocol wrong type for socket"},
+	{99, "ENOPROTOOPT", "option not supported by protocol"},
+	{120, "EPROTONOSUPPORT", "protocol not supported"},
+	{121, "ESOCKTNOSUPPORT", "socket type not supported"},
+	{122, "EOPNOTSUPP", "operation not supported on transport endpoint"},
+	{123, "EPFNOSUPPORT", "protocol family not supported"},
+	{124, "EAFNOSUPPORT", "address family not supported by protocol family"},
+	{125, "EADDRINUSE", "address already in use"},
+	{126, "EADDRNOTAVAIL", "cannot assign requested address"},
+	{127, "ENETDOWN", "network is down"},
+	{128, "ENETUNREACH", "network is unreachable"},
+	{129, "ENETRESET", "network dropped connection because of reset"},
+	{130, "ECONNABORTED", "software caused connection abort"},
+	{131, "ECONNRESET", "connection reset by peer"},
+	{132, "ENOBUFS", "no buffer space available"},
+	{133, "EISCONN", "transport endpoint is already connected"},
+	{134, "ENOTCONN", "transport endpoint is not connected"},
+	{143, "ESHUTDOWN", "cannot send after socket shutdown"},
+	{144, "ETOOMANYREFS", "too many references: cannot splice"},
+	{145, "ETIMEDOUT", "connection timed out"},
+	{146, "ECONNREFUSED", "connection refused"},
+	{147, "EHOSTDOWN", "host is down"},
+	{148, "EHOSTUNREACH", "no route to host"},
+	{149, "EALREADY", "operation already in progress"},
+	{150, "EINPROGRESS", "operation now in progress"},
+	{151, "ESTALE", "stale NFS file handle"},
+}
+
+// Signal table
+var signalList = [...]struct {
+	num  syscall.Signal
+	name string
+	desc string
+}{
+	{1, "SIGHUP", "hangup"},
+	{2, "SIGINT", "interrupt"},
+	{3, "SIGQUIT", "quit"},
+	{4, "SIGILL", "illegal Instruction"},
+	{5, "SIGTRAP", "trace/Breakpoint Trap"},
+	{6, "SIGABRT", "abort"},
+	{7, "SIGEMT", "emulation Trap"},
+	{8, "SIGFPE", "arithmetic Exception"},
+	{9, "SIGKILL", "killed"},
+	{10, "SIGBUS", "bus Error"},
+	{11, "SIGSEGV", "segmentation Fault"},
+	{12, "SIGSYS", "bad System Call"},
+	{13, "SIGPIPE", "broken Pipe"},
+	{14, "SIGALRM", "alarm Clock"},
+	{15, "SIGTERM", "terminated"},
+	{16, "SIGUSR1", "user Signal 1"},
+	{17, "SIGUSR2", "user Signal 2"},
+	{18, "SIGCHLD", "child Status Changed"},
+	{19, "SIGPWR", "power-Fail/Restart"},
+	{20, "SIGWINCH", "window Size Change"},
+	{21, "SIGURG", "urgent Socket Condition"},
+	{22, "SIGIO", "pollable Event"},
+	{23, "SIGSTOP", "stopped (signal)"},
+	{24, "SIGTSTP", "stopped (user)"},
+	{25, "SIGCONT", "continued"},
+	{26, "SIGTTIN", "stopped (tty input)"},
+	{27, "SIGTTOU", "stopped (tty output)"},
+	{28, "SIGVTALRM", "virtual Timer Expired"},
+	{29, "SIGPROF", "profiling Timer Expired"},
+	{30, "SIGXCPU", "cpu Limit Exceeded"},
+	{31, "SIGXFSZ", "file Size Limit Exceeded"},
+	{32, "SIGWAITING", "no runnable lwp"},
+	{33, "SIGLWP", "inter-lwp signal"},
+	{34, "SIGFREEZE", "checkpoint Freeze"},
+	{35, "SIGTHAW", "checkpoint Thaw"},
+	{36, "SIGCANCEL", "thread Cancellation"},
+	{37, "SIGLOST", "resource Lost"},
+	{38, "SIGXRES", "resource Control Exceeded"},
+	{39, "SIGJVM1", "reserved for JVM 1"},
+	{40, "SIGJVM2", "reserved for JVM 2"},
+	{41, "SIGINFO", "information Request"},
+}

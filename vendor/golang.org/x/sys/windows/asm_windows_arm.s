@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
-// +build go1.9
+#include "textflag.h"
 
-package unix
+TEXT ·getprocaddress(SB),NOSPLIT,$0
+	B	syscall·getprocaddress(SB)
+
+TEXT ·loadlibrary(SB),NOSPLIT,$0
+	B	syscall·loadlibrary(SB)

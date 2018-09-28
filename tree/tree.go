@@ -141,7 +141,7 @@ func List(root string, excludePaths []string) ([]ListEntry, error) {
 	return entries, nil
 }
 
-// printList printes a list of entries in the canonical tree list format.
+// printList prints a list of entries in the canonical tree list format.
 func printList(entries []ListEntry) []byte {
 	var b bytes.Buffer
 	for _, e := range entries {

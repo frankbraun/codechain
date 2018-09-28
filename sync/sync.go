@@ -17,7 +17,7 @@ import (
 // Dir syncs the treeDir to the tree hash targetHash with patches from patchDir.
 //
 // treeHashes is a list of intermediate tree hashes which must start with
-// tree.EmptyHash and contain the targetHash. Syncronization happens by
+// tree.EmptyHash and contain the targetHash. Synchronization happens by
 // applying one patch file after another, iterating through the treeHashes
 // array until the targetHash is found.
 //

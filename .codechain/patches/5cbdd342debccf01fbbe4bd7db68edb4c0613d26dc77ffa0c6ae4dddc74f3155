@@ -1,0 +1,312 @@
+codechain patchfile version 1
+treehash 5cbdd342debccf01fbbe4bd7db68edb4c0613d26dc77ffa0c6ae4dddc74f3155
+- f d60d8e8c8500099b7865a6580168ea8120942b891a37ebfffd8bb725180443be README.md
++ f 26f78fd6c10b2be22965cf74aa4daeb11199167ce5cd64037b191dbbcf64c3a5 README.md
+dmppatch 8
+@@ -2366,17 +2366,16 @@
+ org/).%0A%0A
+-%0A
+ ### Docu
+@@ -2498,16 +2498,278 @@
+ st.pdf)%0A
++- %5BHash chain file format%5D(https://godoc.org/github.com/frankbraun/codechain/hashchain)%0A- %5BPatchfile format%5D(https://godoc.org/github.com/frankbraun/codechain/patchfile)%0A- %5BDirectory tree hashes and lists%5D(https://godoc.org/github.com/frankbraun/codechain/tree)%0A
+ %0A### Ack
+- f df75a2a99c6bf4d474effcfc7d16c647c9dc0f115a7a6906da2437e0afdb101e command/review.go
++ f dc90c9d6ffd023e898b324a1ed5de21aeece2ebcf7ffbedf630de8f5848337e4 command/review.go
+dmppatch 24
+@@ -1772,16 +1772,58 @@
+ ret key%0A
++%09log.Println(%22review(): load secret key%22)%0A
+ %09secKey,
+@@ -1891,24 +1891,57 @@
+ turn err%0A%09%7D%0A
++%09log.Println(%22review(): loaded%22)%0A
+ %0A%09// get las
+@@ -3305,16 +3305,63 @@
+ pubKey)%0A
++%09log.Printf(%22review(): barrier=%25d%5Cn%22, barrier)%0A
+ %09var fou
+@@ -3579,82 +3579,84 @@
+ er)%0A
+-%09%09%09err := terminal.Confirm(%22review already signed patch (no continues)?%22)%0A
++%09%09%09err := terminal.Confirm(%22review already released patch (no continues)?%22)%0A
+ %09%09%09i
+@@ -3940,266 +3940,384 @@
+  0)%0A
+-%09%09if err := terminal.Confirm(%22review patch (no aborts)?%22); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if err := procDiff(i, treeHashes, useGit); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if err := terminal.Confirm(%22sign patch?%22); err != nil %7B%0A%09%09%09return err%0A
++%09%09if c.SourceLine(treeHashes%5Bi%5D) %3E barrier %7B%0A%09%09%09if err := terminal.Confirm(%22review patch (no aborts)?%22); err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09if err := procDiff(i, treeHashes, useGit); err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09if err := terminal.Confirm(%22sign patch?%22); err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09signed = true%0A%09%09%7D else %7B%0A%09%09%09fmt.Println(%22skipping already signed patch%22)%0A
+ %09%09%7D%0A
+-%09%09signed = true%0A
+ %09%7D%0A%0A
+- f 13e194c28bf0136166134a2b99cba3cd970c3955ec0a7ae63adc8bdc117ad795 patchfile/apply.go
++ f ec2e67256f2b7796bd3bb27a0235e20dd31c5ef9efaf6c8414c32f5b2f54708a patchfile/apply.go
+dmppatch 13
+@@ -4377,16 +4377,95 @@
+  nil%0A%7D%0A%0A
++// procResults process the final treehash line and returns the terminal state.%0A
+ func pro
+@@ -5911,24 +5911,241 @@
+ tchAfter%0A%09%7D%0A
++%09// If the file already existed os.OpenFile didn't change the file mode,%0A%09// so we adjust it here.%0A%09if state == diffFile && prev.mode != cur.mode %7B%0A%09%09if err := os.Chmod(fileB, perm); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A
+ %09return nil%0A
+@@ -6209,70 +6209,155 @@
+ %0A%7D%0A%0A
+-// Apply applies the given patch r to the directory tree dir.%0A
++// Apply applies the patch read from r to the directory tree dir.%0A// The paths given in excludePaths are excluded from all tree hash calculations.%0A
+ func
+- f f37d983b083af6f062e85a65810fafb8469c66cd7a1b52a094edc02792ea9b8d patchfile/ascii85.go
++ f 886c42734b8f5671b7a39b8a2f0702b5468d4910923c9881b306bffe29b4fb89 patchfile/ascii85.go
+dmppatch 8
+@@ -103,16 +103,120 @@
+ i85%22%0A)%0A%0A
++// ascii85Diff encodes the file with filename in ascii85 and writes it to w as%0A// an %22ascii85%22 section.%0A
+ func asc
+@@ -518,16 +518,146 @@
+  nil%0A%7D%0A%0A
++// ascii85Apply decodes the ascii85 encoding in patch and writes it to w.%0A// patch must not include the %22ascii85%22 section header.%0A
+ func asc
+- f 96a720a7040d37884eb4d0074c1554334f603b675b97427544e0cf11572d5d3c patchfile/diff.go
++ f 7460178738471cf4b38a06c536af16b9e24ca4805c1c361f617cffbac72beb8f patchfile/diff.go
+dmppatch 93
+@@ -1,83 +1,4 @@
+-// Package patchfile implements a robust patchfile format for directory trees.%0A
+ pack
+@@ -30,16 +30,26 @@
+ %22bytes%22%0A
++%09%22errors%22%0A
+ %09%22fmt%22%0A%09
+@@ -163,66 +163,159 @@
+ %0A)%0A%0A
+-func writeDeleteFile(w io.Writer, entry tree.ListEntry) %7B%0A
++// writeFileDeletion writes the tree list entry as a file deletion to w.%0Afunc writeFileDeletion(w io.Writer, entry tree.ListEntry) %7B%0A%09// file deletion%0A
+ %09fmt
+@@ -389,81 +389,321 @@
+ %0A%7D%0A%0A
+-func writeAddFile(w io.Writer, dir string, entry tree.ListEntry) error %7B%0A
++// writeFileAddition writes the tree list entry (in root dir) as a file%0A// addition to w.%0A//%0A// It determines if the file in entry is binary or UTF-8 and encodes it%0A// accordingly as an %22ascii85%22 or %22dmppatch%22 patch.%0Afunc writeFileAddition(w io.Writer, dir string, entry tree.ListEntry) error %7B%0A%09// file addition%0A
+ %09fmt
+@@ -770,16 +770,52 @@
+ lename)%0A
++%09// filename regarding the root dir%0A
+ %09filenam
+@@ -854,16 +854,48 @@
+ lename)%0A
++%09// check if the file is binary%0A
+ %09isBinar
+@@ -976,16 +976,46 @@
+ inary %7B%0A
++%09%09// write %22ascii85%22 encoding%0A
+ %09%09err :=
+@@ -1086,16 +1086,44 @@
+  else %7B%0A
++%09%09// write %22dmppatch%22 patch%0A
+ %09%09err :=
+@@ -1184,17 +1184,1742 @@
+ err%0A%09%09%7D%0A
++%09%7D%0A%09return nil%0A%7D%0A
+ %0A
++// writeFileDiff writes the diff between the tree list entryA (in directory a)%0A// and tree list entryB (in directory b) as a file diff to w.%0A//%0A// If neither the file hash nor the file mode of entryA and entryB differ, the%0A// functions returns nil without writing anything to w.%0A//%0A// If the file hashes differ, the function determines if either of the files%0A// is binary or both are UTF-8 and encodes the diff accordingly as an%0A// %22ascii85%22 or %22dmppatch%22 patch.%0Afunc writeFileDiff(w io.Writer, a, b string, entryA, entryB tree.ListEntry) error %7B%0A%09// Assert that file diffs are only used if the file names are the same.%0A%09if !(entryA.Filename == entryB.Filename) %7B%0A%09%09panic(errors.New(%22patchfile: entryA.Filename != entryB.Filename%22))%0A%09%7D%0A%09// Write a file diff, if the file hash or the file mode changed.%0A%09if !bytes.Equal(entryA.Hash%5B:%5D, entryB.Hash%5B:%5D) %7C%7C%0A%09%09entryA.Mode != entryB.Mode %7B%0A%09%09fmt.Fprintf(w, %22- %25c %25x %25s%5Cn%22, entryA.Mode, entryA.Hash, entryA.Filename)%0A%09%09fmt.Fprintf(w, %22+ %25c %25x %25s%5Cn%22, entryB.Mode, entryB.Hash, entryB.Filename)%0A%09%7D%0A%09// Write actual patch, if the file hash changed.%0A%09if !bytes.Equal(entryA.Hash%5B:%5D, entryB.Hash%5B:%5D) %7B%0A%09%09// Check if either of the files is binary.%0A%09%09filenameA := filepath.Join(a, entryA.Filename)%0A%09%09filenameB := filepath.Join(b, entryB.Filename)%0A%09%09isBinaryA, err := file.IsBinary(filenameA)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09isBinaryB, err := file.IsBinary(filenameB)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if isBinaryA %7C%7C isBinaryB %7B%0A%09%09%09// write %22ascii85%22 encoding%0A%09%09%09err := ascii85Diff(w, filenameB)%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%7D else %7B%0A%09%09%09// write %22dmppatch%22 patch%0A%09%09%09err := dmpDiff(w, filenameA, filenameB)%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%7D%0A
+ %09%7D%0A%09retu
+@@ -2932,218 +2932,316 @@
+ %0A%7D%0A%0A
+-// Diff computes a patch w between the directory trees rooted at a and b.%0A// If a and b have the same tree hash ErrNoDifference is returned.%0A// In case of error, some data might have been written to w already.%0A
++// Diff computes a patch between the directory trees rooted at a and b and%0A// writes it to w. If a and b have the same tree hash ErrNoDifference is%0A// returned. In case of error, some data might have been written to w already.%0A// The paths given in excludePaths are excluded from all tree hash calculations.%0A
+ func
+@@ -3303,16 +3303,68 @@
+ error %7B%0A
++%09// Calculate tree list of %22source%22 directory tree.%0A
+ %09listA, 
+@@ -3430,16 +3430,68 @@
+  err%0A%09%7D%0A
++%09// Calculate tree list of %22target%22 directory tree.%0A
+ %09listB, 
+@@ -3557,16 +3557,61 @@
+  err%0A%09%7D%0A
++%09// Hash directories trees and compare them.%0A
+ %09hashA :
+@@ -3726,24 +3726,41 @@
+ fference%0A%09%7D%0A
++%09// version line%0A
+ %09fmt.Fprintf
+@@ -3808,16 +3808,42 @@
+ ersion)%0A
++%09// initial treehash line%0A
+ %09fmt.Fpr
+@@ -4039,814 +4039,125 @@
+ e %7B%0A
+-%09%09%09if !bytes.Equal(entryA.Hash%5B:%5D, entryB.Hash%5B:%5D) %7C%7C%0A%09%09%09%09entryA.Mode != entryB.Mode %7B%0A%09%09%09%09fmt.Fprintf(w, %22- %25c %25x %25s%5Cn%22, entryA.Mode, entryA.Hash, entryA.Filename)%0A%09%09%09%09fmt.Fprintf(w, %22+ %25c %25x %25s%5Cn%22, entryB.Mode, entryB.Hash, entryB.Filename)%0A%09%09%09%7D%0A%09%09%09if !bytes.Equal(entryA.Hash%5B:%5D, entryB.Hash%5B:%5D) %7B%0A%09%09%09%09filenameA := filepath.Join(a, entryA.Filename)%0A%09%09%09%09filenameB := filepath.Join(b, entryB.Filename)%0A%09%09%09%09isBinaryA, err := file.IsBinary(filenameA)%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09isBinaryB, err := file.IsBinary(filenameB)%0A%09%09%09%09if err != nil %7B%0A%09%09%09%09%09return err%0A%09%09%09%09%7D%0A%09%09%09%09if isBinaryA %7C%7C isBinaryB %7B%0A%09%09%09%09%09err := ascii85Diff(w, filenameB)%0A%09%09%09%09%09if err != nil %7B%0A%09%09%09%09%09%09return err%0A%09%09%09%09%09%7D%0A%09%09%09%09%7D else %7B%0A%09%09%09%09%09err := dmpDiff(w, filenameA, filenameB)%0A%09%09%09%09%09if err != nil %7B%0A%09%09%09%09%09%09return err%0A%09%09%09%09%09%7D%0A%0A%09%09%09%09%7D%0A
++%09%09%09// write file diff, if necessary%0A%09%09%09if err := writeFileDiff(w, a, b, entryA, entryB); err != nil %7B%0A%09%09%09%09return err%0A
+ %09%09%09%7D
+@@ -4209,38 +4209,40 @@
+ e %7B%0A
+-%09%09%09writeDeleteFile(w, entryA)%0A
++%09%09%09writeFileDeletion(w, entryA)%0A
+ %09%09%09i
+@@ -4311,62 +4311,67 @@
+ ame%0A
+-%09%09%09if err := writeAddFile(w, b, entryB); err != nil %7B%0A
++%09%09%09if err := writeFileAddition(w, b, entryB); err != nil %7B%0A
+ %09%09%09%09
+@@ -4462,42 +4462,44 @@
+ ) %7B%0A
+-%09%09writeDeleteFile(w, listA%5BidxA%5D)%0A
++%09%09writeFileDeletion(w, listA%5BidxA%5D)%0A
+ %09%09id
+@@ -4535,66 +4535,71 @@
+ ) %7B%0A
+-%09%09if err := writeAddFile(w, b, listB%5BidxB%5D); err != nil %7B%0A
++%09%09if err := writeFileAddition(w, b, listB%5BidxB%5D); err != nil %7B%0A
+ %09%09%09r
+@@ -4624,16 +4624,40 @@
+ xB++%0A%09%7D%0A
++%09// final treehash line%0A
+ %09fmt.Fpr
+- f 061588d8715da3c33b68bf9a5f4cba1bc32264e112f440be6dce68516d508fe4 patchfile/dmp.go
++ f 92cd0bec23202410873fe090fa37132889af44a2b3147d7047a7722ec2591702 patchfile/dmp.go
+dmppatch 16
+@@ -115,16 +115,189 @@
+ tch%22%0A)%0A%0A
++// dmpDiff employs Myer's diff algorithm (as implemented in Diff Match Patch)%0A// to calculate a diff between fileA and fileB, and writes it to w as a%0A// %22dmppatch%22 section.%0A
+ func dmp
+@@ -810,83 +810,8 @@
+ es)%0A
+-%09/*%0A%09%09if !strings.HasSuffix(patch, %22%5Cn%22) %7B%0A%09%09%09patch = patch + %22%5Cn%22%0A%09%09%7D%0A%09*/%0A
+ %09fmt
+@@ -940,287 +940,8 @@
+ %0A%09%7D%0A
+-%0A%09dmp = diffmatchpatch.New()%0A%09patches, err = dmp.PatchFromText(patch)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09_, applies := dmp.PatchApply(patches, string(a))%0A%09for _, applied := range applies %7B%0A%09%09if !applied %7B%0A%09%09%09return errors.New(%22patchfile: XXX could not apply all patches%22)%0A%09%09%7D%0A%09%7D%0A%0A
+ %09ret
+@@ -951,16 +951,157 @@
+  nil%0A%7D%0A%0A
++// dmpApply decodes the DMP patch in patch, applies it to text, and writes it%0A// to w. patch must not include the %22dmppatch%22 section header.%0A
+ func dmp
++ f d49645ca6bec79d3062f07ac7a0fcbb5f4af5c2466365eb9245873d25b61f1be patchfile/doc.go
+dmppatch 2
+@@ -0,0 +1,5514 @@
++/*%0APackage patchfile implements a robust patchfile format for directory trees.%0A%0A%0APatchfile format%0A%0AA Codechain patchfile is a UTF-8 encoded file split into newline separated%0Alines. It starts with the following line which defines the patchfile version:%0A%0A  codechain patchfile version 1%0A%0AThe second line gives the tree hash (see tree package) of the directory tree%0Athe patchfile applies to (example):%0A%0A  treehash 5998c63aca42e471297c0fa353538a93d4d4cfafe9a672df6989e694188b4a92%0A%0A%0AThe main body of the patch file encodes file deletions, file additions, and%0Afile diffs.%0AA file deletion is encoded as follows (example):%0A%0A  - f 927d2cae58bb53cdd087bb7178afeff9dab8ec1691cbd01aeccae62559da2791 gopher.png%0A%0AThe '-' denotes a deletion. The other three entries are the same as file%0Aentries of tree lists (see tree package).%0A%0AA file addition is encoded as follows (example):%0A%0A  + f ad125cc5c1fb680be130908a0838ca2235db04285bcdd29e8e25087927e7dd0d hello.go%0A%0AThe '+' denotes an addition. The other three entries are the same as file%0Aentries of tree lists (see tree package).%0A%0AAfter an addition the actual patch must follow, either in %22dmppatch%22 (for%0AUTF-8 files) or in %22ascii85%22 format (for binary files).%0AThe %22dmppatch%22 file format looks like the following (example):%0A%0A  dmppatch 2%0A  @@ -0,0 +1,78 @@%0A  +package main%250A%250Aimport (%250A%2509%2522fmt%2522%250A)%250A%250Afunc main() %257B%250A%2509fmt.Println(%2522hello world!%2522)%250A%257D%250A%0A%0AThe number after %22dmppatch%22 denotes the number of lines following containing%0Athe actual UTF-8 patch.%0A%0AThe %22ascii85%22 file format looks like the following (example):%0A%0A  ascii85 2%0A  +,%5EC)8Mp-E!!DW60b/e#'ElcGar%5DO1ZH.;%3EZnWJO:iLd/%605G7uXPR%60iQmq0B%5C%5DnpD=)8AK4gPQFI-+W_%0A  %3EoidmeIj%60.fgNufo%3C4MB5*&XfkqnCOo9%5C::*WQ0?z!!*#%5E!R=9-%25KImW!!%0A%0AThe number after %22ascii85%22 denotes the number of lines following containing%0Athe actual binary encoding. %22ascii85%22 patches are not real patches, but always%0Aencode the entire binary file.%0A%0AA file diff is encoded as follows (example):%0A%0A  - f ad125cc5c1fb680be130908a0838ca2235db04285bcdd29e8e25087927e7dd0d hello.go%0A  + f 1b239e494fa201667627de82f0e4dc27b7b00b6ec06146e4d062730bf3762141 hello.go%0A%0AAs with file additions, after a file diff the actual patch must follow, either%0Ain %22dmppatch%22 or %22ascii85%22 format (see above), if the file hash changed. That%0Ais, if just the file mode changed and the file hash stayed the same no patch%0Amust follow.%0A%0AFile diffs are only used if the file names (%22hello.go%22 in the example above) are%0Athe same. File moves are implemented as a file deletion and a file addition.%0A%0AThe last line in a patchfile must be the tree hash of the directory tree after%0Athe patchfile has been applied (example):%0A%0A  treehash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855%0A%0APatchfiles are optimzed for robustness, not for compactness or human%0Areadability (although the human readability is reasonable).%0AA complete example containing a single UTF-8 file addition:%0A%0A  codechain patchfile version 1%0A  treehash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855%0A  + f ad125cc5c1fb680be130908a0838ca2235db04285bcdd29e8e25087927e7dd0d hello.go%0A  dmppatch 2%0A  @@ -0,0 +1,78 @@%0A  +package main%250A%250Aimport (%250A%2509%2522fmt%2522%250A)%250A%250Afunc main() %257B%250A%2509fmt.Println(%2522hello world!%2522)%250A%257D%250A%0A  treehash 5998c63aca42e471297c0fa353538a93d4d4cfafe9a672df6989e694188b4a92%0A%0A%0ADiff function specification%0A%0AGiven the patchfile format described above, a Diff function that computes a%0Apatch file for two directory trees rooted at A and B is straightforward to%0Aimplement:%0A%0A  1. Calculate tree lists LIST_A and LIST_B (in lexical order) for A and B.%0A%0A  2. Compare the file names NAME_A and NAME_B (lexicographically) of the first%0A     two entries in  LIST_A and LIST_B:%0A%0A     - If NAME_A %3C NAME_B: File delete NAME_A, remove it from LIST_A, goto 2.%0A     - If NAME_A %3E NAME_B: File add NAME_B, remove it from LIST_B, goto 2.%0A     - If NAME_A == NAME_B:%0A       - If file mode or file hash of files NAME_A and NAME_B differ: file diff.%0A       - Remove NAME_A from LIST_A, NAME_B from LIST_B, and goto 2.%0A%0A  3. If LIST_A still contains entries while LIST_B is empty, add file deletions%0A     for all entries in LIST_A.%0A%0A  4. If LIST_B still contains entries while LIST_A is empty, add file additions%0A     for all entries in LIST_B.%0A%0A%0AApply function specification%0A%0ATo apply a patchfile PATCH to a directory DIR we use the following algorithm:%0A%0A  1. Read first line of of PATCH and make sure it contains a codechain%0A     patchfile version we understand.%0A%0A  2. Read the second line of PATCH, make sure it is a treehash, and compare it%0A     with the treehash of DIR (before any patches have been applied).%0A%0A  3. Read next line of PATCH:%0A%0A     - If it starts with '+': Add file encoded in the following patch.%0A     - If it starts with '-':%0A       - If the next line starts with '+':%0A         - If the file name differ: Delete first file, add second file (with%0A           the following patch, which must be either ascii85 or dmppatch).%0A         - Otherwise (file names are the same):%0A           - If hashes are the same (only file modes differ): Adjust mode.%0A           - Otherwise (hashes differ): Apply the following patch, which must be%0A             either ascii85 or dmppatch (and adjust mode, if necessary).%0A       - Otherwise: Delete file.%0A     - If it starts with 'treehash': Goto 4.%0A     - Goto 3.%0A%0A  4. Read the last line of PATCH, make sure it is a treehash, and compare it%0A     with the treehash of DIR (after all patches have been applied).%0A%0A*/%0Apackage patchfile%0A
+- f 27bc72014f931d26a497384873b7f486d0ba3376d0a6c19f4ba04d6f969a590d patchfile/patchfile.go
++ f 50d154a5008e7f4885d2059fb5c7fd5b59434e5054c0c0ac395b656ce70117e2 patchfile/patchfile.go
+dmppatch 8
+@@ -1,83 +1,4 @@
+-// Package patchfile implements a robust patchfile format for directory trees.%0A
+ pack
+@@ -16,86 +16,138 @@
+ le%0A%0A
+-// Version is the maximum codechain patchfile version this package can parse.%0A
++// Version is the Codechain patchfile version this package produces with Diff%0A// and the maximum version it can parse with Apply.%0A
+ cons
+- f 75144bda5c17cf113f2c7bd4d2e2a68b377618a691ff940341bd38c944beaa45 patchfile/patchfile_test.go
++ f 910249495c48e0c36dae451145bb72a9b1465736732c3d3642476503e168e8e1 patchfile/patchfile_test.go
+dmppatch 12
+@@ -5119,16 +5119,176 @@
+ err)%0A%09%7D%0A
++%09scriptfileDir := filepath.Join(%22testdata%22, %22scriptfile%22)%0A%09scriptDir := filepath.Join(%22testdata%22, %22script%22)%0A%09script2Dir := filepath.Join(%22testdata%22, %22script2%22)%0A
+ %09xyDir :
+@@ -8565,16 +8565,1388 @@
+ %09%7D,%0A%09%09%7B%0A
++%09%09%09scriptfileDir,%0A%09%09%09scriptDir,%0A%09%09%09%60codechain patchfile version 1%0Atreehash 2ce831fd2aa55ec8295fc16e6e08f4acfac4cc459295695a05005ccf293ab773%0A- f d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 script.sh%0A+ x d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 script.sh%0Atreehash bb9bf35e526963439e9530539442982acd28cf272250436808d99023cb79a7ff%0A%60,%0A%09%09%7D,%0A%09%09%7B%0A%09%09%09scriptfileDir,%0A%09%09%09script2Dir,%0A%09%09%09%60codechain patchfile version 1%0Atreehash 2ce831fd2aa55ec8295fc16e6e08f4acfac4cc459295695a05005ccf293ab773%0A- f d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 script.sh%0A+ x 63ca0be196825cd98dd10f6e3f8e62729af9fb44acc18f4d495818268bdf4077 script.sh%0Admppatch 4%0A@@ -8,24 +8,40 @@%0A sh%250A%250A%0A-echo %2522hello world!%2522%250A%0A+echo %2522hello world, second version!%2522%250A%0Atreehash 38b133487dbffcc5eb7a46a405495e107444e55664042f08b787764100008acf%0A%60,%0A%09%09%7D,%0A%09%09%7B%0A%09%09%09scriptDir,%0A%09%09%09script2Dir,%0A%09%09%09%60codechain patchfile version 1%0Atreehash bb9bf35e526963439e9530539442982acd28cf272250436808d99023cb79a7ff%0A- x d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 script.sh%0A+ x 63ca0be196825cd98dd10f6e3f8e62729af9fb44acc18f4d495818268bdf4077 script.sh%0Admppatch 4%0A@@ -8,24 +8,40 @@%0A sh%250A%250A%0A-echo %2522hello world!%2522%250A%0A+echo %2522hello world, second version!%2522%250A%0Atreehash 38b133487dbffcc5eb7a46a405495e107444e55664042f08b787764100008acf%0A%60,%0A%09%09%7D,%0A%09%09%7B%0A
+ %09%09%09xyDir
+@@ -10562,16 +10562,48 @@
+ Cases %7B%0A
++%09%09t.Logf(%22test case %25d%5Cn%22, i+1)%0A
+ %09%09var ou
++ x d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 patchfile/testdata/script/script.sh
+dmppatch 2
+@@ -0,0 +1,31 @@
++#!/bin/sh%0A%0Aecho %22hello world!%22%0A
++ x 63ca0be196825cd98dd10f6e3f8e62729af9fb44acc18f4d495818268bdf4077 patchfile/testdata/script2/script.sh
+dmppatch 2
+@@ -0,0 +1,47 @@
++#!/bin/sh%0A%0Aecho %22hello world, second version!%22%0A
++ f d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 patchfile/testdata/scriptfile/script.sh
+dmppatch 2
+@@ -0,0 +1,31 @@
++#!/bin/sh%0A%0Aecho %22hello world!%22%0A
+- f caea3b51715ff15b02ed3f2add94829b45dc94e1ec3f14d6dedae59138cc640c sync/errors.go
++ f bf4478544bc06d532a8530cacfd2e2500813679fac64f7560fa23c514002959b sync/errors.go
+dmppatch 5
+@@ -33,86 +33,85 @@
+ %0A)%0A%0A
+-// ErrCannotRemove is returned if Sync could not find a valid start to apply,%0A
++// ErrCannotRemove is returned if Dir could not find a valid start to apply,%0A
+ // b
+- f 664860a2ebef79ba7b65fafade60d481a919c5ca58391efd0a72072a710b94a6 sync/sync.go
++ f a80dd0cdc3c914c2d0730b356047c5394284990c626d745a5634b18be4243817 sync/sync.go
+dmppatch 14
+@@ -1,50 +1,72 @@
+-// Package sync implements directory syncing.%0A
++// Package sync implements directory tree syncing with patch files.%0A
+ pack
+@@ -387,82 +387,976 @@
+ %0A)%0A%0A
+-// Dir syncs treeDir to the state of treeHash with patches from patchDir.%0A
++// Dir syncs the treeDir to the tree hash targetHash with patches from patchDir.%0A//%0A// treeHashes is a list of intermediate tree hashes which must start with%0A// tree.EmptyHash and contain the targetHash. Syncronization happens by%0A// applying one patch file after another, iterating through the treeHashes%0A// array until the targetHash is found.%0A//%0A// In order to find a suitable start, the tree hash of treeDir is calculated%0A// and treeHashes is searched for the result.%0A//%0A// If no suitable start can be found and canRemoveDir is true, all contents of%0A// treeDir are removed and the patches are applied starting from%0A// tree.EmptyHash. Otherwise, ErrCannotRemove is returned.%0A//%0A// Patch files (see patchfile package) are named after the outgoing (source)%0A// tree hash and must lead to the targetDir having the tree hash of the next%0A// treeHashes entry after they have been applied.%0A//%0A// The paths given in excludePaths are excluded from all tree hash calculations.%0A
+ func
+@@ -1540,77 +1540,82 @@
+ h %7B%0A
+-%09%09return fmt.Errorf(%22sync: treeHashes doesn't start with EmptyHash%22)%0A
++%09%09return fmt.Errorf(%22sync: treeHashes doesn't start with tree.EmptyHash%22)%0A
+ %09%7D%0A%09
+- f 5599f3c8956f16645f633da8256c6db5909536d944ef241ae0945d647d02bae6 tree/tree.go
++ f b24a46b2e00b77df3ee40222f67c3850d54bad0afb9aa6b96a2ab2f4af21e253 tree/tree.go
+dmppatch 40
+@@ -1,66 +1,1289 @@
+-// Package tree implements functions to hash directory trees.%0A
++/*%0APackage tree implements functions to hash directory trees.%0A%0ATo calculate the hash of a directory tree (a tree hash) a list of all files in%0Athe directory root (a tree list) is created as follows.%0A%0AAll the files below the root of the directory tree are traversed in lexical%0Aorder (with filepath.Walk) and printed in this format:%0A%0A  m xxx filename%0A%0AWhere:%0A  m        is the mode ('f' or 'x')%0A  xxx      is the SHA256 hash for the file in hex notation%0A  filename is the file name with directory prefix starting at root%0A%0AExample list:%0A  f 7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730 bar/baz.txt%0A  x b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c foo.txt%0A%0AThe fields are separated with single white space characters and the lines are%0Aseparated with single newline characters.%0A%0ADirectories are only implicitly listed (i.e., if they%0Acontain files). Entries start with 'f' if it is a regular file (read and%0Awrite permission for user) and with 'x' if it is an executable (read,%0Awrite, and executabele for user).%0A%0AThe directory tree must only contain directories, regular files, or executables.%0A%0AThe deterministic tree list serves as the basis for a hash of a directory tree%0A(the tree hash), which is the SHA256 hash of the tree list in hex notation.%0A*/%0A
+ pack
+@@ -1381,67 +1381,71 @@
+ %0A)%0A%0A
+-// SHA256 returns the SHA256 hash of file with given path.%0A
++// SHA256 returns the SHA256 hash of the file with given path.%0A
+ func
+@@ -1803,163 +1803,234 @@
+ t %7B%0A
+-%09Mode     rune // 'f' (regular) or 'x' (binary)%0A%09Filename string%0A%09Hash     %5B32%5Dbyte%0A
++%09Mode     rune     // 'f' (regular) or 'x' (binary)%0A%09Filename string   // Including directory path starting from root%0A%09Hash     %5B32%5Dbyte // SHA256 hash%0A
+ %7D%0A%0A
+-// EmptyHash is the hash an empty directory tree (in hex notation).%0A
++// EmptyHash is the hash of an empty directory tree (in hex notation).%0A
+ cons
+@@ -2192,76 +2192,195 @@
+  in%0A
+-// the file tree rooted at root. See ListHash function for details.%0A
++// the file tree rooted at root. See the ListBytes function for details.%0A//%0A// This is a convenience function to make a tree list accessible without%0A// having to parse tree list entries.%0A
+ func
+@@ -4090,16 +4090,90 @@
+  nil%0A%7D%0A%0A
++// printList printes a list of entries in the canonical tree list format.%0A
+ func pri
+@@ -4349,744 +4349,211 @@
+ %0A%7D%0A%0A
+-// ListBytes returns a list in lexical order of newline separated hashes of all%0A// files in the file tree rooted at root, except for the paths in%0A// excludePaths. Directories are only implicitly listed (i.e., if they%0A// contain files). Entries start with 'f' if it is a regular file (read and%0A// write permission for user) and with 'x' if it is an executable (read,%0A// write, and executabele for user).%0A//%0A// The deterministic list serves as the basis for a hash of a directory tree.%0A//%0A// The directory tree can only contain directories or regular files.%0A//%0A// Example list:%0A//%09f 7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730 bar/baz.txt%0A//%09x b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c foo.txt%0A
++// ListBytes returns a list in lexical order of newline separated hashes of%0A// all files in the file tree rooted at root in the canonical format, except%0A// for the paths in excludePaths (the tree list).%0A
+ func
+@@ -4786,24 +4786,162 @@
+ of entries.%0A
++//%0A// This is a convience function to calculate a tree hash out of entries%0A// without having to print them first in the canonical format.%0A
+ func HashLis
+@@ -5099,154 +5099,81 @@
+ ree%0A
+-// rooted at root, except for the paths in excludePaths. The result of the%0A// List function serves as a deterministic input if the hash function.%0A
++// rooted at root, except for the paths in excludePaths (the tree hash).%0A
+ func
+- f 288036a7fde860ad5498259fdcb4930317ce8558a964f4703d70d386fd8173a7 util/terminal/terminal.go
++ f 3958cdb0357e6708ff4b53e16aa7c618ea1ebe4942eecbf1b3252864aedfc7dc util/terminal/terminal.go
+dmppatch 16
+@@ -137,16 +137,29 @@
+ %22%0A%09%22os%22%0A
++%09%22os/signal%22%0A
+ %09%22string
+@@ -577,16 +577,59 @@
+ .Reader%0A
++%09%09c      chan os.Signal%0A%09%09stop   chan bool%0A
+ %09%09err   
+@@ -722,16 +722,574 @@
+ minal %7B%0A
++%09%09// Get terminal state to restore in case of interrupt.%0A%09%09state, err := terminal.GetState(fd)%0A%09%09if err != nil %7B%0A%09%09%09return nil, err%0A%09%09%7D%0A%09%09// Create the necessary channels.%0A%09%09c = make(chan os.Signal, 1)%0A%09%09stop = make(chan bool, 1)%0A%09%09// Register signal handler.%0A%09%09signal.Notify(c, os.Interrupt)%0A%09%09// Spawn goroutine to handle signal.%0A%09%09go func() %7B%0A%09%09%09select %7B%0A%09%09%09case %3C-c:%0A%09%09%09%09// Restore terminal and close goroutine.%0A%09%09%09%09terminal.Restore(fd, state)%0A%09%09%09%09fmt.Fprintln(os.Stderr, %22cancelled%22)%0A%09%09%09%09return%0A%09%09%09case %3C-stop:%0A%09%09%09%09return%0A%09%09%09%7D%0A%09%09%7D()%0A%09%7D%0A%09if isTerminal %7B%0A
+ %09%09pass, 
+@@ -1338,16 +1338,142 @@
+ tln(%22%22)%0A
++%09%09// Deregister signal handler.%0A%09%09signal.Stop(c)%0A%09%09// Stop signal handler goroutine to prevent goroutine leak.%0A%09%09stop %3C- true%0A
+ %09%7D else 
+treehash c462b306b7184998d037f5bbf7e21e88f971725449e75215c9eee9171d2d2efd

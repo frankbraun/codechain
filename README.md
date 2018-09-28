@@ -37,6 +37,7 @@ go get -u -v github.com/frankbraun/codechain
 ### Features
 
 - [x] Minimal code base, Go only, cross-platform.
+- [ ] [Single source of truth (SSOT) with DNS](doc/ssot-with-dns.md)
 
 Codechain depends on the `git` binary (for `git diff`), but that's optional.
 
@@ -44,10 +45,6 @@ Codechain depends on the `git` binary (for `git diff`), but that's optional.
 
 - Source code management. Git and other VCS systems are good for that,
   Codechain can be used alongside them and solves a different problem.
-- Single source of truth (SSOT). Codechain requires a SSOT to distribute
-  the current hash chain head, but that's outside of the scope for now.
-  DNS (plus DNSCrypt) or DNSSEC could be used. Gossiping of the current
-  head would also work.
 - Code distribution (minimal support is provided via `codechain
   createdist` and `codechain apply -f`).
 - [Reproducible builds](https://reproducible-builds.org/).

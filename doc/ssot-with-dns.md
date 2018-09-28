@@ -18,7 +18,8 @@ Implement:
 
 -   export in Bind format
 -   resolver for records
--   optional: automatic publishing with [lego](https://github.com/xenolf/lego)?
+-   optional: automatic publishing with
+    [lego](https://github.com/xenolf/lego)?
 
 ### Secure packages (`.secpkg`)
 

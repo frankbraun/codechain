@@ -33,7 +33,7 @@ func createDist(c *hashchain.HashChain, filename string) error {
 func CreateDist(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s -f dist.tar.gz\n", argv0)
+		fmt.Fprintf(os.Stderr, "Usage: %s [-f dist.tar.gz]\n", argv0)
 		fmt.Fprintf(os.Stderr, "Create distribution file (for `codechain apply -f`).\n")
 		fs.PrintDefaults()
 	}
@@ -45,9 +45,6 @@ func CreateDist(argv0 string, args ...string) error {
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
 	}
-	if *filename == "" {
-		return fmt.Errorf("%s: option -f is mandatory", argv0)
-	}
 	if fs.NArg() != 0 {
 		fs.Usage()
 		return flag.ErrHelp
@@ -56,6 +53,13 @@ func CreateDist(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
+	if *filename == "" {
+		*filename = fmt.Sprintf("%x.tar.gz", c.Head())
+	}
 	defer c.Close()
-	return createDist(c, *filename)
+	if err := createDist(c, *filename); err != nil {
+		return err
+	}
+	fmt.Println(*filename)
+	return nil
 }

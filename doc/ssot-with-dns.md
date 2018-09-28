@@ -41,6 +41,9 @@ Example:
       "URL": "http://frankbraun.org/codechain"
     }
 
+Also see [secpkg package
+format](https://godoc.org/github.com/frankbraun/codechain/secpkg).
+
 ### DNSSEC
 
 TODO:

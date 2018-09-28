@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/command"
+	"github.com/frankbraun/codechain/util/homedir"
 )
 
 func usage() {
@@ -38,7 +39,7 @@ func main() {
 	case "treehash":
 		err = command.TreeHash(argv0, args...)
 	case "keygen":
-		err = command.KeyGen(argv0, args...)
+		err = command.KeyGen(homedir.Codechain(), argv0, args...)
 	case "keyfile":
 		err = command.KeyFile(argv0, args...)
 	case "start":

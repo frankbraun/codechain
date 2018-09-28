@@ -17,7 +17,7 @@ import (
 	"golang.org/x/crypto/ed25519"
 )
 
-const secretsDir = "secrets"
+const secretsSubDir = "secrets"
 
 var (
 	testPass    string
@@ -25,12 +25,12 @@ var (
 )
 
 // KeyGen implements the 'keygen' command.
-func KeyGen(argv0 string, args ...string) error {
+func KeyGen(homeDir, argv0 string, args ...string) error {
 	var (
-		homeDir string
-		pass    []byte
-		comment []byte
-		err     error
+		secretsDir string
+		pass       []byte
+		comment    []byte
+		err        error
 	)
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
@@ -59,8 +59,8 @@ func KeyGen(argv0 string, args ...string) error {
 			return fmt.Errorf("file '%s' exists already", *seckey)
 		}
 	} else {
-		homeDir = filepath.Join(codechainHomeDir(), secretsDir)
-		if err := os.MkdirAll(homeDir, 0700); err != nil {
+		secretsDir = filepath.Join(homeDir, secretsSubDir)
+		if err := os.MkdirAll(secretsDir, 0700); err != nil {
 			return err
 		}
 	}
@@ -98,7 +98,7 @@ func KeyGen(argv0 string, args ...string) error {
 			return err
 		}
 	} else {
-		filename := filepath.Join(homeDir, pubEnc)
+		filename := filepath.Join(secretsDir, pubEnc)
 		err := keyfile.Create(filename, pass, secKey, signature, comment)
 		if err != nil {
 			return err

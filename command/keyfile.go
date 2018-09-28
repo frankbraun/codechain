@@ -13,6 +13,7 @@ import (
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
+	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/terminal"
 )
@@ -34,7 +35,7 @@ func changePassphrase(filename string, sec, sig *[64]byte, comment []byte) error
 }
 
 func listKeys() error {
-	homeDir := filepath.Join(codechainHomeDir(), secretsDir)
+	homeDir := filepath.Join(homedir.Codechain(), secretsSubDir)
 	files, err := ioutil.ReadDir(homeDir)
 	if err != nil {
 		return err

@@ -3,7 +3,6 @@ package command
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"syscall"
 
@@ -11,21 +10,10 @@ import (
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
-	"github.com/frankbraun/codechain/util/home"
-	"github.com/frankbraun/codechain/util/log"
+	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/terminal"
 	"golang.org/x/crypto/ed25519"
 )
-
-func codechainHomeDir() string {
-	if homeDir := os.Getenv("CODECHAINHOMEDIR"); homeDir != "" {
-		log.Printf("$CODECHAINHOMEDIR=%s", homeDir)
-		return homeDir
-	}
-	homeDir := home.AppDataDir("codechain", false)
-	log.Printf("homeDir: %s", homeDir)
-	return homeDir
-}
 
 func seckeyCheck(seckey string) error {
 	if seckey != "" {
@@ -37,8 +25,8 @@ func seckeyCheck(seckey string) error {
 			return fmt.Errorf("file '%s' doesn't exists", seckey)
 		}
 	} else {
-		homeDir := codechainHomeDir()
-		homeDir = filepath.Join(homeDir, secretsDir)
+		homeDir := homedir.Codechain()
+		homeDir = filepath.Join(homeDir, secretsSubDir)
 		// make sure we have the secrets directory present
 		exists, err := file.Exists(homeDir)
 		if err != nil {
@@ -85,7 +73,7 @@ func seckeyLoad(c *hashchain.HashChain, filename string) (*[64]byte, *[64]byte, 
 	if filename != "" {
 		return seckeyRead(filename)
 	}
-	homeDir := filepath.Join(codechainHomeDir(), secretsDir)
+	homeDir := filepath.Join(homedir.Codechain(), secretsSubDir)
 	signer := c.Signer()
 
 	files, err := ioutil.ReadDir(homeDir)

@@ -24,7 +24,7 @@ func (c *HashChain) signatureCheckArgs(linkHash, pubKey [32]byte) error {
 	return nil
 }
 
-// Signature adds a signature entry for entryHash signed by secKey to the hash chain.
+// Signature adds a signature entry for linkHash signed by secKey to the hash chain.
 // If detached it just returns the signature without adding it.
 func (c *HashChain) Signature(linkHash [32]byte, secKey [64]byte, detached bool) (string, error) {
 	// check arguments

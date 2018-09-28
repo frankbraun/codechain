@@ -172,6 +172,7 @@ func procFileDiff(line string, dir string, prevDiffInfo *diffInfo) (state, *diff
 	return secondFileDiff, &diffInfo{mode, hash, name}, nil
 }
 
+// procResults process the final treehash line and returns the terminal state.
 func procResult(line, dir string, excludePaths []string) (state, error) {
 	if _, err := procTreeHash(line, dir, excludePaths); err != nil {
 		if err == ErrTreeHashStartMismatch {
@@ -245,7 +246,8 @@ type diffInfo struct {
 	name string
 }
 
-// Apply applies the given patch r to the directory tree dir.
+// Apply applies the patch read from r to the directory tree dir.
+// The paths given in excludePaths are excluded from all tree hash calculations.
 func Apply(dir string, r io.Reader, excludePaths []string) error {
 	log.Println("patchfile.Apply()")
 	var (

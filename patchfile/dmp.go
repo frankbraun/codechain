@@ -10,6 +10,9 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
+// dmpDiff employs Myer's diff algorithm (as implemented in Diff Match Patch)
+// to calculate a diff between fileA and fileB, and writes it to w as a
+// "dmppatch" section.
 func dmpDiff(w io.Writer, fileA, fileB string) error {
 	var a []byte
 	if fileA != "" {
@@ -29,31 +32,15 @@ func dmpDiff(w io.Writer, fileA, fileB string) error {
 	diffs = dmp.DiffCharsToLines(diffs, lineArray)
 	patches := dmp.PatchMake(string(a), diffs)
 	patch := dmp.PatchToText(patches)
-	/*
-		if !strings.HasSuffix(patch, "\n") {
-			patch = patch + "\n"
-		}
-	*/
 	fmt.Fprintf(w, "dmppatch %d\n", strings.Count(patch, "\n"))
 	if _, err := io.WriteString(w, patch); err != nil {
 		return err
 	}
-
-	dmp = diffmatchpatch.New()
-	patches, err = dmp.PatchFromText(patch)
-	if err != nil {
-		return err
-	}
-	_, applies := dmp.PatchApply(patches, string(a))
-	for _, applied := range applies {
-		if !applied {
-			return errors.New("patchfile: XXX could not apply all patches")
-		}
-	}
-
 	return nil
 }
 
+// dmpApply decodes the DMP patch in patch, applies it to text, and writes it
+// to w. patch must not include the "dmppatch" section header.
 func dmpApply(w io.Writer, text string, patch []byte) error {
 	dmp := diffmatchpatch.New()
 	patches, err := dmp.PatchFromText(string(patch))

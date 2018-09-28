@@ -1,4 +1,4 @@
-// Package sync implements directory syncing.
+// Package sync implements directory tree syncing with patch files.
 package sync
 
 import (
@@ -14,7 +14,25 @@ import (
 	"github.com/frankbraun/codechain/util/log"
 )
 
-// Dir syncs treeDir to the state of treeHash with patches from patchDir.
+// Dir syncs the treeDir to the tree hash targetHash with patches from patchDir.
+//
+// treeHashes is a list of intermediate tree hashes which must start with
+// tree.EmptyHash and contain the targetHash. Syncronization happens by
+// applying one patch file after another, iterating through the treeHashes
+// array until the targetHash is found.
+//
+// In order to find a suitable start, the tree hash of treeDir is calculated
+// and treeHashes is searched for the result.
+//
+// If no suitable start can be found and canRemoveDir is true, all contents of
+// treeDir are removed and the patches are applied starting from
+// tree.EmptyHash. Otherwise, ErrCannotRemove is returned.
+//
+// Patch files (see patchfile package) are named after the outgoing (source)
+// tree hash and must lead to the targetDir having the tree hash of the next
+// treeHashes entry after they have been applied.
+//
+// The paths given in excludePaths are excluded from all tree hash calculations.
 func Dir(
 	treeDir, targetHash, patchDir string,
 	treeHashes []string,
@@ -23,7 +41,7 @@ func Dir(
 ) error {
 	// argument checking
 	if treeHashes[0] != tree.EmptyHash {
-		return fmt.Errorf("sync: treeHashes doesn't start with EmptyHash")
+		return fmt.Errorf("sync: treeHashes doesn't start with tree.EmptyHash")
 	}
 	if !util.ContainsString(treeHashes, targetHash) {
 		return fmt.Errorf("sync: targetHash unknown: %s", targetHash)

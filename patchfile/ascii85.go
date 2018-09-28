@@ -8,6 +8,8 @@ import (
 	"github.com/frankbraun/codechain/internal/ascii85"
 )
 
+// ascii85Diff encodes the file with filename in ascii85 and writes it to w as
+// an "ascii85" section.
 func ascii85Diff(w io.Writer, filename string) error {
 	src, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -24,6 +26,8 @@ func ascii85Diff(w io.Writer, filename string) error {
 	return nil
 }
 
+// ascii85Apply decodes the ascii85 encoding in patch and writes it to w.
+// patch must not include the "ascii85" section header.
 func ascii85Apply(w io.Writer, _ string, patch []byte) error {
 	buf, err := ascii85.Decode(patch)
 	if err != nil {

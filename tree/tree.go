@@ -1,4 +1,36 @@
-// Package tree implements functions to hash directory trees.
+/*
+Package tree implements functions to hash directory trees.
+
+To calculate the hash of a directory tree (a tree hash) a list of all files in
+the directory root (a tree list) is created as follows.
+
+All the files below the root of the directory tree are traversed in lexical
+order (with filepath.Walk) and printed in this format:
+
+  m xxx filename
+
+Where:
+  m        is the mode ('f' or 'x')
+  xxx      is the SHA256 hash for the file in hex notation
+  filename is the file name with directory prefix starting at root
+
+Example list:
+  f 7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730 bar/baz.txt
+  x b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c foo.txt
+
+The fields are separated with single white space characters and the lines are
+separated with single newline characters.
+
+Directories are only implicitly listed (i.e., if they
+contain files). Entries start with 'f' if it is a regular file (read and
+write permission for user) and with 'x' if it is an executable (read,
+write, and executabele for user).
+
+The directory tree must only contain directories, regular files, or executables.
+
+The deterministic tree list serves as the basis for a hash of a directory tree
+(the tree hash), which is the SHA256 hash of the tree list in hex notation.
+*/
 package tree
 
 import (
@@ -11,7 +43,7 @@ import (
 	"strings"
 )
 
-// SHA256 returns the SHA256 hash of file with given path.
+// SHA256 returns the SHA256 hash of the file with given path.
 func SHA256(path string) (*[32]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -30,16 +62,19 @@ func SHA256(path string) (*[32]byte, error) {
 
 // ListEntry describes a directory tree entry.
 type ListEntry struct {
-	Mode     rune // 'f' (regular) or 'x' (binary)
-	Filename string
-	Hash     [32]byte
+	Mode     rune     // 'f' (regular) or 'x' (binary)
+	Filename string   // Including directory path starting from root
+	Hash     [32]byte // SHA256 hash
 }
 
-// EmptyHash is the hash an empty directory tree (in hex notation).
+// EmptyHash is the hash of an empty directory tree (in hex notation).
 const EmptyHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 // List returns a list in lexical order of ListEntry structs of all files in
-// the file tree rooted at root. See ListHash function for details.
+// the file tree rooted at root. See the ListBytes function for details.
+//
+// This is a convenience function to make a tree list accessible without
+// having to parse tree list entries.
 func List(root string, excludePaths []string) ([]ListEntry, error) {
 	var entries []ListEntry
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -106,6 +141,7 @@ func List(root string, excludePaths []string) ([]ListEntry, error) {
 	return entries, nil
 }
 
+// printList printes a list of entries in the canonical tree list format.
 func printList(entries []ListEntry) []byte {
 	var b bytes.Buffer
 	for _, e := range entries {
@@ -114,20 +150,9 @@ func printList(entries []ListEntry) []byte {
 	return b.Bytes()
 }
 
-// ListBytes returns a list in lexical order of newline separated hashes of all
-// files in the file tree rooted at root, except for the paths in
-// excludePaths. Directories are only implicitly listed (i.e., if they
-// contain files). Entries start with 'f' if it is a regular file (read and
-// write permission for user) and with 'x' if it is an executable (read,
-// write, and executabele for user).
-//
-// The deterministic list serves as the basis for a hash of a directory tree.
-//
-// The directory tree can only contain directories or regular files.
-//
-// Example list:
-//	f 7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730 bar/baz.txt
-//	x b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c foo.txt
+// ListBytes returns a list in lexical order of newline separated hashes of
+// all files in the file tree rooted at root in the canonical format, except
+// for the paths in excludePaths (the tree list).
 func ListBytes(root string, excludePaths []string) ([]byte, error) {
 	entries, err := List(root, excludePaths)
 	if err != nil {
@@ -137,13 +162,15 @@ func ListBytes(root string, excludePaths []string) ([]byte, error) {
 }
 
 // HashList returns the SHA256 hash of a list of entries.
+//
+// This is a convience function to calculate a tree hash out of entries
+// without having to print them first in the canonical format.
 func HashList(entries []ListEntry) [32]byte {
 	return sha256.Sum256(printList(entries))
 }
 
 // Hash returns a SHA256 hash of all files and directories in the file tree
-// rooted at root, except for the paths in excludePaths. The result of the
-// List function serves as a deterministic input if the hash function.
+// rooted at root, except for the paths in excludePaths (the tree hash).
 func Hash(root string, excludePaths []string) (*[32]byte, error) {
 	l, err := ListBytes(root, excludePaths)
 	if err != nil {

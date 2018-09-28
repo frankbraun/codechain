@@ -51,11 +51,13 @@ Codechain depends on the `git` binary (for `git diff`), but that's optional.
   createdist` and `codechain apply -f`).
 - [Reproducible builds](https://reproducible-builds.org/).
 
-
 ### Documentation
 
 - [Walkthrough](doc/walkthrough.md)
 - [Presentation about Codechain](http://frankbraun.org/in-code-we-trust.pdf)
+- [Hash chain file format](https://godoc.org/github.com/frankbraun/codechain/hashchain)
+- [Patchfile format](https://godoc.org/github.com/frankbraun/codechain/patchfile)
+- [Directory tree hashes and lists](https://godoc.org/github.com/frankbraun/codechain/tree)
 
 ### Acknowledgments
 

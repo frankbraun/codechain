@@ -1,5 +1,5 @@
-// Package patchfile implements a robust patchfile format for directory trees.
 package patchfile
 
-// Version is the maximum codechain patchfile version this package can parse.
+// Version is the Codechain patchfile version this package produces with Diff
+// and the maximum version it can parse with Apply.
 const Version = 1

@@ -10,6 +10,7 @@ import (
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/homedir"
 )
 
 const (
@@ -93,12 +94,12 @@ func TestKey(t *testing.T) {
 	testPass = "passphrase"
 	testComment = "John Doe"
 	// codechain keygen -s seckey.bin
-	err = KeyGen("keygen", "-s", "seckey.bin")
+	err = KeyGen(homedir.Codechain(), "keygen", "-s", "seckey.bin")
 	if err != nil {
 		t.Fatalf("KeyGen() failed: %v ", err)
 	}
 	// codechain keyfile -s seckey.bin
-	err = KeyFile("pubkey", "-s", "testkey.bin")
+	err = KeyFile(homedir.Codechain(), "pubkey", "-s", "testkey.bin")
 	if err != nil {
 		t.Errorf("KeyFile() failed: %v ", err)
 	}
@@ -153,12 +154,12 @@ func TestHelp(t *testing.T) {
 		t.Errorf("codechain treehash -h should fail with flag.ErrHelp: %v", err)
 	}
 	// codechain keygen -h
-	err = KeyGen("codechain keygen", "-h")
+	err = KeyGen(homedir.Codechain(), "codechain keygen", "-h")
 	if err != flag.ErrHelp {
 		t.Errorf("codechain keygen -h should fail with flag.ErrHelp: %v", err)
 	}
 	// codechain keyfile -h
-	err = KeyFile("codechain keyfile", "-h")
+	err = KeyFile(homedir.Codechain(), "codechain keyfile", "-h")
 	if err != flag.ErrHelp {
 		t.Errorf("codechain keyfile -h should fail with flag.ErrHelp: %v", err)
 	}

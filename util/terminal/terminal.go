@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"strings"
 	"syscall"
 
@@ -23,13 +24,43 @@ func ReadPassphrase(fd int, confirm bool) ([]byte, error) {
 		pass   []byte
 		pass2  []byte
 		reader *bufio.Reader
+		c      chan os.Signal
+		stop   chan bool
 		err    error
 	)
 	isTerminal := terminal.IsTerminal(fd)
 	fmt.Printf("passphrase: ")
 	if isTerminal {
+		// Get terminal state to restore in case of interrupt.
+		state, err := terminal.GetState(fd)
+		if err != nil {
+			return nil, err
+		}
+		// Create the necessary channels.
+		c = make(chan os.Signal, 1)
+		stop = make(chan bool, 1)
+		// Register signal handler.
+		signal.Notify(c, os.Interrupt)
+		// Spawn goroutine to handle signal.
+		go func() {
+			select {
+			case <-c:
+				// Restore terminal and close goroutine.
+				terminal.Restore(fd, state)
+				fmt.Fprintln(os.Stderr, "cancelled")
+				return
+			case <-stop:
+				return
+			}
+		}()
+	}
+	if isTerminal {
 		pass, err = terminal.ReadPassword(fd)
 		fmt.Println("")
+		// Deregister signal handler.
+		signal.Stop(c)
+		// Stop signal handler goroutine to prevent goroutine leak.
+		stop <- true
 	} else {
 		reader = bufio.NewReader(os.NewFile(uintptr(fd), "terminal"))
 		pass, err = reader.ReadBytes('\n')

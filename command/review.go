@@ -66,10 +66,12 @@ func procDiff(i int, treeHashes []string, useGit bool) error {
 
 func review(c *hashchain.HashChain, secKeyFile, treeHash string, detached, useGit bool) error {
 	// load secret key
+	log.Println("review(): load secret key")
 	secKey, _, _, err := seckeyLoad(c, secKeyFile)
 	if err != nil {
 		return err
 	}
+	log.Println("review(): loaded")
 
 	// get last tree hashes
 	_, idx := c.LastSignedTreeHash()
@@ -130,6 +132,7 @@ func review(c *hashchain.HashChain, secKeyFile, treeHash string, detached, useGi
 
 	// show commits which have been signed, but not by this signer
 	barrier := c.SignerBarrier(pubKey)
+	log.Printf("review(): barrier=%d\n", barrier)
 	var foundBarrier int
 outer:
 	for i := 1; i <= idx; i++ {
@@ -138,7 +141,7 @@ outer:
 				foundBarrier = i
 			}
 			showPatchInfo(c, i, idx, treeHashes, treeComments, foundBarrier)
-			err := terminal.Confirm("review already signed patch (no continues)?")
+			err := terminal.Confirm("review already released patch (no continues)?")
 			if err != nil {
 				if err == terminal.ErrAbort {
 					break outer
@@ -153,16 +156,20 @@ outer:
 
 	for i := idx + 1; i < len(treeHashes); i++ {
 		showPatchInfo(c, i, idx, treeHashes, treeComments, 0)
-		if err := terminal.Confirm("review patch (no aborts)?"); err != nil {
-			return err
+		if c.SourceLine(treeHashes[i]) > barrier {
+			if err := terminal.Confirm("review patch (no aborts)?"); err != nil {
+				return err
+			}
+			if err := procDiff(i, treeHashes, useGit); err != nil {
+				return err
+			}
+			if err := terminal.Confirm("sign patch?"); err != nil {
+				return err
+			}
+			signed = true
+		} else {
+			fmt.Println("skipping already signed patch")
 		}
-		if err := procDiff(i, treeHashes, useGit); err != nil {
-			return err
-		}
-		if err := terminal.Confirm("sign patch?"); err != nil {
-			return err
-		}
-		signed = true
 	}
 
 	if !signed {

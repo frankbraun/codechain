@@ -41,7 +41,7 @@ func main() {
 	case "keygen":
 		err = command.KeyGen(homedir.Codechain(), argv0, args...)
 	case "keyfile":
-		err = command.KeyFile(argv0, args...)
+		err = command.KeyFile(homedir.Codechain(), argv0, args...)
 	case "start":
 		err = command.Start(argv0, args...)
 	case "publish":

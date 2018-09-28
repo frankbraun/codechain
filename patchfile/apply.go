@@ -237,6 +237,13 @@ func apply(dir string, buf []byte, state state, prev, cur *diffInfo, applyFunc a
 	if !bytes.Equal(hash[:], cur.hash) {
 		return ErrFileHashMismatchAfter
 	}
+	// If the file already existed os.OpenFile didn't change the file mode,
+	// so we adjust it here.
+	if state == diffFile && prev.mode != cur.mode {
+		if err := os.Chmod(fileB, perm); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

@@ -198,6 +198,9 @@ func TestDiffApply(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ioutil.ReadFile() failed: %v", err)
 	}
+	scriptfileDir := filepath.Join("testdata", "scriptfile")
+	scriptDir := filepath.Join("testdata", "script")
+	script2Dir := filepath.Join("testdata", "script2")
 	xyDir := filepath.Join("testdata", "xy")
 	yDir := filepath.Join("testdata", "y")
 
@@ -299,6 +302,46 @@ treehash a0b37dfb7b79f877a922aa4aecc4d9d2a91c4db0f6e337caddbee6bf89f5f0fd
 			string(bin2Patch),
 		},
 		{
+			scriptfileDir,
+			scriptDir,
+			`codechain patchfile version 1
+treehash 2ce831fd2aa55ec8295fc16e6e08f4acfac4cc459295695a05005ccf293ab773
+- f d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 script.sh
++ x d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 script.sh
+treehash bb9bf35e526963439e9530539442982acd28cf272250436808d99023cb79a7ff
+`,
+		},
+		{
+			scriptfileDir,
+			script2Dir,
+			`codechain patchfile version 1
+treehash 2ce831fd2aa55ec8295fc16e6e08f4acfac4cc459295695a05005ccf293ab773
+- f d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 script.sh
++ x 63ca0be196825cd98dd10f6e3f8e62729af9fb44acc18f4d495818268bdf4077 script.sh
+dmppatch 4
+@@ -8,24 +8,40 @@
+ sh%0A%0A
+-echo %22hello world!%22%0A
++echo %22hello world, second version!%22%0A
+treehash 38b133487dbffcc5eb7a46a405495e107444e55664042f08b787764100008acf
+`,
+		},
+		{
+			scriptDir,
+			script2Dir,
+			`codechain patchfile version 1
+treehash bb9bf35e526963439e9530539442982acd28cf272250436808d99023cb79a7ff
+- x d02dfe1902fd0fa2d8a65aa3ec659b37b9b05fe5b34634795661370d18dcadc1 script.sh
++ x 63ca0be196825cd98dd10f6e3f8e62729af9fb44acc18f4d495818268bdf4077 script.sh
+dmppatch 4
+@@ -8,24 +8,40 @@
+ sh%0A%0A
+-echo %22hello world!%22%0A
++echo %22hello world, second version!%22%0A
+treehash 38b133487dbffcc5eb7a46a405495e107444e55664042f08b787764100008acf
+`,
+		},
+		{
 			xyDir,
 			yDir,
 			`codechain patchfile version 1
@@ -320,6 +363,7 @@ treehash 1951dd180a9b108c190e95afd5d0635dff0a5f9fa875ecb089e5cde7ccd0da93
 	}
 
 	for i, testCase := range testCases {
+		t.Logf("test case %d\n", i+1)
 		var out bytes.Buffer
 		err := Diff(&out, testCase.a, testCase.b, nil)
 		if err != nil {

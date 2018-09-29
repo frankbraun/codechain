@@ -7,13 +7,14 @@ import (
 	"net"
 	"os"
 
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/file"
 )
 
 func install(pkg *secpkg.Package) error {
-	txts, err := net.LookupTXT("_codechain." + pkg.DNS)
+	txts, err := net.LookupTXT(def.CodechainTXTName + pkg.DNS)
 	if err != nil {
 		return err
 	}

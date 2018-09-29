@@ -12,6 +12,9 @@ const CodechainDir = ".codechain"
 // to store secret key files
 const SecretsSubDir = "secrets"
 
+// CodechainTXTName is the TXT name used for Codechain's secpkg entries.
+const CodechainTXTName = "_codechain."
+
 // ExcludePaths is the default list of paths not considered by Codechain.
 var ExcludePaths = []string{
 	CodechainDir,

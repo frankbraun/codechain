@@ -32,13 +32,13 @@ func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error 
 	}
 
 	// 1. Make sure the project has not been published before
-	pkgDir := filepath.Join(homedir.SSOTPub(), "pkg", pkg.Name)
+	pkgDir := filepath.Join(homedir.SSOTPub(), "pkgs", pkg.Name)
 	exists, err := file.Exists(pkgDir)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return fmt.Errorf("package has already been published: '%s' exists", pkgDir)
+		return fmt.Errorf("package already published: '%s' exists", pkgDir)
 	}
 
 	// Create .secpkg file
@@ -71,7 +71,7 @@ func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error 
 	fmt.Printf("%s: written\n", signedHead)
 
 	// Print DNS TXT record as defined by the .secpkg and the first signed head.
-	fmt.Println("Please publish the following DNS TXT record:")
+	fmt.Println("Please publish the following DNS TXT record:\n")
 	sh.PrintTXT(pkg.DNS)
 	return nil
 }

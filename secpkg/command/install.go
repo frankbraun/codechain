@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/secpkg"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // Install implements the secpkg 'install' command.
@@ -16,8 +17,12 @@ func Install(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Download, verify, and install package defined by project.secpkg.\n")
 		fs.PrintDefaults()
 	}
+	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
 	}
 	if fs.NArg() != 1 {
 		fs.Usage()

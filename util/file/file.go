@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -178,6 +179,26 @@ outer:
 		if err := os.RemoveAll(filepath.Join(path, fi.Name())); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// Download file from url and write it to filepath.
+// If the file with filepath already exists, it will be overwritten!
+func Download(filepath string, url string) error {
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
 	}
 	return nil
 }

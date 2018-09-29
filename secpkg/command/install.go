@@ -4,32 +4,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"net"
-	"net/http"
 	"os"
 
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
+	"github.com/frankbraun/codechain/util/file"
 )
-
-func downloadFile(filepath string, url string) error {
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func install(pkg *secpkg.Package) error {
 	txts, err := net.LookupTXT("_codechain." + pkg.DNS)
@@ -58,7 +39,7 @@ func install(pkg *secpkg.Package) error {
 	filename := sh.Head() + ".tar.gz"
 	url := pkg.URL + "/" + filename
 	fmt.Printf("download %s\n", url)
-	if err := downloadFile(filename, url); err != nil {
+	if err := file.Download(filename, url); err != nil {
 		return err
 	}
 	return nil

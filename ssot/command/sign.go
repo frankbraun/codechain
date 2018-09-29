@@ -15,14 +15,17 @@ import (
 )
 
 func sign(c *hashchain.HashChain, secKeyFile string) error {
+	head := c.Head()
+	fmt.Printf("signing head %x\n", head)
 	secKey, _, _, err := seckey.Read(secKeyFile)
 	if err != nil {
 		return err
 	}
-	head := c.Head()
 	// TODO: counter
 	sh := ssot.SignHead(head, 0, *secKey)
-	fmt.Println(sh.Marshal())
+	// print TXT entry
+	fmt.Printf("_codechain.example.com.\t\t%d\tIN\tTXT\t\"value=%s\"\n", ssot.TTL,
+		sh.Marshal())
 	return nil
 }
 

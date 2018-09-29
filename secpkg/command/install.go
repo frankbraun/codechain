@@ -23,6 +23,7 @@ func Install(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
+	// 1. Parse .secpkg file and validate it.
 	pkg, err := secpkg.Load(fs.Arg(0))
 	if err != nil {
 		return err

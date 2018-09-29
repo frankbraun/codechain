@@ -23,25 +23,7 @@ Implement:
 
 ### Secure packages (`.secpkg`)
 
-File format:
-
-    {
-      "Name": "the project's package name",
-      "Head": "head of project's Codechain",
-      "DNS": "fully qualified domain name",
-      "URL": "URL to download project files of the from (URL/head.tar.gz)"
-    }
-
-Example:
-
-    {
-      "Name": "codechain",
-      "Head": "73fe1313fd924854f149021e969546bce6052eca0c22b2b91245cb448410493c",
-      "DNS": "codechain.secpkg.net",
-      "URL": "http://frankbraun.org/codechain"
-    }
-
-Also see [secpkg package
+See [secpkg package
 format](https://godoc.org/github.com/frankbraun/codechain/secpkg).
 
 ### DNSSEC

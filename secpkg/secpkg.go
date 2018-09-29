@@ -1,4 +1,3 @@
-// Package secpkg implements the secpkg package format.
 package secpkg
 
 import (

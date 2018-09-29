@@ -42,7 +42,7 @@ func (sh *SignedHead) marshal() [120]byte {
 }
 
 // SignHead signs the given Codechain head.
-func SignHead(head [32]byte, counter uint64, secKey [64]byte) (*SignedHead, error) {
+func SignHead(head [32]byte, counter uint64, secKey [64]byte) *SignedHead {
 	var sh SignedHead
 	copy(sh.pubKey[:], secKey[32:])
 	// TODO: allow to set pubKeyRotate
@@ -55,7 +55,7 @@ func SignHead(head [32]byte, counter uint64, secKey [64]byte) (*SignedHead, erro
 	m := sh.marshal()
 	sig := ed25519.Sign(secKey[:], m[:])
 	copy(sh.signature[:], sig)
-	return &sh, nil
+	return &sh
 }
 
 // Marshal signed head with signature and encode it as base64.

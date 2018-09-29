@@ -7,11 +7,22 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/ssot"
+	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/interrupt"
 	"github.com/frankbraun/codechain/util/log"
+	"github.com/frankbraun/codechain/util/seckey"
 )
 
 func sign(c *hashchain.HashChain, secKeyFile string) error {
+	secKey, _, _, err := seckey.Read(secKeyFile)
+	if err != nil {
+		return err
+	}
+	head := c.Head()
+	// TODO: counter
+	sh := ssot.SignHead(head, 0, *secKey)
+	fmt.Println(sh.Marshal())
 	return nil
 }
 
@@ -23,7 +34,7 @@ func Sign(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Sign Codechain head and print it on stdout.\n")
 		fs.PrintDefaults()
 	}
-	seckey := fs.String("s", "", "Secret key file")
+	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -31,11 +42,9 @@ func Sign(argv0 string, args ...string) error {
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
 	}
-	/*
-		if err := seckeyCheck(*seckey); err != nil {
-			return err
-		}
-	*/
+	if err := seckey.Check(homedir.SSOTPub(), *secKey); err != nil {
+		return err
+	}
 	if fs.NArg() != 0 {
 		fs.Usage()
 		return flag.ErrHelp
@@ -51,7 +60,7 @@ func Sign(argv0 string, args ...string) error {
 	})
 	// run publish
 	go func() {
-		if err := sign(c, *seckey); err != nil {
+		if err := sign(c, *secKey); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

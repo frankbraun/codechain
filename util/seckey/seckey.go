@@ -53,7 +53,7 @@ func Read(filename string) (*[64]byte, *[64]byte, []byte, error) {
 		return nil, nil, nil, err
 	}
 	if !exists {
-		return nil, nil, nil, fmt.Errorf("file '%s' does not exist", filename)
+		return nil, nil, nil, fmt.Errorf("keyfile '%s' does not exist", filename)
 	}
 	fmt.Printf("opening keyfile: %s\n", filename)
 	var pass []byte

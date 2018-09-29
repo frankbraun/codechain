@@ -40,10 +40,7 @@ func install(pkg *secpkg.Package) error {
 	filename := sh.Head() + ".tar.gz"
 	url := pkg.URL + "/" + filename
 	fmt.Printf("download %s\n", url)
-	if err := file.Download(filename, url); err != nil {
-		return err
-	}
-	return nil
+	return file.Download(filename, url)
 }
 
 // Install implements the secpkg 'install' command.

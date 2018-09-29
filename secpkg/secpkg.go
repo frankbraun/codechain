@@ -6,19 +6,46 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/file"
 )
+
+// File defines the default file (ending) for a secure package.
+const File = ".secpkg"
 
 // Package defines a package in secpkg format (stored in .secpkg files).
 type Package struct {
 	Name string // the project's package name
 	Head string // head of project's Codechain
 	DNS  string // fully qualified domain name for _codechain TXT records (SSOT)
-	URL  string // URL to download project files of the from (URL/head.tar.gz)
+	URL  string // URL to download project files from (URL/head.tar.gz)
+}
+
+// New creates a new Package.
+func New(name, dns, pkgURL string, head [32]byte) (*Package, error) {
+	// validate arguments
+	if strings.Contains(name, " ") {
+		return nil, ErrPkgNameWhitespace
+	}
+	if _, err := url.Parse(dns); err != nil {
+		return nil, err
+	}
+	if _, err := url.Parse(pkgURL); err != nil {
+		return nil, err
+	}
+	// create package
+	var pkg Package
+	pkg.Name = strings.ToLower(name) // project names are lowercase
+	pkg.Head = hex.Encode(head[:])
+	pkg.DNS = dns
+	pkg.URL = pkgURL
+	return &pkg, nil
 }
 
 // Load a .secpkg file from filename and return the Package struct.

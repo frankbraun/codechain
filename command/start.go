@@ -9,6 +9,7 @@ import (
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/log"
+	"github.com/frankbraun/codechain/util/seckey"
 )
 
 // Start implements the 'start' command.
@@ -19,7 +20,7 @@ func Start(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Initialized new .codechain/hashchain in current directory.\n")
 		fs.PrintDefaults()
 	}
-	seckey := fs.String("s", "", "Secret key file")
+	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -27,7 +28,7 @@ func Start(argv0 string, args ...string) error {
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
 	}
-	if *seckey == "" {
+	if *secKey == "" {
 		return fmt.Errorf("%s: option -s is mandatory", argv0)
 	}
 	if fs.NArg() != 0 {
@@ -44,7 +45,7 @@ func Start(argv0 string, args ...string) error {
 	if exists {
 		return fmt.Errorf("%s: file '%s' exists already", argv0, def.HashchainFile)
 	}
-	sec, _, comment, err := seckeyRead(*seckey)
+	sec, _, comment, err := seckey.Read(*secKey)
 	if err != nil {
 		return err
 	}

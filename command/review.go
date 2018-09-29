@@ -11,8 +11,10 @@ import (
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/util/git"
+	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/interrupt"
 	"github.com/frankbraun/codechain/util/log"
+	"github.com/frankbraun/codechain/util/seckey"
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
@@ -67,7 +69,7 @@ func procDiff(i int, treeHashes []string, useGit bool) error {
 func review(c *hashchain.HashChain, secKeyFile, treeHash string, detached, useGit bool) error {
 	// load secret key
 	log.Println("review(): load secret key")
-	secKey, _, _, err := seckeyLoad(c, secKeyFile)
+	secKey, _, _, err := seckey.Load(c, homedir.Codechain(), secKeyFile)
 	if err != nil {
 		return err
 	}
@@ -216,7 +218,7 @@ func Review(argv0 string, args ...string) error {
 	add := fs.Bool("a", false, "Add detached signature")
 	detached := fs.Bool("d", false, "Create detached signature")
 	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
-	seckey := fs.String("s", "", "Secret key file")
+	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -224,7 +226,7 @@ func Review(argv0 string, args ...string) error {
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
 	}
-	if err := seckeyCheck(*seckey); err != nil {
+	if err := seckey.Check(homedir.Codechain(), *secKey); err != nil {
 		return err
 	}
 	if *add {
@@ -263,7 +265,7 @@ func Review(argv0 string, args ...string) error {
 		if *add {
 			err = addDetached(c, fs.Arg(0), fs.Arg(1), fs.Arg(2))
 		} else {
-			err = review(c, *seckey, treeHash, *detached, *useGit)
+			err = review(c, *secKey, treeHash, *detached, *useGit)
 		}
 		if err != nil {
 			interrupt.ShutdownChannel <- err

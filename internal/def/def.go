@@ -8,6 +8,10 @@ import (
 // CodechainDir is the default directory used for Codechain related files.
 const CodechainDir = ".codechain"
 
+// SecretsSubDir is the default subdirectory of a tool's home directory used
+// to store secret key files
+const SecretsSubDir = "secrets"
+
 // ExcludePaths is the default list of paths not considered by Codechain.
 var ExcludePaths = []string{
 	CodechainDir,

@@ -15,8 +15,10 @@ import (
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/git"
+	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/interrupt"
 	"github.com/frankbraun/codechain/util/log"
+	"github.com/frankbraun/codechain/util/seckey"
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
@@ -54,7 +56,7 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) err
 
 	// load secret key
 	if !dryRun {
-		secKey, _, _, err = seckeyLoad(c, secKeyFile)
+		secKey, _, _, err = seckey.Load(c, homedir.Codechain(), secKeyFile)
 		if err != nil {
 			return err
 		}
@@ -145,7 +147,7 @@ func Publish(argv0 string, args ...string) error {
 	}
 	dryRun := fs.Bool("d", false, "Dry run, just show diff without signing anything")
 	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
-	seckey := fs.String("s", "", "Secret key file")
+	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -154,7 +156,7 @@ func Publish(argv0 string, args ...string) error {
 		log.Std = log.NewStd(os.Stdout)
 	}
 	if !*dryRun {
-		if err := seckeyCheck(*seckey); err != nil {
+		if err := seckey.Check(homedir.Codechain(), *secKey); err != nil {
 			return err
 		}
 	}
@@ -182,7 +184,7 @@ func Publish(argv0 string, args ...string) error {
 	})
 	// run publish
 	go func() {
-		if err := publish(c, *seckey, *dryRun, *useGit); err != nil {
+		if err := publish(c, *secKey, *dryRun, *useGit); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

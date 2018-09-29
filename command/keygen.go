@@ -9,20 +9,17 @@ import (
 	"syscall"
 
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/log"
+	"github.com/frankbraun/codechain/util/seckey"
 	"github.com/frankbraun/codechain/util/terminal"
 	"golang.org/x/crypto/ed25519"
 )
 
-const secretsSubDir = "secrets"
-
-var (
-	testPass    string
-	testComment string
-)
+var testComment string
 
 // KeyGen implements the 'keygen' command.
 func KeyGen(homeDir, argv0 string, args ...string) error {
@@ -38,7 +35,7 @@ func KeyGen(homeDir, argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Generate new encrypted secret key file and show pubkey, signature, and comment.\n")
 		fs.PrintDefaults()
 	}
-	seckey := fs.String("s", "", "Secret key file")
+	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -50,28 +47,28 @@ func KeyGen(homeDir, argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	if *seckey != "" {
-		exists, err := file.Exists(*seckey)
+	if *secKey != "" {
+		exists, err := file.Exists(*secKey)
 		if err != nil {
 			return err
 		}
 		if exists {
-			return fmt.Errorf("file '%s' exists already", *seckey)
+			return fmt.Errorf("file '%s' exists already", *secKey)
 		}
 	} else {
-		secretsDir = filepath.Join(homeDir, secretsSubDir)
+		secretsDir = filepath.Join(homeDir, def.SecretsSubDir)
 		if err := os.MkdirAll(secretsDir, 0700); err != nil {
 			return err
 		}
 	}
-	if testPass == "" {
+	if seckey.TestPass == "" {
 		pass, err = terminal.ReadPassphrase(syscall.Stdin, true)
 		if err != nil {
 			return err
 		}
 		defer bzero.Bytes(pass)
 	} else {
-		pass = []byte(testPass)
+		pass = []byte(seckey.TestPass)
 	}
 	if testComment == "" {
 		fmt.Println("comment (e.g., name; can be empty):")
@@ -88,18 +85,18 @@ func KeyGen(homeDir, argv0 string, args ...string) error {
 	}
 	sig := ed25519.Sign(sec, append(pub, comment...))
 	pubEnc := base64.Encode(pub[:])
-	var secKey [64]byte
-	copy(secKey[:], sec)
+	var sk [64]byte
+	copy(sk[:], sec)
 	var signature [64]byte
 	copy(signature[:], sig)
-	if *seckey != "" {
-		err := keyfile.Create(*seckey, pass, secKey, signature, comment)
+	if *secKey != "" {
+		err := keyfile.Create(*secKey, pass, sk, signature, comment)
 		if err != nil {
 			return err
 		}
 	} else {
 		filename := filepath.Join(secretsDir, pubEnc)
-		err := keyfile.Create(filename, pass, secKey, signature, comment)
+		err := keyfile.Create(filename, pass, sk, signature, comment)
 		if err != nil {
 			return err
 		}

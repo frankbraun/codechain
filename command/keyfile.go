@@ -11,9 +11,11 @@ import (
 	"syscall"
 
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/log"
+	"github.com/frankbraun/codechain/util/seckey"
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
@@ -34,7 +36,7 @@ func changePassphrase(filename string, sec, sig *[64]byte, comment []byte) error
 }
 
 func listKeys(homeDir string) error {
-	secretsDir := filepath.Join(homeDir, secretsSubDir)
+	secretsDir := filepath.Join(homeDir, def.SecretsSubDir)
 	files, err := ioutil.ReadDir(secretsDir)
 	if err != nil {
 		return err
@@ -70,7 +72,7 @@ func KeyFile(homeDir, argv0 string, args ...string) error {
 	}
 	change := fs.Bool("c", false, "Change passphrase")
 	list := fs.Bool("l", false, "List keyfiles")
-	seckey := fs.String("s", "", "Secret key file")
+	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -81,10 +83,10 @@ func KeyFile(homeDir, argv0 string, args ...string) error {
 	if *change && *list {
 		return fmt.Errorf("%s: options -c and -l exclude each other", argv0)
 	}
-	if *seckey != "" && *list {
+	if *secKey != "" && *list {
 		return fmt.Errorf("%s: options -s and -l exclude each other", argv0)
 	}
-	if *seckey == "" && !*list {
+	if *secKey == "" && !*list {
 		return fmt.Errorf("%s: option -s is mandatory", argv0)
 	}
 	if fs.NArg() != 0 {
@@ -94,13 +96,13 @@ func KeyFile(homeDir, argv0 string, args ...string) error {
 	if *list {
 		return listKeys(homeDir)
 	}
-	sec, sig, comment, err := seckeyRead(*seckey)
+	sec, sig, comment, err := seckey.Read(*secKey)
 	if err != nil {
 		return err
 	}
 	if *change {
-		fmt.Printf("%s read, please provide new ", *seckey)
-		if err := changePassphrase(*seckey, sec, sig, comment); err != nil {
+		fmt.Printf("%s read, please provide new ", *secKey)
+		if err := changePassphrase(*secKey, sec, sig, comment); err != nil {
 			return err
 		}
 		fmt.Println("passphrase changed")

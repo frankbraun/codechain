@@ -1,4 +1,5 @@
-package command
+// Package seckey implements helper functions for secret key files.
+package seckey
 
 import (
 	"fmt"
@@ -7,15 +8,21 @@ import (
 	"syscall"
 
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
-	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/terminal"
 	"golang.org/x/crypto/ed25519"
 )
 
-func seckeyCheck(seckey string) error {
+// TestPass is a passphrase used for testing purposes.
+var TestPass string
+
+// Check that the file seckey exists, if it is given.
+// Otherwise make sure that at least the secrets subdirectory of homeDir
+// exists.
+func Check(homeDir, seckey string) error {
 	if seckey != "" {
 		exists, err := file.Exists(seckey)
 		if err != nil {
@@ -25,10 +32,9 @@ func seckeyCheck(seckey string) error {
 			return fmt.Errorf("file '%s' doesn't exists", seckey)
 		}
 	} else {
-		homeDir := homedir.Codechain()
-		homeDir = filepath.Join(homeDir, secretsSubDir)
+		secretDir := filepath.Join(homeDir, def.SecretsSubDir)
 		// make sure we have the secrets directory present
-		exists, err := file.Exists(homeDir)
+		exists, err := file.Exists(secretDir)
 		if err != nil {
 			return err
 		}
@@ -40,7 +46,8 @@ func seckeyCheck(seckey string) error {
 	return nil
 }
 
-func seckeyRead(filename string) (*[64]byte, *[64]byte, []byte, error) {
+// Read reads the secret key from given filename.
+func Read(filename string) (*[64]byte, *[64]byte, []byte, error) {
 	exists, err := file.Exists(filename)
 	if err != nil {
 		return nil, nil, nil, err
@@ -50,14 +57,14 @@ func seckeyRead(filename string) (*[64]byte, *[64]byte, []byte, error) {
 	}
 	fmt.Printf("opening keyfile: %s\n", filename)
 	var pass []byte
-	if testPass == "" {
+	if TestPass == "" {
 		pass, err = terminal.ReadPassphrase(syscall.Stdin, false)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 		defer bzero.Bytes(pass)
 	} else {
-		pass = []byte(testPass)
+		pass = []byte(TestPass)
 	}
 	sec, sig, comment, err := keyfile.Read(filename, pass)
 	if err != nil {
@@ -69,18 +76,19 @@ func seckeyRead(filename string) (*[64]byte, *[64]byte, []byte, error) {
 	return sec, sig, comment, nil
 }
 
-func seckeyLoad(c *hashchain.HashChain, filename string) (*[64]byte, *[64]byte, []byte, error) {
+// Load loads secret from filename, if given.
+// Otherwise it loads the secret corresponding to the signer in given hash
+// chain and makes sure that only one such secret exists.
+func Load(c *hashchain.HashChain, homeDir, filename string) (*[64]byte, *[64]byte, []byte, error) {
 	if filename != "" {
-		return seckeyRead(filename)
+		return Read(filename)
 	}
-	homeDir := filepath.Join(homedir.Codechain(), secretsSubDir)
+	secretDir := filepath.Join(homeDir, def.SecretsSubDir)
 	signer := c.Signer()
-
-	files, err := ioutil.ReadDir(homeDir)
+	files, err := ioutil.ReadDir(secretDir)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-
 	var pubKey string
 	for _, fi := range files {
 		if signer[fi.Name()] {
@@ -94,7 +102,7 @@ func seckeyLoad(c *hashchain.HashChain, filename string) (*[64]byte, *[64]byte, 
 	}
 	if pubKey == "" {
 		return nil, nil, nil,
-			fmt.Errorf("directory '%s' doesn' contain any matching secret keyfile", homeDir)
+			fmt.Errorf("directory '%s' doesn't contain any matching secret keyfile", secretDir)
 	}
-	return seckeyRead(filepath.Join(homeDir, pubKey))
+	return Read(filepath.Join(secretDir, pubKey))
 }

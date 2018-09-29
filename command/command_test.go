@@ -11,6 +11,7 @@ import (
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/homedir"
+	"github.com/frankbraun/codechain/util/seckey"
 )
 
 const (
@@ -91,7 +92,7 @@ func TestKey(t *testing.T) {
 	if err != nil {
 		t.Errorf("TreeList() -l failed: %v", err)
 	}
-	testPass = "passphrase"
+	seckey.TestPass = "passphrase"
 	testComment = "John Doe"
 	// codechain keygen -s seckey.bin
 	err = KeyGen(homedir.Codechain(), "keygen", "-s", "seckey.bin")

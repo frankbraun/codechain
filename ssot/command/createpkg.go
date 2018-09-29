@@ -71,7 +71,8 @@ func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error 
 	fmt.Printf("%s: written\n", signedHead)
 
 	// Print DNS TXT record as defined by the .secpkg and the first signed head.
-	fmt.Println("Please publish the following DNS TXT record:\n")
+	fmt.Println("Please publish the following DNS TXT record:")
+	fmt.Println("")
 	sh.PrintTXT(pkg.DNS)
 	return nil
 }

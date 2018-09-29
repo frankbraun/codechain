@@ -1,10 +1,11 @@
 package command
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/frankbraun/codechain/secpkg"
 )
 
 // Update implements the secpkg 'update' command.
@@ -22,6 +23,5 @@ func Update(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	// TODO
-	return errors.New("not implemented")
+	return secpkg.Update(fs.Arg(0))
 }

@@ -43,7 +43,7 @@ func (pkg *Package) Marshal() string {
 	return string(jsn)
 }
 
-// Install pkg.
+// Install pkg, see specification for details.
 func (pkg *Package) Install() error {
 	txts, err := net.LookupTXT(def.CodechainTXTName + pkg.DNS)
 	if err != nil {
@@ -72,4 +72,10 @@ func (pkg *Package) Install() error {
 	url := pkg.URL + "/" + filename
 	fmt.Printf("download %s\n", url)
 	return file.Download(filename, url)
+}
+
+// Update package with name, see specification for details.
+func Update(name string) error {
+	// TODO
+	return errors.New("not implemented")
 }

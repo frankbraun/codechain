@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/internal/hex"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -55,8 +56,8 @@ func SignHead(head [32]byte, counter uint64, secKey [64]byte) *SignedHead {
 	sh.validTo = now + MaximumValidity
 	sh.counter = counter
 	copy(sh.head[:], head[:])
-	m := sh.marshal()
-	sig := ed25519.Sign(secKey[:], m[:])
+	msg := sh.marshal()
+	sig := ed25519.Sign(secKey[:], msg[:])
 	copy(sh.signature[:], sig)
 	return &sh
 }
@@ -68,4 +69,36 @@ func (sh *SignedHead) Marshal() string {
 	copy(m[:120], b[:])
 	copy(m[120:184], sh.signature[:])
 	return base64.Encode(m[:])
+}
+
+func unmarshal(m [184]byte) (*SignedHead, error) {
+	var sh SignedHead
+	copy(sh.pubKey[:], m[:32])
+	copy(sh.pubKeyRotate[:], m[32:64])
+	sh.validFrom = int64(binary.BigEndian.Uint64(m[64:72]))
+	sh.validTo = int64(binary.BigEndian.Uint64(m[72:80]))
+	sh.counter = binary.BigEndian.Uint64(m[80:88])
+	copy(sh.head[:], m[88:120])
+	copy(sh.signature[:], m[120:184])
+	msg := sh.marshal()
+	if !ed25519.Verify(sh.pubKey[:], msg[:], sh.signature[:]) {
+		return nil, ErrSignedHeadSignature
+	}
+	return &sh, nil
+}
+
+// Unmarshal and verify a base64 encoded signed head.
+func Unmarshal(signedHead string) (*SignedHead, error) {
+	b, err := base64.Decode(signedHead, 184)
+	if err != nil {
+		return nil, err
+	}
+	var m [184]byte
+	copy(m[:], b)
+	return unmarshal(m)
+}
+
+// Head returns the signed head.
+func (sh *SignedHead) Head() string {
+	return hex.Encode(sh.head[:])
 }

@@ -1,22 +1,65 @@
 package command
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"os"
 
 	"github.com/frankbraun/codechain/secpkg"
+	"github.com/frankbraun/codechain/ssot"
 )
 
-func install(pkg *secpkg.Package) error {
-	// TODO: txts, err := net.LookupTXT("_codechain." + pkg.DNS)
-	txts, err := net.LookupTXT("_test.frankbraun.org")
+func downloadFile(filepath string, url string) error {
+	out, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
+	defer out.Close()
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func install(pkg *secpkg.Package) error {
+	txts, err := net.LookupTXT("_codechain." + pkg.DNS)
+	if err != nil {
+		return err
+	}
+	// Parse TXT records and look for signed head
+	var sh *ssot.SignedHead
 	for _, txt := range txts {
-		fmt.Println(txt)
+		sh, err = ssot.Unmarshal(txt)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "cannot unmarshal: %s\n", txt)
+			continue
+		}
+		fmt.Println(sh.Head())
+		break /// TXT record found
+	}
+	if sh == nil {
+		return errors.New("secpkg: no valid TXT record found")
+	}
+	// TODO: trust pubkey on first use
+	// TODO: compare pubkey with stored one
+	// TODO: pubkey rotation
+
+	// download distribution
+	filename := sh.Head() + ".tar.gz"
+	url := pkg.URL + "/" + filename
+	fmt.Printf("download %s\n", url)
+	if err := downloadFile(filename, url); err != nil {
+		return err
 	}
 	return nil
 }

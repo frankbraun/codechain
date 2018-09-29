@@ -1,13 +1,25 @@
 package command
 
 import (
-	"errors"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 
 	"github.com/frankbraun/codechain/secpkg"
 )
+
+func install(pkg *secpkg.Package) error {
+	// TODO: txts, err := net.LookupTXT("_codechain." + pkg.DNS)
+	txts, err := net.LookupTXT("_test.frankbraun.org")
+	if err != nil {
+		return err
+	}
+	for _, txt := range txts {
+		fmt.Println(txt)
+	}
+	return nil
+}
 
 // Install implements the secpkg 'install' command.
 func Install(argv0 string, args ...string) error {
@@ -29,6 +41,5 @@ func Install(argv0 string, args ...string) error {
 		return err
 	}
 	fmt.Println(pkg.Marshal())
-	// TODO
-	return errors.New("not implemented")
+	return install(pkg)
 }

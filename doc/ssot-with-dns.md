@@ -14,12 +14,8 @@ We have to store the following information:
 
 The protocol shall define a global maximum validity.
 
-Implement:
-
--   export in Bind format
--   resolver for records
--   optional: automatic publishing with
-    [lego](https://github.com/xenolf/lego)?
+See [SSOT
+package](https://godoc.org/github.com/frankbraun/codechain/ssot).
 
 ### Secure packages (`.secpkg`)
 

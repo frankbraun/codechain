@@ -1,5 +1,3 @@
-// Package ssot implements a single source of truth (SSOT)
-// with DNS TXT records.
 package ssot
 
 import (

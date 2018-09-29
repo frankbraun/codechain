@@ -23,7 +23,7 @@ Install specification
 
 Installing software described by a .secpkg file works as follows:
 
-   1. Parse .secpkg file and validate it. Save head (as HEAD_PKG).
+   1. Parse .secpkg file and validate it. Save head as HEAD_PKG.
 
    2. Make sure the project with NAME has not been installed before.
       That is, the directory ~/.config/secpkg/pkgs/NAME does not exist.
@@ -115,7 +115,7 @@ Updating a software package with NAME works as follows:
 
       - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
                ~/.config/secpkg/pkgs/NAME/previous_signed_head`
-      - Atomically save new signed head: ~/.config/secpkg/pkgs/NAME/signed_head
+      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
 
   16. The software has been successfully updated.
 */

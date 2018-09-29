@@ -68,7 +68,7 @@ installed (with module support) and all dependencies must be vendored.
 
 Update specification
 
-Updating a software package NAME works as follows:
+Updating a software package with NAME works as follows:
 
    1. Make sure the project with NAME has been installed before.
       That is, the directory ~/.config/secpkg/pkgs/NAME exists.

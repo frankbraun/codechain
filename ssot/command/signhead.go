@@ -24,8 +24,7 @@ func signHead(c *hashchain.HashChain, secKeyFile string) error {
 	// TODO: counter
 	sh := ssot.SignHead(head, 0, *secKey)
 	// print TXT entry
-	fmt.Printf("%sexample.com.\t\t%d\tIN\tTXT\t\"value=%s\"\n",
-		def.CodechainTXTName, ssot.TTL, sh.Marshal())
+	sh.PrintTXT("example.com")
 	return nil
 }
 

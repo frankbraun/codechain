@@ -2,11 +2,16 @@ package ssot
 
 import (
 	"encoding/binary"
+	"fmt"
 
 	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/internal/hex"
 	"golang.org/x/crypto/ed25519"
 )
+
+// File defines the default file name for a signed head.
+const File = "signed_head"
 
 // MaximumValidity of signed heads.
 const MaximumValidity = 30 * 24 * 60 * 60 // 30d
@@ -81,4 +86,10 @@ func Unmarshal(signedHead string) (*SignedHead, error) {
 // Head returns the signed head.
 func (sh *SignedHead) Head() string {
 	return hex.Encode(sh.head[:])
+}
+
+// PrintTXT prints the TXT record to publish the signed head.
+func (sh *SignedHead) PrintTXT(dns string) {
+	fmt.Printf("%s%s.\t\t%d\tIN\tTXT\t\"%s\"\n",
+		def.CodechainTXTName, dns, TTL, sh.Marshal())
 }

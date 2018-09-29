@@ -10,6 +10,7 @@ import (
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
+	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/interrupt"
@@ -20,16 +21,17 @@ import (
 func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error {
 	head := c.Head()
 	fmt.Printf("create package for head %x\n", head)
-	_, _, _, err := seckey.Read(secKeyFile)
+	secKey, _, _, err := seckey.Read(secKeyFile)
 	if err != nil {
 		return err
 	}
-	// Create package
+	// 2. Create package (before 1., because this checks the arguments)
 	pkg, err := secpkg.New(name, dns, url, head)
 	if err != nil {
 		return err
 	}
-	// Make sure the project has not been published before
+
+	// 1. Make sure the project has not been published before
 	pkgDir := filepath.Join(homedir.SSOTPub(), "pkg", pkg.Name)
 	exists, err := file.Exists(pkgDir)
 	if err != nil {
@@ -38,6 +40,7 @@ func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error 
 	if exists {
 		return fmt.Errorf("package has already been published: '%s' exists", pkgDir)
 	}
+
 	// Create .secpkg file
 	exists, err = file.Exists(secpkg.File)
 	if err != nil {
@@ -50,12 +53,30 @@ func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error 
 	if err != nil {
 		return err
 	}
-	fmt.Printf("'%s' file has been written\n", secpkg.File)
+	fmt.Printf("%s: written\n", secpkg.File)
 
+	// 3. Create the first signed head with counter set to 0.
+	sh := ssot.SignHead(head, 0, *secKey)
+
+	// 4. Create the directory ~/.config/ssotpub/pkgs/NAME and save the signed head
+	//    to ~/.config/ssotpub/pkgs/NAME/signed_head
+	if err := os.MkdirAll(pkgDir, 0755); err != nil {
+		return err
+	}
+	signedHead := filepath.Join(pkgDir, ssot.File)
+	err = ioutil.WriteFile(signedHead, []byte(sh.Marshal()+"\n"), 0644)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s: written\n", signedHead)
+
+	// Print DNS TXT record as defined by the .secpkg and the first signed head.
+	fmt.Println("Please publish the following DNS TXT record:")
+	sh.PrintTXT(pkg.DNS)
 	return nil
 }
 
-// CreatePKG implements the ssotpub 'createpkg' command.
+// CreatePkg implements the ssotpub 'createpkg' command.
 func CreatePkg(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {

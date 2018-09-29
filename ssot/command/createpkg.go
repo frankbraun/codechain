@@ -7,34 +7,30 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
-	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/interrupt"
 	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/seckey"
 )
 
-func signHead(c *hashchain.HashChain, secKeyFile string) error {
+func createPkg(c *hashchain.HashChain, secKeyFile string) error {
 	head := c.Head()
-	fmt.Printf("signing head %x\n", head)
-	secKey, _, _, err := seckey.Read(secKeyFile)
-	if err != nil {
-		return err
-	}
-	// TODO: counter
-	sh := ssot.SignHead(head, 0, *secKey)
-	// print TXT entry
-	fmt.Printf("%sexample.com.\t\t%d\tIN\tTXT\t\"value=%s\"\n",
-		def.CodechainTXTName, ssot.TTL, sh.Marshal())
+	fmt.Printf("create package for head %x\n", head)
+	/*
+		secKey, _, _, err := seckey.Read(secKeyFile)
+		if err != nil {
+			return err
+		}
+	*/
 	return nil
 }
 
-// SignHead implements the ssotpub 'signhead' command.
-func SignHead(argv0 string, args ...string) error {
+// CreatePKG implements the ssotpub 'createpkg' command.
+func CreatePkg(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s -s seckey.bin\n", argv0)
-		fmt.Fprintf(os.Stderr, "Sign Codechain head and print it on stdout.\n")
+		fmt.Fprintf(os.Stderr, "Create secure package and first signed head.\n")
 		fs.PrintDefaults()
 	}
 	secKey := fs.String("s", "", "Secret key file")
@@ -61,9 +57,9 @@ func SignHead(argv0 string, args ...string) error {
 	interrupt.AddInterruptHandler(func() {
 		c.Close()
 	})
-	// run signHead
+	// run createPkg
 	go func() {
-		if err := signHead(c, *secKey); err != nil {
+		if err := createPkg(c, *secKey); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

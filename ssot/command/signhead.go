@@ -29,8 +29,8 @@ func sign(c *hashchain.HashChain, secKeyFile string) error {
 	return nil
 }
 
-// Sign implements the ssotpub 'sign' command.
-func Sign(argv0 string, args ...string) error {
+// SignHead implements the ssotpub 'signhead' command.
+func SignHead(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s -s seckey.bin\n", argv0)

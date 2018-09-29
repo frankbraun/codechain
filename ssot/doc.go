@@ -4,8 +4,8 @@ Package ssot implements a single source of truth (SSOT) with DNS TXT records.
 CreatePkg specification
 
 To create a new secure package for a project developed with Codechain that
-should be distributed with a SSOT using DNS TXT records the following
-procedure can be used:
+should be distributed with a SSOT using DNS TXT records, the following
+procedure is defined:
 
   1. Make sure the project with NAME has not been published before.
      That is, the directory ~/.config/ssotpub/pkgs/NAME does not exist.
@@ -13,7 +13,8 @@ procedure can be used:
   2. Create a new .secpkg file which specifies the following:
 
      - The NAME of the project.
-     - The fully qualified domain name (DNS) where the TXT records can be queried.
+     - The fully qualified domain name (DNS) where the TXT records can be
+       queried.
      - The URL under which the distribution .tar.gz files can be downloaded.
      - The current HEAD of the project's Codechain.
 

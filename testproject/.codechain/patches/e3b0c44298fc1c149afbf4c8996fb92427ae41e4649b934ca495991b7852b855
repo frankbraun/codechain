@@ -1,0 +1,15 @@
+codechain patchfile version 1
+treehash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
++ f 7b2f341d020192b3fa88bef5e407771962c6c5d672798bf0e751477b78c7f956 Makefile
+dmppatch 2
+@@ -0,0 +1,52 @@
++all:%0A%09go install -v .%0A%0A.PHONY: install%0Ainstall: all%0A
++ f 8173de0e3669dcba756c41ab8c040bc6a55ee34a791116b61aacd852dda3189a README.md
+dmppatch 2
+@@ -0,0 +1,43 @@
++## Test project for %60ssotpub%60 and %60secpkg%60%0A
++ f 014b551fe0135a2c86cbf2745aaeb8442fd433bd21f24b0f13b034f6156890bf testproject.go
+dmppatch 2
+@@ -0,0 +1,78 @@
++package main%0A%0Aimport (%0A%09%22fmt%22%0A)%0A%0Afunc main() %7B%0A%09fmt.Println(%22test project%22)%0A%7D%0A
+treehash 67d1c5d343c5418ad004d42079710579becc71c82408f738e6d4b141c02b91ec

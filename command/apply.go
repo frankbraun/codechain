@@ -9,24 +9,8 @@ import (
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/internal/hex"
-	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/util/log"
 )
-
-func apply(c *hashchain.HashChain, head *[32]byte) error {
-	targetHash, _ := c.LastSignedTreeHash()
-	treeHashes := c.TreeHashes()
-	if head != nil {
-		if err := c.CheckHead(*head); err != nil {
-			return err
-		}
-	}
-	err := sync.Dir(".", targetHash, def.PatchDir, treeHashes, def.ExcludePaths, false)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 // Apply implements the 'apply' command.
 func Apply(argv0 string, args ...string) error {
@@ -72,5 +56,5 @@ func Apply(argv0 string, args ...string) error {
 	if err := c.Close(); err != nil {
 		return err
 	}
-	return apply(c, head)
+	return c.Apply(head)
 }

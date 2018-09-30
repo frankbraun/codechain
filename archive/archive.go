@@ -191,3 +191,17 @@ func Apply(hashchainFile, patchDir string, r io.Reader, head *[32]byte) error {
 
 	return zr.Close()
 }
+
+// ApplyFile applies the archive in filename to the given hashchainFile and patchDir.
+// If the hashchainFile is already present it must be transformable by
+// appending to the hashchain present in r, otherwise an error is returned.
+// If head is not nil the hash chain read from filename must contain the given head.
+func ApplyFile(hashchainFile, patchDir, filename string, head *[32]byte) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	log.Printf("applying distribution '%s'", filename)
+	return Apply(hashchainFile, patchDir, f, head)
+}

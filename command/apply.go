@@ -13,16 +13,6 @@ import (
 	"github.com/frankbraun/codechain/util/log"
 )
 
-func applyDist(filename string, head *[32]byte) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	log.Printf("applying distribution '%s'", filename)
-	return archive.Apply(def.HashchainFile, def.PatchDir, f, head)
-}
-
 func apply(c *hashchain.HashChain, head *[32]byte) error {
 	targetHash, _ := c.LastSignedTreeHash()
 	treeHashes := c.TreeHashes()
@@ -35,7 +25,6 @@ func apply(c *hashchain.HashChain, head *[32]byte) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -71,7 +60,8 @@ func Apply(argv0 string, args ...string) error {
 		head = &ha
 	}
 	if *filename != "" {
-		if err := applyDist(*filename, head); err != nil {
+		err := archive.ApplyFile(def.HashchainFile, def.PatchDir, *filename, head)
+		if err != nil {
 			return err
 		}
 	}

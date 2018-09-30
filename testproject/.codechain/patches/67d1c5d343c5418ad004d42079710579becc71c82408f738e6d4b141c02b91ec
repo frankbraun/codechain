@@ -1,0 +1,11 @@
+codechain patchfile version 1
+treehash 67d1c5d343c5418ad004d42079710579becc71c82408f738e6d4b141c02b91ec
++ f 1e9d590e751169538596075e43f3d9ca07fd73318711e8d29a92c0fc6f8a545d .secpkg
+dmppatch 2
+@@ -0,0 +1,187 @@
++%7B%0A  %22Name%22: %22testproject%22,%0A  %22Head%22: %22cb78fd9d949c77fa41d2ab1f9fd72f90f4c9a9009ab458a401a784f8fce89649%22,%0A  %22DNS%22: %22testproject.secpkg.net%22,%0A  %22URL%22: %22http://frankbraun.org/testproject%22%0A%7D%0A
++ f 388a2a13cb0a71c79333e31094d04ac3045769e84da7943b47833787df344587 go.mod
+dmppatch 2
+@@ -0,0 +1,51 @@
++module github.com/frankbraun/codechain/testproject%0A
+treehash 2b310273280ae50e20360fb6b454bf82c90ad65c9c3cfb3c045566ab46b83a09

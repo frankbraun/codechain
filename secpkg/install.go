@@ -6,9 +6,13 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 
+	"github.com/frankbraun/codechain/archive"
+	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/homedir"
@@ -100,7 +104,78 @@ func (pkg *Package) Install() error {
 		os.RemoveAll(pkgDir)
 		return err
 	}
+	if err := os.Chdir(srcDir); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+	head := sh.HeadBuf()
+	distFile := filepath.Join("..", "dists", fn)
+	err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)
+	if err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+	c, err := hashchain.ReadFile(def.HashchainFile)
+	if err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+	if err := c.Close(); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+	if err := c.Apply(&head); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
 
-	//os.RemoveAll(pkgDir)
+	// 9. Make sure HEAD_PKG is contained in
+	//   ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain
+	h, err := hex.Decode(pkg.Head, 32)
+	if err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+	copy(head[:], h)
+	if err := c.CheckHead(head); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+
+	// 10. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+	buildDir := filepath.Join(pkgDir, "build")
+	if err := file.CopyDir(srcDir, buildDir); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+
+	// 11. Call `make` in ~/.config/secpkg/pkgs/NAME/build
+	if err := os.Chdir(buildDir); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+	cmd := exec.Command("make")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+
+	// 12. Call `make install` in ~/.config/secpkg/pkgs/NAME/build
+	cmd = exec.Command("make", "install")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+
+	// 13. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+	installDir := filepath.Join(pkgDir, "install")
+	if err := os.Rename(buildDir, installDir); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
 	return nil
 }

@@ -88,6 +88,13 @@ func (sh *SignedHead) Head() string {
 	return hex.Encode(sh.head[:])
 }
 
+// HeadBuf returns the signed head.
+func (sh *SignedHead) HeadBuf() [32]byte {
+	var b [32]byte
+	copy(b[:], sh.head[:])
+	return b
+}
+
 // PrintTXT prints the TXT record to publish the signed head.
 func (sh *SignedHead) PrintTXT(dns string) {
 	fmt.Printf("%s%s.\t\t%d\tIN\tTXT\t\"%s\"\n",

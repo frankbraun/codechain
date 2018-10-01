@@ -17,7 +17,7 @@ const File = "signed_head"
 const MaximumValidity = 30 * 24 * 60 * 60 // 30d
 
 // TTL of signed head TXT records
-const TTL = 3600 // 1h
+const TTL = 600 // 10m
 
 // SignedHead is a signed Codechain head ready for publication as a SSOT with
 // DNS TXT records.

@@ -88,6 +88,11 @@ func (sh *SignedHead) Head() string {
 	return hex.Encode(sh.head[:])
 }
 
+// PubKey returns the public key in base64 notation.
+func (sh *SignedHead) PubKey() string {
+	return base64.Encode(sh.pubKey[:])
+}
+
 // HeadBuf returns the signed head.
 func (sh *SignedHead) HeadBuf() [32]byte {
 	var b [32]byte

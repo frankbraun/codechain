@@ -42,13 +42,13 @@ SignHead specification
 
 To publish an update of a secure package with SSOT do the following:
 
-  1. Make sure the project with NAME has been published before.
+  1. Parse the .secpkg file in the current working directory.
+
+  2. Make sure the project with NAME has been published before.
      That is, the directory ~/.config/ssotpub/pkgs/NAME exists.
 
-  2. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
+  3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
      and make sure the corresponding secret key is available.
-
-  3. Parse the .secpkg file in the current working directory.
 
   4. Get the HEAD from .codechain/hashchain in the current working directory.
 

@@ -1,3 +1,4 @@
+// testproject implements a simple "hello world" command.
 package main
 
 import (
@@ -5,5 +6,5 @@ import (
 )
 
 func main() {
-	fmt.Println("test project")
+	fmt.Println("hello world!")
 }

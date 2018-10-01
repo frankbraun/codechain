@@ -26,8 +26,5 @@ func CreateDist(c *hashchain.HashChain, filename string) error {
 	}
 	defer f.Close()
 	log.Printf("creating distribution '%s'", filename)
-	if err := Create(f, c, def.PatchDir); err != nil {
-		return err
-	}
-	return nil
+	return Create(f, c, def.PatchDir)
 }

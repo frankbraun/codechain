@@ -1,15 +1,23 @@
 codechain patchfile version 1
 treehash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-+ f 7b2f341d020192b3fa88bef5e407771962c6c5d672798bf0e751477b78c7f956 Makefile
++ f 1e9d590e751169538596075e43f3d9ca07fd73318711e8d29a92c0fc6f8a545d .secpkg
 dmppatch 2
-@@ -0,0 +1,52 @@
-+all:%0A%09go install -v .%0A%0A.PHONY: install%0Ainstall: all%0A
+@@ -0,0 +1,187 @@
++%7B%0A  %22Name%22: %22testproject%22,%0A  %22Head%22: %22cb78fd9d949c77fa41d2ab1f9fd72f90f4c9a9009ab458a401a784f8fce89649%22,%0A  %22DNS%22: %22testproject.secpkg.net%22,%0A  %22URL%22: %22http://frankbraun.org/testproject%22%0A%7D%0A
++ f 65cfb9379923f5461033e6454fcc5865b1987cea7d80c183501b69125380e244 Makefile
+dmppatch 2
+@@ -0,0 +1,143 @@
++prefix ?= /usr/local%0Aexec_prefix ?= $(prefix)%0Abindir ?= $(exec_prefix)/bin%0A%0Aall:%0A%09go build -v .%0A%0Ainstall:%0A%09env GOBIN=$(bindir) go install -v .%0A
 + f 8173de0e3669dcba756c41ab8c040bc6a55ee34a791116b61aacd852dda3189a README.md
 dmppatch 2
 @@ -0,0 +1,43 @@
 +## Test project for %60ssotpub%60 and %60secpkg%60%0A
-+ f 014b551fe0135a2c86cbf2745aaeb8442fd433bd21f24b0f13b034f6156890bf testproject.go
++ f 388a2a13cb0a71c79333e31094d04ac3045769e84da7943b47833787df344587 go.mod
 dmppatch 2
-@@ -0,0 +1,78 @@
-+package main%0A%0Aimport (%0A%09%22fmt%22%0A)%0A%0Afunc main() %7B%0A%09fmt.Println(%22test project%22)%0A%7D%0A
-treehash 67d1c5d343c5418ad004d42079710579becc71c82408f738e6d4b141c02b91ec
+@@ -0,0 +1,51 @@
++module github.com/frankbraun/codechain/testproject%0A
++ f 5bd5416b4787f1daa6d121413c96b8181ddf1b5a270396e606508215864e8dd9 testproject.go
+dmppatch 2
+@@ -0,0 +1,136 @@
++// testproject implements a simple %22hello world%22 command.%0Apackage main%0A%0Aimport (%0A%09%22fmt%22%0A)%0A%0Afunc main() %7B%0A%09fmt.Println(%22hello world!%22)%0A%7D%0A
+treehash 574245b1e724172faf07af2f5f42174ead56ab76ea9f588449d6fce590b2bdcb

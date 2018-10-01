@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/frankbraun/codechain/archive"
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
@@ -58,11 +59,19 @@ func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error 
 	// 3. Create the first signed head with counter set to 0.
 	sh := ssot.SignHead(head, 0, *secKey)
 
-	// 4. Create the directory ~/.config/ssotpub/pkgs/NAME and save the signed head
-	//    to ~/.config/ssotpub/pkgs/NAME/signed_head
-	if err := os.MkdirAll(pkgDir, 0755); err != nil {
+	// 4. Create the directory ~/.config/ssotpub/pkgs/NAME/dists
+	//    and save the current distribution to
+	//    ~/.config/ssotpub/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`)
+	distDir := filepath.Join(pkgDir, "dists")
+	if err := os.MkdirAll(distDir, 0755); err != nil {
 		return err
 	}
+	distFile := filepath.Join(distDir, fmt.Sprintf("%x.tar.gz", head))
+	if err := archive.CreateDist(c, distFile); err != nil {
+		return err
+	}
+
+	// 5. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head
 	signedHead := filepath.Join(pkgDir, ssot.File)
 	err = ioutil.WriteFile(signedHead, []byte(sh.Marshal()+"\n"), 0644)
 	if err != nil {
@@ -70,7 +79,13 @@ func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error 
 	}
 	fmt.Printf("%s: written\n", signedHead)
 
-	// Print DNS TXT record as defined by the .secpkg and the first signed head.
+	// 6. Print the distribution name
+	fmt.Println("")
+	fmt.Printf("Please upload the following distribution file to: %s\n", pkg.URL)
+	fmt.Println(distFile)
+	fmt.Println("")
+
+	// 7. Print DNS TXT record as defined by the .secpkg and the first signed head.
 	fmt.Println("Please publish the following DNS TXT record:")
 	fmt.Println("")
 	sh.PrintTXT(pkg.DNS)

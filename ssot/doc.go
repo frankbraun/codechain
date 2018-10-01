@@ -24,13 +24,19 @@ procedure is defined:
   3. Create the first signed head (see SignHead) for the current project's
      HEAD with a supplied secret key and counter set to 0.
 
-  4. Create the directory ~/.config/ssotpub/pkgs/NAME and save the signed head
-     to ~/.config/ssotpub/pkgs/NAME/signed_head
+  4. Create the directory ~/.config/ssotpub/pkgs/NAME/dists
+     and save the current distribution to
+      ~/.config/ssotpub/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
 
-  5. Print DNS TXT record as defined by the .secpkg and the first signed head.
+  5. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head
 
-  Afterward the administrator manually publishes the new DNS TXT record in the
-  defined zone. DNSSEC should be enabled.
+  6. Print the distribution name: ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+
+  7. Print DNS TXT record as defined by the .secpkg and the first signed head.
+
+  Afterwards the administrator manually uploads the distribution HEAD.tar.gz
+  to the download URL and publishes the new DNS TXT record in the defined
+  zone. DNSSEC should be enabled.
 
 SignHead specification
 
@@ -53,12 +59,18 @@ To publish an update of a secure package with SSOT do the following:
               ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
      - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 
-  6. Print DNS TXT record as defined by the .secpkg and the signed head.
+  6. Save the current distribution to:
+     ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
 
-  7. If the HEAD changed, update the .secpkg file accordingly.
+  7. Print the distribution name: ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
 
-  Afterward the administrator manually publishes the updated DNS TXT record in
-  the defined zone. DNSSEC should be enabled.
+  8. Print DNS TXT record as defined by the .secpkg and the signed head.
+
+  9. If the HEAD changed, update the .secpkg file accordingly.
+
+  Afterwards the administrator manually uploads the distribution HEAD.tar.gz
+  to the download URL and publishes the new DNS TXT record in the defined
+  zone. DNSSEC should be enabled.
 
 TODO
 

@@ -61,13 +61,11 @@ func signHead(c *hashchain.HashChain) error {
 	fmt.Printf("signing head %x\n", head)
 
 	// 5. Create a new signed head with current HEAD, the counter of the previous
-	/*
-	   signed head plus 1, and update the saved signed head:
-
-	   - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
-	            ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
-	   - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
-	*/
+	//    signed head plus 1, and update the saved signed head:
+	//
+	//    - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
+	//           ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
+	//    - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 	newSignedHead := ssot.SignHead(head, prevSignedHead.Counter()+1, *secKey)
 	if err := newSignedHead.RotateFile(pkgDir); err != nil {
 		return err
@@ -118,7 +116,6 @@ func SignHead(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Sign Codechain head and print it on stdout.\n")
 		fs.PrintDefaults()
 	}
-	//secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -126,11 +123,6 @@ func SignHead(argv0 string, args ...string) error {
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
 	}
-	/*
-		if err := seckey.Check(homedir.SSOTPub(), *secKey); err != nil {
-			return err
-		}
-	*/
 	if fs.NArg() != 0 {
 		fs.Usage()
 		return flag.ErrHelp

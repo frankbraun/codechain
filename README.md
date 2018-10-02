@@ -37,7 +37,7 @@ go get -u -v github.com/frankbraun/codechain
 ### Features
 
 - [x] Minimal code base, Go only, cross-platform.
-- [ ] [Single source of truth (SSOT) with DNS](doc/ssot-with-dns.md)
+- [x] [Single source of truth (SSOT) with DNS](doc/ssot-with-dns.md)
 
 Codechain depends on the `git` binary (for `git diff`), but that's optional.
 

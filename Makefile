@@ -1,8 +1,14 @@
-all:
-	env GO111MODULE=on go install -mod vendor -v ./...
+prefix ?= /usr/local
+exec_prefix ?= $(prefix)
+bindir ?= $(exec_prefix)/bin
 
-.PHONY: install test update-vendor
-install: all
+all:
+	env GO111MODULE=on go build -mod vendor -v ./...
+
+install:
+	env GO111MODULE=on GOBIN=$(bindir) go install -mod vendor -v ./...
+
+.PHONY: test update-vendor
 
 test:
 	go get github.com/frankbraun/gocheck

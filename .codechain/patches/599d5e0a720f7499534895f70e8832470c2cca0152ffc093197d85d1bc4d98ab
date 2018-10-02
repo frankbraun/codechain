@@ -1,0 +1,162 @@
+codechain patchfile version 1
+treehash 599d5e0a720f7499534895f70e8832470c2cca0152ffc093197d85d1bc4d98ab
+- f cb2566bc79cb320a740b095e606adac4a782ac91d6b476fab1089a582bffcdeb .secpkg
++ f c4badbce7fed2a5f46200828b166e641f399c11e530c83cdf756b8b40c64b0cb .secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %2273fe1313fd924854f149021e969546bce6052eca0c22b2b91245cb448410493c%22,%0A
++  %22Head%22: %2253f2c26d92e173306e83d54e3103ef2e0bd87a561315bc4b49e1ee6c78dfb583%22,%0A
+   %22D
+- f 930786dcadf2cded3178811ccc2a593fbf4cbb1aacd56fdda584eed0ae37cd7a secpkg/doc.go
++ f bf9afbe6da90c9fd3411bc5ddd3b85a062cd42834c3e458f65d1dc0ad637a15c secpkg/doc.go
+dmppatch 29
+@@ -2916,88 +2916,88 @@
+ K)%0A%0A
+-   4. Query TXT record from _codechain.DNS, if it is the same as DISK, goto 16.%0A
++   4. Query TXT record from _codechain.DNS, if it is the same as DISK, goto 15.%0A
+ %0A   
+@@ -3646,25 +3646,25 @@
+ c).%0A
+-      - Goto 16.%0A
++      - Goto 15.%0A
+ %0A   
+@@ -4088,234 +4088,307 @@
+ d%60%0A%0A
+-  11. Call %60make%60 in ~/.config/secpkg/pkgs/NAME/build%0A
++  11. Call %60make prefix=~/.config/secpkg/local%60 in%0A      ~/.config/secpkg/pkgs/NAME/build%0A
+ %0A
+-  12. Call %60make install%60 in ~/.config/secpkg/pkgs/NAME/build%0A
++  12. Call %60make prefix= ~/.config/secpkg/local install%60 in%0A      ~/.config/secpkg/pkgs/NAME/build%0A
+ %0A
+-  14. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A
++  13. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A
+ %0A
+-  15. Update signed head:%0A
++  14. Update signed head:%0A
+ %0A   
+@@ -4588,58 +4588,58 @@
+ ).%0A%0A
+-  16. The software has been successfully updated.%0A
++  15. The software has been successfully updated.%0A
+ */%0Ap
+- f 01231ae0af4ce2560dbb76add8ed2f96cb04b161352631326f20d791588c5565 secpkg/install.go
++ f 2cc826f1aa6a44e81208916b84cae326f5abc11ef2beef60e597db740d03e0f7 secpkg/install.go
+dmppatch 33
+@@ -22,18 +22,8 @@
+ t (%0A
+-%09%22errors%22%0A
+ %09%22fm
+@@ -42,32 +42,14 @@
+ il%22%0A
+-%09%22net%22%0A
+ %09%22os%22%0A
+-%09%22os/exec%22%0A
+ %09%22pa
+@@ -331,16 +331,64 @@
+ l/file%22%0A
++%09%22github.com/frankbraun/codechain/util/gnumake%22%0A
+ %09%22github
+@@ -1405,68 +1405,41 @@
+ e).%0A
+-%09txts, err := net.LookupTXT(def.CodechainTXTName + pkg.DNS)%0A
++%09sh, err := ssot.Lookup(pkg.DNS)%0A
+ %09if 
+@@ -1491,413 +1491,8 @@
+ err%0A
+-%09%7D%0A%09var sh *ssot.SignedHead%0A%09for _, txt := range txts %7B%0A%09%09// parse TXT records and look for signed head%0A%09%09sh, err = ssot.Unmarshal(txt)%0A%09%09if err != nil %7B%0A%09%09%09fmt.Fprintf(os.Stderr, %22cannot unmarshal: %25s%5Cn%22, txt)%0A%09%09%09continue%0A%09%09%7D%0A%09%09fmt.Printf(%22signed head found: %25s%5Cn%22, sh.Head())%0A%09%09break // TXT record found%0A%09%7D%0A%09if sh == nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return errors.New(%22secpkg: no valid TXT record found%22)%0A
+ %09%7D%0A%0A
+@@ -4020,174 +4020,56 @@
+ %09*/%0A
+-%09prefix := fmt.Sprintf(%22prefix=%25s%22, localDir)%0A%09cmd := exec.Command(%22make%22, prefix)%0A%09cmd.Stdout = os.Stdout%0A%09cmd.Stderr = os.Stderr%0A%09if err := cmd.Run(); err != nil %7B%0A
++%09if err := gnumake.Call(localDir); err != nil %7B%0A
+ %09%09os
+@@ -4210,138 +4210,59 @@
+ ild%0A
+-%09cmd = exec.Command(%22make%22, prefix, %22install%22)%0A%09cmd.Stdout = os.Stdout%0A%09cmd.Stderr = os.Stderr%0A%09if err := cmd.Run(); err != nil %7B%0A
++%09if err := gnumake.Install(localDir); err != nil %7B%0A
+ %09%09os
+- f 3cd62c2b45c0d53b681b57472d37922433bc27119b3a7059fd0619506502fe4c secpkg/update.go
++ f 5434e9a4ae2b993f2d071b5c486acbe77d3931e5eae7e87c4fff800b5d3e50a2 secpkg/update.go
+dmppatch 10
+@@ -22,18 +22,356 @@
+ t (%0A
+-%09%22errors%22%0A
++%09%22fmt%22%0A%09%22os%22%0A%09%22path/filepath%22%0A%0A%09%22github.com/frankbraun/codechain/archive%22%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/ssot%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/gnumake%22%0A%09%22github.com/frankbraun/codechain/util/homedir%22%0A
+ )%0A%0A/
+@@ -466,53 +466,4614 @@
+ r %7B%0A
+-%09// TODO%0A%09return errors.New(%22not implemented%22)%0A
++%09// 1. Make sure the project with NAME has been installed before.%0A%09//    That is, the directory ~/.config/secpkg/pkgs/NAME exists.%0A%09pkgDir := filepath.Join(homedir.SecPkg(), %22pkgs%22, name)%0A%09exists, err := file.Exists(pkgDir)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if !exists %7B%0A%09%09return fmt.Errorf(%22package not installed: '%25s' does not exist%22, pkgDir)%0A%09%7D%0A%0A%09// 2. Load .secpkg file from ~/.config/secpkg/pkgs/NAME/.secpkg%0A%09fn := filepath.Join(pkgDir, File)%0A%09pkg, err := Load(fn)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if pkg.Name != name %7B%0A%09%09return fmt.Errorf(%22package to update (%25s) differs from package name in %25s%22, name, fn)%0A%09%7D%0A%0A%09// 3. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head (as DISK)%0A%09signedHeadFile := filepath.Join(pkgDir, %22signed_head%22)%0A%09shDisk, err := ssot.Load(signedHeadFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 4. Query TXT record from _codechain.DNS, if it is the same as DISK, goto 15.%0A%09shDNS, err := ssot.Lookup(pkg.DNS)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if shDisk.Marshal() == shDNS.Marshal() %7B%0A%09%09fmt.Printf(%22package '%25s' already up-to-date%5Cn%22, name)%0A%09%09return nil%0A%09%7D%0A%0A%09// 5. Validate signed head from TXT (also see ssot package) and store HEAD:%0A%09//%0A%09//    - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK.%0A%09//    - The counter from TXT must be larger than the counter from DISK.%0A%09//    - The signed head must be valid (as defined by validFrom and validTo).%0A%09//%0A%09// If the validation fails, abort update procedure and report error.%0A%09if !(shDNS.PubKey() == shDisk.PubKey() %7C%7C%0A%09%09shDNS.PubKey() == shDisk.PubKeyRotate()) %7B%0A%09%09return fmt.Errorf(%22secpkg: public key from TXT record does not match public key (or rotate) from disk%22)%0A%09%7D%0A%09if shDNS.Counter() %3C= shDisk.Counter() %7B%0A%09%09return fmt.Errorf(%22secpkg: counter from TXT record is not increasing%22)%0A%09%7D%0A%09if err := shDNS.Valid(); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 6. If signed head from TXT record is the same as the one from DISK:%0A%09//%0A%09//    - %60cp -f ~/.config/secpkg/pkgs/NAME/signed_head%0A%09//             ~/.config/secpkg/pkgs/NAME/previous_signed_head%60%0A%09//     - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).%0A%09//     - Goto 15.%0A%0A%09if shDNS.Head() == shDisk.Head() %7B%0A%09%09return shDNS.RotateFile(pkgDir)%0A%09%7D%0A%0A%09// 7. Download distribution file from URL/HEAD.tar.gz and save it to%0A%09//    ~/.config/secpkg/pkgs/NAME/dists%0A%09distDir := filepath.Join(pkgDir, %22dists%22)%0A%09fn = shDNS.Head() + %22.tar.gz%22%0A%09filename := filepath.Join(distDir, fn)%0A%09url := pkg.URL + %22/%22 + fn%0A%09fmt.Printf(%22download %25s%5Cn%22, url)%0A%09err = file.Download(filename, url)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 8. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz%0A%09//%09  to ~/.config/secpkg/pkgs/NAME/src with %60codechain apply%0A%09//%09  -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD%60.%0A%09srcDir := filepath.Join(pkgDir, %22src%22)%0A%09if err := os.Chdir(srcDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09head := shDNS.HeadBuf()%0A%09distFile := filepath.Join(%22..%22, %22dists%22, fn)%0A%09err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09c, err := hashchain.ReadFile(def.HashchainFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if err := c.Close(); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if err := c.Apply(&head); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 9. %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A%09buildDir := filepath.Join(pkgDir, %22build%22)%0A%09if err := os.RemoveAll(buildDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 10. %60cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build%60%0A%09if err := file.CopyDir(srcDir, buildDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 11. Call %60make prefix=~/.config/secpkg/local%60 in%0A%09//     ~/.config/secpkg/pkgs/NAME/build%0A%09localDir := filepath.Join(homedir.SecPkg(), %22local%22)%0A%09if err := os.Chdir(buildDir); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09if err := gnumake.Call(localDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 12. Call %60make prefix= ~/.config/secpkg/local install%60 in%0A%09//     ~/.config/secpkg/pkgs/NAME/build%0A%09if err := gnumake.Install(localDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 13. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A%09installDir := filepath.Join(pkgDir, %22install%22)%0A%09if err := os.RemoveAll(installDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09if err := os.Rename(buildDir, installDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 14. Update signed head:%0A%09//%0A%09//      - %60cp -f ~/.config/secpkg/pkgs/NAME/signed_head%0A%09//               ~/.config/secpkg/pkgs/NAME/previous_signed_head%60%0A%09//      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).%0A%09return shDNS.RotateFile(pkgDir)%0A%0A%09// 15. The software has been successfully updated.%0A
+ %7D%0A
+- f 5a84e0ff2195abc27982976769ecb4b66ac6166c1c0082f6779a2dd83f8ab5b9 ssot/command/signhead.go
++ f 52332b396772d5059f1f1259f91aebf7e21cf431006ddc29fef87a59b1b36f34 ssot/command/signhead.go
+dmppatch 32
+@@ -1431,60 +1431,58 @@
+ d%22)%0A
+-%09signedHead, err := ioutil.ReadFile(signedHeadFile)%0A
++%09prevSignedHead, err := ssot.Load(signedHeadFile)%0A
+ %09if 
+@@ -1514,100 +1514,9 @@
+ %0A%09%7D%0A
+-%09prevSignedHead, err := ssot.Unmarshal(string(signedHead))%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A
++%0A
+ %09sec
+@@ -1936,271 +1936,276 @@
+ ous%0A
+-%09/*%0A%09   signed head plus 1, and update the saved signed head:%0A%0A%09   - %60cp -f ~/.config/ssotpub/pkgs/NAME/signed_head%0A%09            ~/.config/ssotpub/pkgs/NAME/previous_signed_head%60%0A%09   - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).%0A%09*/%0A
++%09//    signed head plus 1, and update the saved signed head:%0A%09//%0A%09//    - %60cp -f ~/.config/ssotpub/pkgs/NAME/signed_head%0A%09//           ~/.config/ssotpub/pkgs/NAME/previous_signed_head%60%0A%09//    - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).%0A
+ %09new
+@@ -2279,318 +2279,66 @@
+ ey)%0A
+-%09prevSignedHeadFile := filepath.Join(pkgDir, %22previous_signed_head%22)%0A%09exists, err = file.Exists(prevSignedHeadFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09if err := os.Remove(prevSignedHeadFile); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%09if err := file.Copy(signedHeadFile, prevSignedHeadFile); err != nil %7B%0A
++%09if err := newSignedHead.RotateFile(pkgDir); err != nil %7B%0A
+ %09%09re
+@@ -2353,322 +2353,8 @@
+ %0A%09%7D%0A
+-%09newSignedHeadFile := filepath.Join(pkgDir, %22new_signed_head%22)%0A%09err = ioutil.WriteFile(newSignedHeadFile, %5B%5Dbyte(newSignedHead.Marshal()+%22%5Cn%22), 0644)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if err := os.Rename(newSignedHeadFile, signedHeadFile); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09fmt.Printf(%22%25s: written%5Cn%22, signedHeadFile)%0A
+ %0A%09//
+@@ -3825,59 +3825,8 @@
+ %0A%09%7D%0A
+-%09//secKey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
+ %09ver
+@@ -3979,101 +3979,8 @@
+ %0A%09%7D%0A
+-%09/*%0A%09%09if err := seckey.Check(homedir.SSOTPub(), *secKey); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09*/%0A
+ %09if 
+- f a0668e06f56deca418a2d678b884b0c00732b6e574e4a8f05fc5966ca6fbb35f ssot/errors.go
++ f 5d081af81cfd597953efe491d7c744f17966a4e80249eed0e8ce55cfed4e7ce5 ssot/errors.go
+dmppatch 3
+@@ -198,8 +198,328 @@
+ erify%22)%0A
++%0A// ErrSignedHeadFuture is returned if the validity of a signed head is in the future.%0Avar ErrSignedHeadFuture = errors.New(%22ssot: signed head is valid in the future%22)%0A%0A// ErrSignedHeadExpired is returned if the validity of a signed head is expired.%0Avar ErrSignedHeadExpired = errors.New(%22ssot: signed head is expired%22)%0A
++ f 71845c24d0c3247e05dbc40e2cf3324144b6f2140cf97f556ffda086add11a2b ssot/rotatefile.go
+dmppatch 2
+@@ -0,0 +1,998 @@
++package ssot%0A%0Aimport (%0A%09%22fmt%22%0A%09%22io/ioutil%22%0A%09%22os%22%0A%09%22path/filepath%22%0A%0A%09%22github.com/frankbraun/codechain/util/file%22%0A)%0A%0A// RotateFile rotates the pkgDir/signed_head to pkgDir/previous_signed_head and saves%0A// signed head sh to pkgDir/signed_head.%0Afunc (sh *SignedHead) RotateFile(pkgDir string) error %7B%0A%09prevSignedHeadFile := filepath.Join(pkgDir, %22previous_signed_head%22)%0A%09exists, err := file.Exists(prevSignedHeadFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09if err := os.Remove(prevSignedHeadFile); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%09signedHeadFile := filepath.Join(pkgDir, %22signed_head%22)%0A%09if err := file.Copy(signedHeadFile, prevSignedHeadFile); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09newSignedHeadFile := filepath.Join(pkgDir, %22new_signed_head%22)%0A%09err = ioutil.WriteFile(newSignedHeadFile, %5B%5Dbyte(sh.Marshal()+%22%5Cn%22), 0644)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if err := os.Rename(newSignedHeadFile, signedHeadFile); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09fmt.Printf(%22%25s: written%5Cn%22, signedHeadFile)%0A%09return nil%0A%7D%0A
+- f 14da65f1c2241a01084305407b9f9cda2aa4be526db052105d75a6c25951aba6 ssot/ssot.go
++ f 1576f18f35bbce016ae1bbf6c90d7e3ed742e938421c0801971e4b80a3670439 ssot/ssot.go
+dmppatch 14
+@@ -39,15 +39,51 @@
+ ry%22%0A
++%09%22errors%22%0A
+ %09%22fmt%22%0A
++%09%22io/ioutil%22%0A%09%22net%22%0A%09%22os%22%0A
+ %0A%09%22g
+@@ -2489,24 +2489,982 @@
+ rshal(m)%0A%7D%0A%0A
++// Load and verify a base64 encoded signed head from filename.%0Afunc Load(filename string) (*SignedHead, error) %7B%0A%09b, err := ioutil.ReadFile(filename)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09sh, err := Unmarshal(string(b))%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09return sh, nil%0A%7D%0A%0A// Lookup and verify base64 encoded signed head from dns.%0Afunc Lookup(dns string) (*SignedHead, error) %7B%0A%09txts, err := net.LookupTXT(def.CodechainTXTName + dns)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09var sh *SignedHead%0A%09for _, txt := range txts %7B%0A%09%09// parse TXT records and look for signed head%0A%09%09sh, err = Unmarshal(txt)%0A%09%09if err != nil %7B%0A%09%09%09fmt.Fprintf(os.Stderr, %22cannot unmarshal: %25s%5Cn%22, txt)%0A%09%09%09continue%0A%09%09%7D%0A%09%09fmt.Printf(%22signed head found: %25s%5Cn%22, sh.Head())%0A%09%09if err := sh.Valid(); err != nil %7B%0A%09%09%09fmt.Printf(%22not valid: %25v%5Cn%22, err)%0A%09%09%7D%0A%09%09break // valid TXT record found%0A%09%7D%0A%09if sh == nil %7B%0A%09%09return nil, errors.New(%22secpkg: no valid TXT record found%22)%0A%09%7D%0A%09return sh, nil%0A%7D%0A%0A
+ // Head retu
+@@ -3681,24 +3681,181 @@
+ .pubKey%5B:%5D)%0A
++%7D%0A%0A// PubKeyRotate returns the public key rotate in base64 notation.%0Afunc (sh *SignedHead) PubKeyRotate() string %7B%0A%09return base64.Encode(sh.pubKeyRotate%5B:%5D)%0A
+ %7D%0A%0A// Counte
++ f 35338c197961189a09be26f8e4c0bc63480051640761d989200b2ac34a4eeb27 ssot/valid.go
+dmppatch 2
+@@ -0,0 +1,402 @@
++package ssot%0A%0Aimport (%0A%09%22time%22%0A)%0A%0A// Valid checks if the signed head sh is currently valid%0A// (as defined by validFrom and validTo).%0A// It returns nil, if the signed check is valid and an error otherwise.%0Afunc (sh *SignedHead) Valid() error %7B%0A%09now := time.Now().UTC().Unix()%0A%09if now %3C sh.validFrom %7B%0A%09%09return ErrSignedHeadFuture%0A%09%7D%0A%09if now %3E sh.validTo %7B%0A%09%09return ErrSignedHeadExpired%0A%09%7D%0A%09return nil%0A%7D%0A
++ f 20b2830a7483c82d5a8ba173cc709f7fcb5dcb565664bce0cb12cf651d829ec5 util/gnumake/gnumake.go
+dmppatch 2
+@@ -0,0 +1,599 @@
++// Package gnumake contains wrappers around some GNU make commands.%0Apackage gnumake%0A%0Aimport (%0A%09%22fmt%22%0A%09%22os%22%0A%09%22os/exec%22%0A)%0A%0A// Call 'make' with prefix=prefix.%0Afunc Call(prefix string) error %7B%0A%09prefixStr := fmt.Sprintf(%22prefix=%25s%22, prefix)%0A%09cmd := exec.Command(%22make%22, prefixStr)%0A%09cmd.Stdout = os.Stdout%0A%09cmd.Stderr = os.Stderr%0A%09return cmd.Run()%0A%7D%0A%0A// Install calls 'make install' with prefix=prefix.%0Afunc Install(prefix string) error %7B%0A%09prefixStr := fmt.Sprintf(%22prefix=%25s%22, prefix)%0A%09cmd := exec.Command(%22make%22, prefixStr, %22install%22)%0A%09cmd.Stdout = os.Stdout%0A%09cmd.Stderr = os.Stderr%0A%09return cmd.Run()%0A%7D%0A
+treehash fc3881ef3c56f57a2f3d9b3b9b0b726f6bdd846b5569d1af827f35e16d5694c3

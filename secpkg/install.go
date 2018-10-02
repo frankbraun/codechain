@@ -156,6 +156,13 @@ func (pkg *Package) Install() error {
 		os.RemoveAll(pkgDir)
 		return err
 	}
+	/* TODO: call via $SHELL
+	shell := os.Getenv("SHELL")
+	if shell == "" {
+		os.RemoveAll(pkgDir)
+		return errors.New("secpkg: $SHELL not defined")
+	}
+	*/
 	prefix := fmt.Sprintf("prefix=%s", localDir)
 	cmd := exec.Command("make", prefix)
 	cmd.Stdout = os.Stdout

@@ -149,12 +149,15 @@ func (pkg *Package) Install() error {
 		return err
 	}
 
-	// 11. Call `make` in ~/.config/secpkg/pkgs/NAME/build
+	// 11. Call `make prefix=~/.config/secpkg/local` in
+	//     ~/.config/secpkg/pkgs/NAME/build
+	localDir := filepath.Join(homedir.SecPkg(), "local")
 	if err := os.Chdir(buildDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
-	cmd := exec.Command("make")
+	prefix := fmt.Sprintf("prefix=%s", localDir)
+	cmd := exec.Command("make", prefix)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -162,8 +165,9 @@ func (pkg *Package) Install() error {
 		return err
 	}
 
-	// 12. Call `make install` in ~/.config/secpkg/pkgs/NAME/build
-	cmd = exec.Command("make", "install")
+	// 12. Call `make prefix=~/.config/secpkg/local install` in
+	//     ~/.config/secpkg/pkgs/NAME/build
+	cmd = exec.Command("make", prefix, "install")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {

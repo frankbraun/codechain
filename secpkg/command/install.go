@@ -33,6 +33,5 @@ func Install(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(pkg.Marshal())
 	return pkg.Install()
 }

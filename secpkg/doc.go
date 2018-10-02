@@ -49,9 +49,11 @@ Installing software described by a .secpkg file works as follows:
 
   10. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 
-  11. Call `make` in ~/.config/secpkg/pkgs/NAME/build
+  11. Call `make prefix=~/.config/secpkg/local` in
+      ~/.config/secpkg/pkgs/NAME/build
 
-  12. Call `make install` in ~/.config/secpkg/pkgs/NAME/build
+  12. Call `make prefix= ~/.config/secpkg/local install` in
+      ~/.config/secpkg/pkgs/NAME/build
 
   13. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 

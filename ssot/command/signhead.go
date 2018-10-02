@@ -7,8 +7,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/frankbraun/codechain/archive"
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/file"
@@ -46,12 +48,12 @@ func signHead(c *hashchain.HashChain) error {
 	if err != nil {
 		return err
 	}
-	sh, err := ssot.Unmarshal(string(signedHead))
+	prevSignedHead, err := ssot.Unmarshal(string(signedHead))
 	if err != nil {
 		return err
 	}
-	secKeyFile := filepath.Join(homedir.SSOTPub(), def.SecretsSubDir, sh.PubKey())
-	_, _, _, err = seckey.Read(secKeyFile)
+	secKeyFile := filepath.Join(homedir.SSOTPub(), def.SecretsSubDir, prevSignedHead.PubKey())
+	secKey, _, _, err := seckey.Read(secKeyFile)
 	if err != nil {
 		return err
 	}
@@ -69,11 +71,64 @@ func signHead(c *hashchain.HashChain) error {
 	            ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
 	   - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 	*/
+	newSignedHead := ssot.SignHead(head, prevSignedHead.Counter()+1, *secKey)
+	prevSignedHeadFile := filepath.Join(pkgDir, "previous_signed_head")
+	exists, err = file.Exists(prevSignedHeadFile)
+	if err != nil {
+		return err
+	}
+	if exists {
+		if err := os.Remove(prevSignedHeadFile); err != nil {
+			return err
+		}
+	}
+	if err := file.Copy(signedHeadFile, prevSignedHeadFile); err != nil {
+		return err
+	}
+	newSignedHeadFile := filepath.Join(pkgDir, "new_signed_head")
+	err = ioutil.WriteFile(newSignedHeadFile, []byte(newSignedHead.Marshal()+"\n"), 0644)
+	if err != nil {
+		return err
+	}
+	if err := os.Rename(newSignedHeadFile, signedHeadFile); err != nil {
+		return err
+	}
+	fmt.Printf("%s: written\n", signedHeadFile)
 
-	// TODO: counter
-	// sh := ssot.SignHead(head, 0, *secKey)
-	// print TXT entry
-	sh.PrintTXT("example.com")
+	// 6. Save the current distribution to:
+	//    ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
+	distDir := filepath.Join(pkgDir, "dists")
+	distFile := filepath.Join(distDir, fmt.Sprintf("%x.tar.gz", head))
+	if err := archive.CreateDist(c, distFile); err != nil {
+		return err
+	}
+
+	// 7. Print the distribution name: ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
+	fmt.Println("")
+	fmt.Printf("Please upload the following distribution file to: %s\n", pkg.URL)
+	fmt.Println(distFile)
+	fmt.Println("")
+
+	// 8. Print DNS TXT record as defined by the .secpkg and the signed head.
+	fmt.Println("Please publish the following DNS TXT record:")
+	fmt.Println("")
+	newSignedHead.PrintTXT(pkg.DNS)
+
+	// 9. If the HEAD changed, update the .secpkg file accordingly.
+	h := hex.Encode(head[:])
+	if h != pkg.Head {
+		pkg.Head = h
+		newSecPkgFile := secpkg.File + "_new"
+		err = ioutil.WriteFile(newSecPkgFile, []byte(pkg.Marshal()+"\n"), 0644)
+		if err != nil {
+			return err
+		}
+		if err := os.Rename(newSecPkgFile, secpkg.File); err != nil {
+			return err
+		}
+		fmt.Printf("\n%s: updated\n", secpkg.File)
+	}
+
 	return nil
 }
 

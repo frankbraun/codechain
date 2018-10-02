@@ -93,6 +93,11 @@ func (sh *SignedHead) PubKey() string {
 	return base64.Encode(sh.pubKey[:])
 }
 
+// Counter returns the counter of signed head.
+func (sh *SignedHead) Counter() uint64 {
+	return sh.counter
+}
+
 // HeadBuf returns the signed head.
 func (sh *SignedHead) HeadBuf() [32]byte {
 	var b [32]byte

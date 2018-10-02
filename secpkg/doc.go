@@ -79,7 +79,7 @@ Updating a software package with NAME works as follows:
 
    3. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head (as DISK)
 
-   4. Query TXT record from _codechain.DNS, if it is the same as DISK, goto 16.
+   4. Query TXT record from _codechain.DNS, if it is the same as DISK, goto 15.
 
    5. Validate signed head from TXT (also see ssot package) and store HEAD:
 
@@ -94,7 +94,7 @@ Updating a software package with NAME works as follows:
       - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
                ~/.config/secpkg/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
-      - Goto 16.
+      - Goto 15.
 
    7. Download distribution file from URL/HEAD.tar.gz and save it to
       ~/.config/secpkg/pkgs/NAME/dists
@@ -107,18 +107,20 @@ Updating a software package with NAME works as follows:
 
   10. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 
-  11. Call `make` in ~/.config/secpkg/pkgs/NAME/build
+  11. Call `make prefix=~/.config/secpkg/local` in
+      ~/.config/secpkg/pkgs/NAME/build
 
-  12. Call `make install` in ~/.config/secpkg/pkgs/NAME/build
+  12. Call `make prefix= ~/.config/secpkg/local install` in
+      ~/.config/secpkg/pkgs/NAME/build
 
-  14. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+  13. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
-  15. Update signed head:
+  14. Update signed head:
 
       - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
                ~/.config/secpkg/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
 
-  16. The software has been successfully updated.
+  15. The software has been successfully updated.
 */
 package secpkg

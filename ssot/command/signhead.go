@@ -44,14 +44,11 @@ func signHead(c *hashchain.HashChain) error {
 	//    and make sure the corresponding secret key is available.
 	log.Println("3. validate signed head")
 	signedHeadFile := filepath.Join(pkgDir, "signed_head")
-	signedHead, err := ioutil.ReadFile(signedHeadFile)
+	prevSignedHead, err := ssot.Load(signedHeadFile)
 	if err != nil {
 		return err
 	}
-	prevSignedHead, err := ssot.Unmarshal(string(signedHead))
-	if err != nil {
-		return err
-	}
+
 	secKeyFile := filepath.Join(homedir.SSOTPub(), def.SecretsSubDir, prevSignedHead.PubKey())
 	secKey, _, _, err := seckey.Read(secKeyFile)
 	if err != nil {
@@ -72,28 +69,9 @@ func signHead(c *hashchain.HashChain) error {
 	   - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 	*/
 	newSignedHead := ssot.SignHead(head, prevSignedHead.Counter()+1, *secKey)
-	prevSignedHeadFile := filepath.Join(pkgDir, "previous_signed_head")
-	exists, err = file.Exists(prevSignedHeadFile)
-	if err != nil {
+	if err := newSignedHead.RotateFile(pkgDir); err != nil {
 		return err
 	}
-	if exists {
-		if err := os.Remove(prevSignedHeadFile); err != nil {
-			return err
-		}
-	}
-	if err := file.Copy(signedHeadFile, prevSignedHeadFile); err != nil {
-		return err
-	}
-	newSignedHeadFile := filepath.Join(pkgDir, "new_signed_head")
-	err = ioutil.WriteFile(newSignedHeadFile, []byte(newSignedHead.Marshal()+"\n"), 0644)
-	if err != nil {
-		return err
-	}
-	if err := os.Rename(newSignedHeadFile, signedHeadFile); err != nil {
-		return err
-	}
-	fmt.Printf("%s: written\n", signedHeadFile)
 
 	// 6. Save the current distribution to:
 	//    ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).

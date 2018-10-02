@@ -2,7 +2,11 @@ package ssot
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net"
+	"os"
 
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/def"
@@ -83,6 +87,45 @@ func Unmarshal(signedHead string) (*SignedHead, error) {
 	return unmarshal(m)
 }
 
+// Load and verify a base64 encoded signed head from filename.
+func Load(filename string) (*SignedHead, error) {
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	sh, err := Unmarshal(string(b))
+	if err != nil {
+		return nil, err
+	}
+	return sh, nil
+}
+
+// Lookup and verify base64 encoded signed head from dns.
+func Lookup(dns string) (*SignedHead, error) {
+	txts, err := net.LookupTXT(def.CodechainTXTName + dns)
+	if err != nil {
+		return nil, err
+	}
+	var sh *SignedHead
+	for _, txt := range txts {
+		// parse TXT records and look for signed head
+		sh, err = Unmarshal(txt)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "cannot unmarshal: %s\n", txt)
+			continue
+		}
+		fmt.Printf("signed head found: %s\n", sh.Head())
+		if err := sh.Valid(); err != nil {
+			fmt.Printf("not valid: %v\n", err)
+		}
+		break // valid TXT record found
+	}
+	if sh == nil {
+		return nil, errors.New("secpkg: no valid TXT record found")
+	}
+	return sh, nil
+}
+
 // Head returns the signed head.
 func (sh *SignedHead) Head() string {
 	return hex.Encode(sh.head[:])
@@ -91,6 +134,11 @@ func (sh *SignedHead) Head() string {
 // PubKey returns the public key in base64 notation.
 func (sh *SignedHead) PubKey() string {
 	return base64.Encode(sh.pubKey[:])
+}
+
+// PubKeyRotate returns the public key rotate in base64 notation.
+func (sh *SignedHead) PubKeyRotate() string {
+	return base64.Encode(sh.pubKeyRotate[:])
 }
 
 // Counter returns the counter of signed head.

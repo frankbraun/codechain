@@ -1,12 +1,9 @@
 package secpkg
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/frankbraun/codechain/archive"
@@ -15,6 +12,7 @@ import (
 	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/gnumake"
 	"github.com/frankbraun/codechain/util/homedir"
 )
 
@@ -49,25 +47,10 @@ func (pkg *Package) Install() error {
 
 	// 5. Query TXT record from _codechain.DNS and validate the signed head
 	//    contained in it (see ssot package).
-	txts, err := net.LookupTXT(def.CodechainTXTName + pkg.DNS)
+	sh, err := ssot.Lookup(pkg.DNS)
 	if err != nil {
 		os.RemoveAll(pkgDir)
 		return err
-	}
-	var sh *ssot.SignedHead
-	for _, txt := range txts {
-		// parse TXT records and look for signed head
-		sh, err = ssot.Unmarshal(txt)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "cannot unmarshal: %s\n", txt)
-			continue
-		}
-		fmt.Printf("signed head found: %s\n", sh.Head())
-		break // TXT record found
-	}
-	if sh == nil {
-		os.RemoveAll(pkgDir)
-		return errors.New("secpkg: no valid TXT record found")
 	}
 
 	// 6. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head
@@ -163,21 +146,14 @@ func (pkg *Package) Install() error {
 		return errors.New("secpkg: $SHELL not defined")
 	}
 	*/
-	prefix := fmt.Sprintf("prefix=%s", localDir)
-	cmd := exec.Command("make", prefix)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
+	if err := gnumake.Call(localDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
 	// 12. Call `make prefix=~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
-	cmd = exec.Command("make", prefix, "install")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
+	if err := gnumake.Install(localDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}

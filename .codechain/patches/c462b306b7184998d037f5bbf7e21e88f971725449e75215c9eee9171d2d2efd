@@ -1,0 +1,630 @@
+codechain patchfile version 1
+treehash c462b306b7184998d037f5bbf7e21e88f971725449e75215c9eee9171d2d2efd
++ f cb2566bc79cb320a740b095e606adac4a782ac91d6b476fab1089a582bffcdeb .secpkg
+dmppatch 2
+@@ -0,0 +1,181 @@
++%7B%0A  %22Name%22: %22codechain%22,%0A  %22Head%22: %2273fe1313fd924854f149021e969546bce6052eca0c22b2b91245cb448410493c%22,%0A  %22DNS%22: %22codechain.secpkg.net%22,%0A  %22URL%22: %22http://frankbraun.org/codechain%22%0A%7D%0A
+- f f96512c11f09a3223b25c82fe087fe519effb70d41be2dddbef1645251fe29ca Makefile
++ f b89ce42c22193e1dace04a8b1bedb4d7421f69360f9b64a8d6e78f6589d8f797 Makefile
+dmppatch 10
+@@ -1,61 +1,213 @@
++prefix ?= /usr/local%0Aexec_prefix ?= $(prefix)%0Abindir ?= $(exec_prefix)/bin%0A%0A
+ all:%0A
+-%09env GO111MODULE=on go install -mod vendor -v ./...%0A
++%09env GO111MODULE=on go build -mod vendor -v ./...%0A%0Ainstall:%0A%09env GO111MODULE=on GOBIN=$(bindir) go install -mod vendor -v ./...%0A
+ %0A.PH
+@@ -230,16 +230,17 @@
+ -vendor%0A
++%0A
+ test:%0A%09g
+- f 26f78fd6c10b2be22965cf74aa4daeb11199167ce5cd64037b191dbbcf64c3a5 README.md
++ f 39d0acbd5e969620360669f40ef3c2d06156ea66832b45b9319488ae088b9a76 README.md
+dmppatch 16
+@@ -1,67 +1,119 @@
+-## Codechain %E2%80%94 code trust through hash chains %E2%80%94 %CE%B2 release%0A
++Codechain %E2%80%94 code trust through hash chains %E2%80%94 %CE%B2 release%0A------------------------------------------------------%0A
+ %0A%5B!%5B
+@@ -1773,16 +1773,85 @@
+ atform.%0A
++- %5B %5D %5BSingle source of truth (SSOT) with DNS%5D(doc/ssot-with-dns.md)%0A
+ %0ACodecha
+@@ -2085,249 +2085,8 @@
+ em.%0A
+-- Single source of truth (SSOT). Codechain requires a SSOT to distribute%0A  the current hash chain head, but that's outside of the scope for now.%0A  DNS (plus DNSCrypt) or DNSSEC could be used. Gossiping of the current%0A  head would also work.%0A
+ - Co
+@@ -2640,16 +2640,192 @@
+ n/tree)%0A
++- %5BSecure packages (%60.secpkg%60)%5D(https://godoc.org/github.com/frankbraun/codechain/secpkg)%0A- %5BSSOT with DNS TXT records%5D(https://godoc.org/github.com/frankbraun/codechain/ssot)%0A
+ %0A### Ack
+- f 23614eb76f23f35f7212be5e936b659e3be1de93d472dbb5ea88e14b2982369d archive/archive.go
++ f 5a6d8d6c45a5a926a4d399b5f10c3a7291009f18564f35ce7c7c00fb7d46c0df archive/archive.go
+dmppatch 3
+@@ -4528,16 +4528,597 @@
+ rn zr.Close()%0A%7D%0A
++%0A// ApplyFile applies the archive in filename to the given hashchainFile and patchDir.%0A// If the hashchainFile is already present it must be transformable by%0A// appending to the hashchain present in r, otherwise an error is returned.%0A// If head is not nil the hash chain read from filename must contain the given head.%0Afunc ApplyFile(hashchainFile, patchDir, filename string, head *%5B32%5Dbyte) error %7B%0A%09f, err := os.Open(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer f.Close()%0A%09log.Printf(%22applying distribution '%25s'%22, filename)%0A%09return Apply(hashchainFile, patchDir, f, head)%0A%7D%0A
++ f a0cfd4c100b279587b02f89fef98300f38410b83a0f1a8b5fa12afdb385c6796 archive/createdist.go
+dmppatch 2
+@@ -0,0 +1,720 @@
++package archive%0A%0Aimport (%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0A// CreateDist creates a distribution file with filename for hash chain c.%0A// Filename must not exist.%0Afunc CreateDist(c *hashchain.HashChain, filename string) error %7B%0A%09exists, err := file.Exists(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09return fmt.Errorf(%22distribution file '%25s' exists already%22, filename)%0A%09%7D%0A%09f, err := os.Create(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer f.Close()%0A%09log.Printf(%22creating distribution '%25s'%22, filename)%0A%09return Create(f, c, def.PatchDir)%0A%7D%0A
+- f 941fab00832b05ba19e94d8fa37a547cadaf00f0ee1298e423105e9c9e68fb3f cmd/ccdiff/ccdiff.go
+- f c38bf0b23ef09a47061ae31e8308ed4d0ffe6572eaf7100c108670646976c6ea cmd/ccfindhead/ccfindhead.go
+- f 98f0d57628fef5c7816450e8d7e33ff9140f7fc0b9b4a80e2812ec5e930f561d cmd/ccpatch/ccpatch.go
++ f 85c3b3c117b5332cf876fe87f42c24c2d9dfc9cbc126d8f950b6ab6fa97a0a03 cmd/secpkg/secpkg.go
+dmppatch 2
+@@ -0,0 +1,760 @@
++// secpkg installs and updates secure Codechain packages.%0Apackage main%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/secpkg/command%22%0A)%0A%0Afunc usage() %7B%0A%09cmd := os.Args%5B0%5D%0A%09fmt.Fprintf(os.Stderr, %22Usage: %25s install project.secpkg%5Cn%22, cmd)%0A%09fmt.Fprintf(os.Stderr, %22       %25s update package_name%5Cn%22, cmd)%0A%09os.Exit(2)%0A%7D%0A%0Afunc main() %7B%0A%09if len(os.Args) %3C 2 %7B%0A%09%09usage()%0A%09%7D%0A%09argv0 := os.Args%5B0%5D + %22 %22 + os.Args%5B1%5D%0A%09args := os.Args%5B2:%5D%0A%09var err error%0A%09switch os.Args%5B1%5D %7B%0A%09case %22install%22:%0A%09%09err = command.Install(argv0, args...)%0A%09case %22update%22:%0A%09%09err = command.Update(argv0, args...)%0A%09default:%0A%09%09usage()%0A%09%7D%0A%09if err != nil %7B%0A%09%09if err != flag.ErrHelp %7B%0A%09%09%09fmt.Fprintf(os.Stderr, %22%25s: error: %25s%5Cn%22, os.Args%5B0%5D, err)%0A%09%09%09os.Exit(1)%0A%09%09%7D%0A%09%09os.Exit(2)%0A%09%7D%0A%7D%0A
++ f 66edc4176c0330982f63d0c93279927e8d4dec6b53cec4e07786d0fbe1f2d057 cmd/ssotpub/ssotpub.go
+dmppatch 2
+@@ -0,0 +1,1067 @@
++// ssotpub publishes Codechain heads with a single source of truth (SSOT).%0Apackage main%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/ssot/command%22%0A)%0A%0Afunc usage() %7B%0A%09cmd := os.Args%5B0%5D%0A%09fmt.Fprintf(os.Stderr, %22Usage: %25s keygen %5B-s seckey.bin%5D%5Cn%22, cmd)%0A%09fmt.Fprintf(os.Stderr, %22       %25s keyfile -s seckey.bin %5B-c%5D%5Cn%22, cmd)%0A%09fmt.Fprintf(os.Stderr, %22       %25s createpkg -name name -dns FQDN -url URL -s seckey.bin%5Cn%22, cmd)%0A%09fmt.Fprintf(os.Stderr, %22       %25s signhead -s seckey.bin%5Cn%22, cmd)%0A%09os.Exit(2)%0A%7D%0A%0Afunc main() %7B%0A%09if len(os.Args) %3C 2 %7B%0A%09%09usage()%0A%09%7D%0A%09argv0 := os.Args%5B0%5D + %22 %22 + os.Args%5B1%5D%0A%09args := os.Args%5B2:%5D%0A%09var err error%0A%09switch os.Args%5B1%5D %7B%0A%09case %22keygen%22:%0A%09%09err = command.KeyGen(argv0, args...)%0A%09case %22keyfile%22:%0A%09%09err = command.KeyFile(argv0, args...)%0A%09case %22createpkg%22:%0A%09%09err = command.CreatePkg(argv0, args...)%0A%09case %22signhead%22:%0A%09%09err = command.SignHead(argv0, args...)%0A%09default:%0A%09%09usage()%0A%09%7D%0A%09if err != nil %7B%0A%09%09if err != flag.ErrHelp %7B%0A%09%09%09fmt.Fprintf(os.Stderr, %22%25s: error: %25s%5Cn%22, os.Args%5B0%5D, err)%0A%09%09%09os.Exit(1)%0A%09%09%7D%0A%09%09os.Exit(2)%0A%09%7D%0A%7D%0A
++ f 941fab00832b05ba19e94d8fa37a547cadaf00f0ee1298e423105e9c9e68fb3f cmd/util/ccdiff/ccdiff.go
+dmppatch 2
+@@ -0,0 +1,888 @@
++// ccpatch caluates a patch between two directory trees and prints it to stdout.%0Apackage main%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/patchfile%22%0A%09%22github.com/frankbraun/codechain/util%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0Afunc diff(a, b string) error %7B%0A%09return patchfile.Diff(os.Stdout, a, b, def.ExcludePaths)%0A%7D%0A%0Afunc usage() %7B%0A%09fmt.Fprintf(os.Stderr, %22Usage: %25s tree_a tree_b%5Cn%22, os.Args%5B0%5D)%0A%09fmt.Fprintf(os.Stderr, %22Caluates a patch between two directory trees and print it to stdout.%5Cn%22)%0A%09flag.PrintDefaults()%0A%09os.Exit(2)%0A%7D%0A%0Afunc main() %7B%0A%09verbose := flag.Bool(%22v%22, false, %22Be verbose (on stderr)%22)%0A%09flag.Usage = usage%0A%09flag.Parse()%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stderr)%0A%09%7D%0A%09if flag.NArg() != 2 %7B%0A%09%09usage()%0A%09%7D%0A%09if err := diff(flag.Arg(0), flag.Arg(1)); err != nil %7B%0A%09%09util.Fatal(err)%0A%09%7D%0A%7D%0A
++ f c38bf0b23ef09a47061ae31e8308ed4d0ffe6572eaf7100c108670646976c6ea cmd/util/ccfindhead/ccfindhead.go
+dmppatch 2
+@@ -0,0 +1,1068 @@
++// ccfindhead finds a given head in a hash chain file.%0Apackage main%0A%0Aimport (%0A%09%22bufio%22%0A%09%22bytes%22%0A%09%22crypto/sha256%22%0A%09%22encoding/hex%22%0A%09%22errors%22%0A%09%22fmt%22%0A%09%22os%22%0A)%0A%0Afunc findHead(hashchainFile, headInHex string) error %7B%0A%09head, err := hex.DecodeString(headInHex)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if len(head) != 32 %7B%0A%09%09return errors.New(%22head_in_hex is not 32 bytes long%22)%0A%09%7D%0A%09f, err := os.Open(hashchainFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer f.Close()%0A%09scanner := bufio.NewScanner(f)%0A%09for scanner.Scan() %7B%0A%09%09lineHash := sha256.Sum256(scanner.Bytes())%0A%09%09if bytes.Equal(lineHash%5B:%5D, head) %7B%0A%09%09%09fmt.Println(%22head found%22)%0A%09%09%09return nil%0A%09%09%7D%0A%09%7D%0A%09if err := scanner.Err(); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09return errors.New(%22cannot find head%22)%0A%7D%0A%0Afunc fatal(err error) %7B%0A%09fmt.Fprintf(os.Stderr, %22%25s: error: %25s%5Cn%22, os.Args%5B0%5D, err)%0A%09os.Exit(1)%0A%7D%0A%0Afunc usage() %7B%0A%09fmt.Fprintf(os.Stderr, %22usage: %25s hashchain_file head_in_hex%5Cn%22, os.Args%5B0%5D)%0A%09os.Exit(2)%0A%7D%0A%0Afunc main() %7B%0A%09if len(os.Args) != 3 %7B%0A%09%09usage()%0A%09%7D%0A%09if err := findHead(os.Args%5B1%5D, os.Args%5B2%5D); err != nil %7B%0A%09%09fatal(err)%0A%09%7D%0A%7D%0A
++ f 98f0d57628fef5c7816450e8d7e33ff9140f7fc0b9b4a80e2812ec5e930f561d cmd/util/ccpatch/ccpatch.go
+dmppatch 2
+@@ -0,0 +1,917 @@
++// ccpatch applies a patchfile to a directory tree.%0Apackage main%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/patchfile%22%0A%09%22github.com/frankbraun/codechain/util%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0Afunc patch(dir, filename string) error %7B%0A%09f, err := os.Open(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer f.Close()%0A%09return patchfile.Apply(dir, f, def.ExcludePaths)%0A%7D%0A%0Afunc usage() %7B%0A%09fmt.Fprintf(os.Stderr, %22Usage: %25s directory patchfile%5Cn%22, os.Args%5B0%5D)%0A%09fmt.Fprintf(os.Stderr, %22Apply a patchfile to a directory tree.%5Cn%22)%0A%09flag.PrintDefaults()%0A%09os.Exit(2)%0A%7D%0A%0Afunc main() %7B%0A%09verbose := flag.Bool(%22v%22, false, %22Be verbose (on stderr)%22)%0A%09flag.Usage = usage%0A%09flag.Parse()%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stderr)%0A%09%7D%0A%09if flag.NArg() != 2 %7B%0A%09%09usage()%0A%09%7D%0A%09if err := patch(flag.Arg(0), flag.Arg(1)); err != nil %7B%0A%09%09util.Fatal(err)%0A%09%7D%0A%7D%0A
+- f c424211d57c6476b4dda9e972cb8933330b41513ce24159e65883c692cec3a05 codechain.go
++ f f5656bfafb65121ae339573afbefd28084ceb459f07f7b9f430993d19bc60fc8 codechain.go
+dmppatch 14
+@@ -138,16 +138,64 @@
+ ommand%22%0A
++%09%22github.com/frankbraun/codechain/util/homedir%22%0A
+ )%0A%0Afunc 
+@@ -1291,47 +1291,68 @@
+ n%22:%0A
+-%09%09err = command.KeyGen(argv0, args...)%0A
++%09%09err = command.KeyGen(homedir.Codechain(), argv0, args...)%0A
+ %09cas
+@@ -1368,48 +1368,69 @@
+ e%22:%0A
+-%09%09err = command.KeyFile(argv0, args...)%0A
++%09%09err = command.KeyFile(homedir.Codechain(), argv0, args...)%0A
+ %09cas
+- f 33ae37dbac8307b090ff3fbb3cdc22544acfae44b25fe8310adb0e8a4e0d1961 command/apply.go
++ f 97f17879b98cb206229fb6c4a3b0fa2b3f96aea01b24d12121dd94fe9b0557e3 command/apply.go
+dmppatch 18
+@@ -229,48 +229,8 @@
+ ex%22%0A
+-%09%22github.com/frankbraun/codechain/sync%22%0A
+ %09%22gi
+@@ -276,610 +276,8 @@
+ %0A)%0A%0A
+-func applyDist(filename string, head *%5B32%5Dbyte) error %7B%0A%09f, err := os.Open(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer f.Close()%0A%09log.Printf(%22applying distribution '%25s'%22, filename)%0A%09return archive.Apply(def.HashchainFile, def.PatchDir, f, head)%0A%7D%0A%0Afunc apply(c *hashchain.HashChain, head *%5B32%5Dbyte) error %7B%0A%09targetHash, _ := c.LastSignedTreeHash()%0A%09treeHashes := c.TreeHashes()%0A%09if head != nil %7B%0A%09%09if err := c.CheckHead(*head); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%09err := sync.Dir(%22.%22, targetHash, def.PatchDir, treeHashes, def.ExcludePaths, false)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09return nil%0A%7D%0A%0A
+ // A
+@@ -1135,61 +1135,103 @@
+ %22 %7B%0A
+-%09%09if err := applyDist(*filename, head); err != nil %7B%0A
++%09%09err := archive.ApplyFile(def.HashchainFile, def.PatchDir, *filename, head)%0A%09%09if err != nil %7B%0A
+ %09%09%09r
+@@ -1384,29 +1384,28 @@
+ %0A%09%7D%0A
+-%09return apply(c, head)%0A
++%09return c.Apply(head)%0A
+ %7D%0A
+- f a39c0b7c5ed556423e775c1c6c83d0daef022f5d9fe6a5585b6bd079e6d1e4ec command/command_test.go
++ f e88146448d440a6bfc91783af7286e0d90ca1ed61b552197fe62fef59d2abab1 command/command_test.go
+dmppatch 29
+@@ -213,16 +213,111 @@
+ l/file%22%0A
++%09%22github.com/frankbraun/codechain/util/homedir%22%0A%09%22github.com/frankbraun/codechain/util/seckey%22%0A
+ )%0A%0Aconst
+@@ -2528,33 +2528,40 @@
+ %0A%09%7D%0A
+-%09testPass = %22passphrase%22%0A
++%09seckey.TestPass = %22passphrase%22%0A
+ %09tes
+@@ -2621,52 +2621,73 @@
+ bin%0A
+-%09err = KeyGen(%22keygen%22, %22-s%22, %22seckey.bin%22)%0A
++%09err = KeyGen(homedir.Codechain(), %22keygen%22, %22-s%22, %22seckey.bin%22)%0A
+ %09if 
+@@ -2782,54 +2782,75 @@
+ bin%0A
+-%09err = KeyFile(%22pubkey%22, %22-s%22, %22testkey.bin%22)%0A
++%09err = KeyFile(homedir.Codechain(), %22pubkey%22, %22-s%22, %22testkey.bin%22)%0A
+ %09if 
+@@ -4238,48 +4238,69 @@
+  -h%0A
+-%09err = KeyGen(%22codechain keygen%22, %22-h%22)%0A
++%09err = KeyGen(homedir.Codechain(), %22codechain keygen%22, %22-h%22)%0A
+ %09if 
+@@ -4426,50 +4426,71 @@
+  -h%0A
+-%09err = KeyFile(%22codechain keyfile%22, %22-h%22)%0A
++%09err = KeyFile(homedir.Codechain(), %22codechain keyfile%22, %22-h%22)%0A
+ %09if 
+- f b0201ca26f655466bfc119ec7e9e048bbd5fe400b186abb341e5cfb6271e7e2b command/createdist.go
++ f 413559bc485681dab7436ee0be2e4004ac898ae52e91384b820395dfc2136e0b command/createdist.go
+dmppatch 22
+@@ -181,53 +181,8 @@
+ ef%22%0A
+-%09%22github.com/frankbraun/codechain/util/file%22%0A
+ %09%22gi
+@@ -228,410 +228,8 @@
+ %0A)%0A%0A
+-func createDist(c *hashchain.HashChain, filename string) error %7B%0A%09exists, err := file.Exists(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09return fmt.Errorf(%22distribution file '%25s' exists already%22, filename)%0A%09%7D%0A%09f, err := os.Create(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer f.Close()%0A%09log.Printf(%22creating distribution '%25s'%22, filename)%0A%09return archive.Create(f, c, def.PatchDir)%0A%7D%0A%0A
+ // C
+@@ -406,70 +406,72 @@
+ ) %7B%0A
+-%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s -f dist.tar.gz%5Cn%22, argv0)%0A
++%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s %5B-f dist.tar.gz%5D%5Cn%22, argv0)%0A
+ %09%09fm
+@@ -784,90 +784,8 @@
+ %0A%09%7D%0A
+-%09if *filename == %22%22 %7B%0A%09%09return fmt.Errorf(%22%25s: option -f is mandatory%22, argv0)%0A%09%7D%0A
+ %09if 
+@@ -942,39 +942,190 @@
+ e()%0A
+-%09return createDist(c, *filename)%0A
++%09if *filename == %22%22 %7B%0A%09%09*filename = fmt.Sprintf(%22%25x.tar.gz%22, c.Head())%0A%09%7D%0A%09if err := archive.CreateDist(c, *filename); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09fmt.Println(*filename)%0A%09return nil%0A
+ %7D%0A
+- f f364c0b366bc6907562d4d6363048ceba058f72553ff7d50975f472eb24b3c4f command/helper.go
+- f b1f472951915f0bb81c251ab495ed5459593627f8e896fd24d714b75771e7290 command/keyfile.go
++ f 83fabe3301f55b16b105a55ba2f4de2ad691b865ac75dee0d3a0330d27e7b426 command/keyfile.go
+dmppatch 51
+@@ -153,16 +153,64 @@
+ base64%22%0A
++%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22github
+@@ -334,16 +334,63 @@
+ il/log%22%0A
++%09%22github.com/frankbraun/codechain/util/seckey%22%0A
+ %09%22github
+@@ -887,129 +887,145 @@
+ %0A%7D%0A%0A
+-func listKeys() error %7B%0A%09homeDir := filepath.Join(codechainHomeDir(), secretsDir)%0A%09files, err := ioutil.ReadDir(homeDir)%0A
++func listKeys(homeDir string) error %7B%0A%09secretsDir := filepath.Join(homeDir, def.SecretsSubDir)%0A%09files, err := ioutil.ReadDir(secretsDir)%0A
+ %09if 
+@@ -1085,56 +1085,59 @@
+ s %7B%0A
+-%09%09filename := filepath.Join(homeDir, fi.Name())%0A
++%09%09filename := filepath.Join(secretsDir, fi.Name())%0A
+ %09%09fm
+@@ -1494,59 +1494,68 @@
+ nd.%0A
+-func KeyFile(argv0 string, args ...string) error %7B%0A
++func KeyFile(homeDir, argv0 string, args ...string) error %7B%0A
+ %09fs 
+@@ -1907,57 +1907,57 @@
+ s%22)%0A
+-%09seckey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
++%09secKey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
+ %09ver
+@@ -2207,37 +2207,37 @@
+ %0A%09%7D%0A
+-%09if *seckey != %22%22 && *list %7B%0A
++%09if *secKey != %22%22 && *list %7B%0A
+ %09%09re
+@@ -2310,38 +2310,38 @@
+ %0A%09%7D%0A
+-%09if *seckey == %22%22 && !*list %7B%0A
++%09if *secKey == %22%22 && !*list %7B%0A
+ %09%09re
+@@ -2471,78 +2471,86 @@
+ t %7B%0A
+-%09%09return listKeys()%0A
++%09%09return listKeys(homeDir)%0A
+ %09%7D%0A
+-%09sec, sig, comment, err := seckeyRead(*seckey)%0A
++%09sec, sig, comment, err := seckey.Read(*secKey)%0A
+ %09if 
+@@ -2596,133 +2596,133 @@
+ e %7B%0A
+-%09%09fmt.Printf(%22%25s read, please provide new %22, *seckey)%0A%09%09if err := changePassphrase(*seckey, sec, sig, comment); err != nil %7B%0A
++%09%09fmt.Printf(%22%25s read, please provide new %22, *secKey)%0A%09%09if err := changePassphrase(*secKey, sec, sig, comment); err != nil %7B%0A
+ %09%09%09r
+- f 6e23008251824079eb0761aaa3a4004a66302909560151230f30a412dd93766b command/keygen.go
++ f 2e3a8de4cf94c8e1c34b21a50d762c0ae2f3c112774067113ad3b8591acad3f3 command/keygen.go
+dmppatch 66
+@@ -135,16 +135,64 @@
+ base64%22%0A
++%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22github
+@@ -361,16 +361,63 @@
+ il/log%22%0A
++%09%22github.com/frankbraun/codechain/util/seckey%22%0A
+ %09%22github
+@@ -495,86 +495,31 @@
+ %0A)%0A%0A
+-const secretsDir = %22secrets%22%0A%0Avar (%0A%09testPass    string%0A%09testComment string%0A)%0A
++var testComment string%0A
+ %0A// 
+@@ -562,132 +562,153 @@
+ nd.%0A
+-func KeyGen(argv0 string, args ...string) error %7B%0A
++func KeyGen(homeDir, argv0 string, args ...string) error %7B%0A
+ %09var (%0A
+-%09%09homeDir string%0A%09%09pass    %5B%5Dbyte%0A%09%09comment %5B%5Dbyte%0A%09%09err     error%0A
++%09%09secretsDir string%0A%09%09pass       %5B%5Dbyte%0A%09%09comment    %5B%5Dbyte%0A%09%09err        error%0A
+ %09)%0A%09
+@@ -980,57 +980,57 @@
+ %0A%09%7D%0A
+-%09seckey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
++%09secKey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
+ %09ver
+@@ -1242,66 +1242,66 @@
+ %0A%09%7D%0A
+-%09if *seckey != %22%22 %7B%0A%09%09exists, err := file.Exists(*seckey)%0A
++%09if *secKey != %22%22 %7B%0A%09%09exists, err := file.Exists(*secKey)%0A
+ %09%09if
+@@ -1350,66 +1350,66 @@
+ s %7B%0A
+-%09%09%09return fmt.Errorf(%22file '%25s' exists already%22, *seckey)%0A
++%09%09%09return fmt.Errorf(%22file '%25s' exists already%22, *secKey)%0A
+ %09%09%7D%0A
+@@ -1422,119 +1422,121 @@
+ e %7B%0A
+-%09%09homeDir = filepath.Join(codechainHomeDir(), secretsDir)%0A%09%09if err := os.MkdirAll(homeDir, 0700); err != nil %7B%0A
++%09%09secretsDir = filepath.Join(homeDir, def.SecretsSubDir)%0A%09%09if err := os.MkdirAll(secretsDir, 0700); err != nil %7B%0A
+ %09%09%09r
+@@ -1556,29 +1556,36 @@
+ %0A%09%7D%0A
+-%09if testPass == %22%22 %7B%0A
++%09if seckey.TestPass == %22%22 %7B%0A
+ %09%09pa
+@@ -1715,34 +1715,41 @@
+ e %7B%0A
+-%09%09pass = %5B%5Dbyte(testPass)%0A
++%09%09pass = %5B%5Dbyte(seckey.TestPass)%0A
+ %09%7D%0A%09
+@@ -2122,51 +2122,43 @@
+ :%5D)%0A
+-%09var secKey %5B64%5Dbyte%0A%09copy(secKey%5B:%5D, sec)%0A
++%09var sk %5B64%5Dbyte%0A%09copy(sk%5B:%5D, sec)%0A
+ %09var
+@@ -2206,95 +2206,91 @@
+ ig)%0A
+-%09if *seckey != %22%22 %7B%0A%09%09err := keyfile.Create(*seckey, pass, secKey, signature, comment)%0A
++%09if *secKey != %22%22 %7B%0A%09%09err := keyfile.Create(*secKey, pass, sk, signature, comment)%0A
+ %09%09if
+@@ -2335,121 +2335,120 @@
+ e %7B%0A
+-%09%09filename := filepath.Join(homeDir, pubEnc)%0A%09%09err := keyfile.Create(filename, pass, secKey, signature, comment)%0A
++%09%09filename := filepath.Join(secretsDir, pubEnc)%0A%09%09err := keyfile.Create(filename, pass, sk, signature, comment)%0A
+ %09%09if
+- f 86d6d49ee3155f51bf00ec00fe1e0329d03250f6b78d9033b812e71945dd04bd command/publish.go
++ f 885ff29deb3a0cb6e9f6419200169d15b6f8219103c3760b23fe1f440936b495 command/publish.go
+dmppatch 28
+@@ -422,16 +422,64 @@
+ il/git%22%0A
++%09%22github.com/frankbraun/codechain/util/homedir%22%0A
+ %09%22github
+@@ -564,16 +564,63 @@
+ il/log%22%0A
++%09%22github.com/frankbraun/codechain/util/seckey%22%0A
+ %09%22github
+@@ -1482,56 +1482,78 @@
+ n %7B%0A
+-%09%09secKey, _, _, err = seckeyLoad(c, secKeyFile)%0A
++%09%09secKey, _, _, err = seckey.Load(c, homedir.Codechain(), secKeyFile)%0A
+ %09%09if
+@@ -3781,57 +3781,57 @@
+ s%22)%0A
+-%09seckey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
++%09secKey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
+ %09ver
+@@ -3999,55 +3999,77 @@
+ n %7B%0A
+-%09%09if err := seckeyCheck(*seckey); err != nil %7B%0A
++%09%09if err := seckey.Check(homedir.Codechain(), *secKey); err != nil %7B%0A
+ %09%09%09r
+@@ -4569,72 +4569,72 @@
+ ) %7B%0A
+-%09%09if err := publish(c, *seckey, *dryRun, *useGit); err != nil %7B%0A
++%09%09if err := publish(c, *secKey, *dryRun, *useGit); err != nil %7B%0A
+ %09%09%09i
+- f dc90c9d6ffd023e898b324a1ed5de21aeece2ebcf7ffbedf630de8f5848337e4 command/review.go
++ f 39a374058f8dba9d91cf61450f0f5b6fb1949eebcdeb46e1c2ee91d92cf34aca command/review.go
+dmppatch 28
+@@ -279,16 +279,64 @@
+ il/git%22%0A
++%09%22github.com/frankbraun/codechain/util/homedir%22%0A
+ %09%22github
+@@ -421,16 +421,63 @@
+ il/log%22%0A
++%09%22github.com/frankbraun/codechain/util/seckey%22%0A
+ %09%22github
+@@ -1913,56 +1913,78 @@
+ y%22)%0A
+-%09secKey, _, _, err := seckeyLoad(c, secKeyFile)%0A
++%09secKey, _, _, err := seckey.Load(c, homedir.Codechain(), secKeyFile)%0A
+ %09if 
+@@ -5722,57 +5722,57 @@
+ s%22)%0A
+-%09seckey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
++%09secKey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
+ %09ver
+@@ -5925,54 +5925,76 @@
+ %0A%09%7D%0A
+-%09if err := seckeyCheck(*seckey); err != nil %7B%0A
++%09if err := seckey.Check(homedir.Codechain(), *secKey); err != nil %7B%0A
+ %09%09re
+@@ -6688,66 +6688,66 @@
+ e %7B%0A
+-%09%09%09err = review(c, *seckey, treeHash, *detached, *useGit)%0A
++%09%09%09err = review(c, *secKey, treeHash, *detached, *useGit)%0A
+ %09%09%7D%0A
+- f a3560630ec3e64b699619a02628cd37ee30a386c52039ac7a25b093b60a20892 command/start.go
++ f c146c1fcdfc094eb0c391759869df4aaacf0d4ee08e7573ccba2b9a848cd5343 command/start.go
+dmppatch 19
+@@ -223,16 +223,63 @@
+ il/log%22%0A
++%09%22github.com/frankbraun/codechain/util/seckey%22%0A
+ )%0A%0A// St
+@@ -614,57 +614,57 @@
+ %0A%09%7D%0A
+-%09seckey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
++%09secKey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A
+ %09ver
+@@ -817,28 +817,28 @@
+ %0A%09%7D%0A
+-%09if *seckey == %22%22 %7B%0A
++%09if *secKey == %22%22 %7B%0A
+ %09%09re
+@@ -1207,53 +1207,54 @@
+ %0A%09%7D%0A
+-%09sec, _, comment, err := seckeyRead(*seckey)%0A
++%09sec, _, comment, err := seckey.Read(*secKey)%0A
+ %09if 
++ f 7fbb86fa0583887ec5af02764595a3a0feb5662ba05194d3ddc035035ef2e0d3 doc/ssot-with-dns.md
+dmppatch 2
+@@ -0,0 +1,997 @@
++Single source of truth (SSOT) with DNS notes%0A--------------------------------------------%0A%0A### TXT records%0A%0AWe have to store the following information:%0A%0A-   pubkey (32 byte)%0A-   pubkeyRotate (32 byte)%0A-   validity: from, to (16 byte)%0A-   counter (8 byte)%0A-   head (32 byte)%0A-   signature (64 byte)%0A%0AThe protocol shall define a global maximum validity.%0A%0ASee %5BSSOT%0Apackage%5D(https://godoc.org/github.com/frankbraun/codechain/ssot).%0A%0A### Secure packages (%60.secpkg%60)%0A%0ASee %5Bsecpkg package%0Aformat%5D(https://godoc.org/github.com/frankbraun/codechain/secpkg).%0A%0A### DNSSEC%0A%0ATODO:%0A%0A-   TLD should allow DNSSEC (all of them?)%0A-   Registar should support DNSSEC%0A-   DNSSEC should be activated%0A%0A### Possible attacks%0A%0A-   publisher attack: not possible%0A-   DNS poisoning:%0A    -   user saw key before: failed%0A    -   user didn't see key before: success (can be mitigated with%0A        DNSSEC)%0A%0A### Results%0A%0AThis gives us%0A%0A-   globally identical,%0A-   verifiable,%0A-   reproducible, and%0A-   attributable%0A%0AGo binaries!%0A
+- f 1d9b1c0fe2ea1a6b4d5894a237ad3688123259f85938c38f9e3afd8288cd9418 doc/walkthrough.md
++ f 43bb6e67fac3567daf31f2874bbc6a8c0bbf00f9ef7cb08af80f88c16865e469 doc/walkthrough.md
+dmppatch 115
+@@ -1,29 +1,48 @@
+-## Codechain walkthrough%0A
++Codechain walkthrough%0A---------------------%0A
+ %0ASta
+@@ -93,61 +93,65 @@
+ t:%0A%0A
+-%60%60%60%0A$ cd doc/hellproject%0A$ ls%0Ahello.go README.md%0A%60%60%60%0A
++    $ cd doc/hellproject%0A    $ ls%0A    hello.go README.md%0A
+ %0ALet
+@@ -188,445 +188,474 @@
+ ce:%0A
+-%60%60%60%0A$ codechain keygen%0Apassphrase: %0Aconfirm passphrase: %0Acomment (e.g., name; can be empty):%0AAlice %3Calice@example.com%3E%0Asecret key file created:%0A/home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0Apublic key with signature and optional comment:%0AKDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 JNBIdjLOu20He3c-Dn7sjpspO8bmKFxTlOItfZkqieb8h218t3g-QooDATGGbrzYzVNbDqb7LCFFnJxEH7hcBA 'Alice %3Calice@example.com%3E'%0A%60%60%60%0A
++%0A    $ codechain keygen%0A    passphrase: %0A    confirm passphrase: %0A    comment (e.g., name; can be empty):%0A    Alice %3Calice@example.com%3E%0A    secret key file created:%0A    /home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0A    public key with signature and optional comment:%0A    KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 JNBIdjLOu20He3c-Dn7sjpspO8bmKFxTlOItfZkqieb8h218t3g-QooDATGGbrzYzVNbDqb7LCFFnJxEH7hcBA 'Alice %3Calice@example.com%3E'%0A
+ %0ALet
+@@ -708,405 +708,410 @@
+ ct:%0A
+-%60%60%60%0A$ codechain start -s ~/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0Apassphrase: %0Ae3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-19T00:07:02Z cstart KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 sVnVenzHyCOV6nLUkCKg6ARllkYsTV-n 0UmUcDFZ2j3WWnqzEdxX-wzofWlhF3O0Rm1tT6qMUwLu8a1R5MwbK5zDongYZKccpA37Vp6Sp3m0xSreGskzCg Alice %3Calice@example.com%3E%0A%60%60%60%0A
++%0A    $ codechain start -s ~/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0A    passphrase: %0A    e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-19T00:07:02Z cstart KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 sVnVenzHyCOV6nLUkCKg6ARllkYsTV-n 0UmUcDFZ2j3WWnqzEdxX-wzofWlhF3O0Rm1tT6qMUwLu8a1R5MwbK5zDongYZKccpA37Vp6Sp3m0xSreGskzCg Alice %3Calice@example.com%3E%0A
+ %0ALet
+@@ -1163,438 +1163,438 @@
+ r:%0A%0A
+-%60%60%60%0A$ codechain addkey 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag 'Bob %3Cbob@example.com%3E'%0A40c7e5ca4be98e9cae6931afa4ac09e11ecb1ce20fa18d0faaabfac7e8fad071 2018-05-19T00:09:44Z addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag Bob %3Cbob@example.com%3E%0A%60%60%60%0A
++    $ codechain addkey 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag 'Bob %3Cbob@example.com%3E'%0A    40c7e5ca4be98e9cae6931afa4ac09e11ecb1ce20fa18d0faaabfac7e8fad071 2018-05-19T00:09:44Z addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag Bob %3Cbob@example.com%3E%0A
+ %0AInc
+@@ -1640,135 +1640,135 @@
+ o:%0A%0A
+-%60%60%60%0A$ codechain sigctl -m 2%0A34cd10effd93e67ba96fefb29ea751d013459a6de11cc117cf1deacd77d6b7be 2018-05-19T00:10:25Z sigctl 2%0A%60%60%60%0A
++    $ codechain sigctl -m 2%0A    34cd10effd93e67ba96fefb29ea751d013459a6de11cc117cf1deacd77d6b7be 2018-05-19T00:10:25Z sigctl 2%0A
+ %0APub
+@@ -1792,1034 +1792,1142 @@
+ e:%0A%0A
+-%60%60%60%0A$ codechain publish%0Aopening keyfile: /home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0Apassphrase: %0Adiff --git a/.codechain/tree/b/README.md b/.codechain/tree/b/README.md%0Anew file mode 100644%0Aindex 0000000..841852c%0A--- /dev/null%0A+++ b/.codechain/tree/b/README.md%0A@@ -0,0 +1 @@%0A+## Example project for Codechain walkthrough%0Adiff --git a/.codechain/tree/b/hello.go b/.codechain/tree/b/hello.go%0Anew file mode 100644%0Aindex 0000000..c40eee0%0A--- /dev/null%0A+++ b/.codechain/tree/b/hello.go%0A@@ -0,0 +1,9 @@%0A+package main%0A+%0A+import (%0A+       %22fmt%22%0A+)%0A+%0A+func main() %7B%0A+       fmt.Println(%22hello world!%22)%0A+%7D%0Apublish patch? %5By/n%5D: y%0Acomment describing code change (can be empty):%0Afirst release%0A92d2fc6687b0d36d045adaf34a1615e513ef0e2dc60384cfe19863e9753567f8 2018-05-19T00:11:44Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 r5aZCYGwWCFppaMDV7XSOHoyCl3qbUKGiSuYzjsTl4C0W9n0tCa0MXDy_fOwspV9f4_o0kMcb6XZS706ml3FAQ first release%0A%60%60%60%0A
++    $ codechain publish%0A    opening keyfile: /home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0A    passphrase: %0A    diff --git a/.codechain/tree/b/README.md b/.codechain/tree/b/README.md%0A    new file mode 100644%0A    index 0000000..841852c%0A    --- /dev/null%0A    +++ b/.codechain/tree/b/README.md%0A    @@ -0,0 +1 @@%0A    +## Example project for Codechain walkthrough%0A    diff --git a/.codechain/tree/b/hello.go b/.codechain/tree/b/hello.go%0A    new file mode 100644%0A    index 0000000..c40eee0%0A    --- /dev/null%0A    +++ b/.codechain/tree/b/hello.go%0A    @@ -0,0 +1,9 @@%0A    +package main%0A    +%0A    +import (%0A    +       %22fmt%22%0A    +)%0A    +%0A    +func main() %7B%0A    +       fmt.Println(%22hello world!%22)%0A    +%7D%0A    publish patch? %5By/n%5D: y%0A    comment describing code change (can be empty):%0A    first release%0A    92d2fc6687b0d36d045adaf34a1615e513ef0e2dc60384cfe19863e9753567f8 2018-05-19T00:11:44Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 r5aZCYGwWCFppaMDV7XSOHoyCl3qbUKGiSuYzjsTl4C0W9n0tCa0MXDy_fOwspV9f4_o0kMcb6XZS706ml3FAQ first release%0A
+ %0ARev
+@@ -2944,1246 +2944,1382 @@
+ s:%0A%0A
+-%60%60%60%0A$ codechain review%0Aopening keyfile: /home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0Apassphrase: %0Asigner/sigctl changes:%0A0 addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Bob %3Cbob@example.com%3E%0A0 sigctl 2%0Aconfirm signer/sigctl changes? %5By/n%5D: y%0Apatch 1/1%0Afirst release%0Adeveloper: KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0AAlice %3Calice@example.com%3E%0Areview patch (no aborts)? %5By/n%5D: y%0Adiff --git a/.codechain/tree/b/README.md b/.codechain/tree/b/README.md%0Anew file mode 100644%0Aindex 0000000..841852c%0A--- /dev/null%0A+++ b/.codechain/tree/b/README.md%0A@@ -0,0 +1 @@%0A+## Example project for Codechain walkthrough%0Adiff --git a/.codechain/tree/b/hello.go b/.codechain/tree/b/hello.go%0Anew file mode 100644%0Aindex 0000000..c40eee0%0A--- /dev/null%0A+++ b/.codechain/tree/b/hello.go%0A@@ -0,0 +1,9 @@%0A+package main%0A+%0A+import (%0A+       %22fmt%22%0A+)%0A+%0A+func main() %7B%0A+       fmt.Println(%22hello world!%22)%0A+%7D%0Asign patch? %5By/n%5D: y%0Ad258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 2018-05-19T00:12:48Z signtr d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 HKlLKnYSCVzc4b-erETK50EN5gKRKZQsT16grv7eFBklFqXBFoSXSmcY99HLWhAP9BJcA6c3Px1trNBns3KkDA%0A%60%60%60%0A
++    $ codechain review%0A    opening keyfile: /home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0A    passphrase: %0A    signer/sigctl changes:%0A    0 addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Bob %3Cbob@example.com%3E%0A    0 sigctl 2%0A    confirm signer/sigctl changes? %5By/n%5D: y%0A    patch 1/1%0A    first release%0A    developer: KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0A    Alice %3Calice@example.com%3E%0A    review patch (no aborts)? %5By/n%5D: y%0A    diff --git a/.codechain/tree/b/README.md b/.codechain/tree/b/README.md%0A    new file mode 100644%0A    index 0000000..841852c%0A    --- /dev/null%0A    +++ b/.codechain/tree/b/README.md%0A    @@ -0,0 +1 @@%0A    +## Example project for Codechain walkthrough%0A    diff --git a/.codechain/tree/b/hello.go b/.codechain/tree/b/hello.go%0A    new file mode 100644%0A    index 0000000..c40eee0%0A    --- /dev/null%0A    +++ b/.codechain/tree/b/hello.go%0A    @@ -0,0 +1,9 @@%0A    +package main%0A    +%0A    +import (%0A    +       %22fmt%22%0A    +)%0A    +%0A    +func main() %7B%0A    +       fmt.Println(%22hello world!%22)%0A    +%7D%0A    sign patch? %5By/n%5D: y%0A    d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 2018-05-19T00:12:48Z signtr d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 HKlLKnYSCVzc4b-erETK50EN5gKRKZQsT16grv7eFBklFqXBFoSXSmcY99HLWhAP9BJcA6c3Px1trNBns3KkDA%0A
+ %0ASee
+@@ -4351,945 +4351,985 @@
+ t:%0A%0A
+-%60%60%60%0A$ codechain status%0Ano signed releases yet%0A
++    $ codechain status%0A    no signed releases yet%0A
+ %0A
+-signers (2-of-2 required):%0A1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Bob %3Cbob@example.com%3E%0A1 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 Alice %3Calice@example.com%3E%0A
++    signers (2-of-2 required):%0A    1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Bob %3Cbob@example.com%3E%0A    1 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 Alice %3Calice@example.com%3E%0A
+ %0A
+-unsigned entries:%0A1 source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 first release%0A
++    unsigned entries:%0A    1 source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 first release%0A
+ %0A
+-head:%0A2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e%0A
++    head:%0A    2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e%0A
+ %0A
+-tree matches d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716%0A%60%60%60%0A
++    tree matches d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716%0A
+ %0A
+-Because Bob was added as the second reviewer first, we still need his signature for the first release. Let's build a distribution for him:%0A
++Because Bob was added as the second reviewer first, we still need his%0Asignature for the first release. Let's build a distribution for him:%0A
+ %0A
+-%60%60%60%0A$ codechain createdist -f /tmp/dist.tar.gz%0A%60%60%60%0A
++    $ codechain createdist -f /tmp/dist.tar.gz%0A
+ %0A
+-Now as Bob, apply the distribution in an empty %60~/helloproject%60 directory:%0A
++Now as Bob, apply the distribution in an empty %60~/helloproject%60%0Adirectory:%0A
+ %0A
+-%60%60%60%0A$ cd ~/helloproject%0A$ codechain apply -f /tmp/dist.tar.gz%0A$ find . -type f%0A./.codechain/hashchain%0A./.codechain/patches/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855%0A%60%60%60%0A
++    $ cd ~/helloproject%0A    $ codechain apply -f /tmp/dist.tar.gz%0A    $ find . -type f%0A    ./.codechain/hashchain%0A    ./.codechain/patches/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855%0A
+ %0ANow
+@@ -5392,943 +5392,1063 @@
+ e:%0A%0A
+-%60%60%60%0A$ codechain review -d%0Aopening keyfile: /home/frank/bob.bin%0Apassphrase: %0Apatch 1/1%0Afirst release%0Adeveloper: KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0AAlice %3Calice@example.com%3E%0Areview patch (no aborts)? %5By/n%5D: y%0Adiff --git a/.codechain/tree/b/README.md b/.codechain/tree/b/README.md%0Anew file mode 100644%0Aindex 0000000..841852c%0A--- /dev/null%0A+++ b/.codechain/tree/b/README.md%0A@@ -0,0 +1 @@%0A+## Example project for Codechain walkthrough%0Adiff --git a/.codechain/tree/b/hello.go b/.codechain/tree/b/hello.go%0Anew file mode 100644%0Aindex 0000000..c40eee0%0A--- /dev/null%0A+++ b/.codechain/tree/b/hello.go%0A@@ -0,0 +1,9 @@%0A+package main%0A+%0A+import (%0A+       %22fmt%22%0A+)%0A+%0A+func main() %7B%0A+       fmt.Println(%22hello world!%22)%0A+%7D%0Asign patch? %5By/n%5D: y%0A2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw%0A%60%60%60%0A
++    $ codechain review -d%0A    opening keyfile: /home/frank/bob.bin%0A    passphrase: %0A    patch 1/1%0A    first release%0A    developer: KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70%0A    Alice %3Calice@example.com%3E%0A    review patch (no aborts)? %5By/n%5D: y%0A    diff --git a/.codechain/tree/b/README.md b/.codechain/tree/b/README.md%0A    new file mode 100644%0A    index 0000000..841852c%0A    --- /dev/null%0A    +++ b/.codechain/tree/b/README.md%0A    @@ -0,0 +1 @@%0A    +## Example project for Codechain walkthrough%0A    diff --git a/.codechain/tree/b/hello.go b/.codechain/tree/b/hello.go%0A    new file mode 100644%0A    index 0000000..c40eee0%0A    --- /dev/null%0A    +++ b/.codechain/tree/b/hello.go%0A    @@ -0,0 +1,9 @@%0A    +package main%0A    +%0A    +import (%0A    +       %22fmt%22%0A    +)%0A    +%0A    +func main() %7B%0A    +       fmt.Println(%22hello world!%22)%0A    +%7D%0A    sign patch? %5By/n%5D: y%0A    2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw%0A
+ %0ANow
+@@ -6491,523 +6491,523 @@
+ e:%0A%0A
+-%60%60%60%0A$ codechain review -a 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw%0A2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 2018-05-19T00:34:51Z signtr 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw%0A%60%60%60%0A
++    $ codechain review -a 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw%0A    2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 2018-05-19T00:34:51Z signtr 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw%0A
+ %0AWhi
+@@ -7049,471 +7049,503 @@
+ e:%0A%0A
+-%60%60%60%0A$ codechain status%0Asigned releases:%0Ad844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 first release%0A
++    $ codechain status%0A    signed releases:%0A    d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 first release%0A
+ %0A
+-signers (2-of-2 required):%0A1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Bob %3Cbob@example.com%3E%0A1 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 Alice %3Calice@example.com%3E%0A
++    signers (2-of-2 required):%0A    1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Bob %3Cbob@example.com%3E%0A    1 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 Alice %3Calice@example.com%3E%0A
+ %0A
+-no unsigned entries%0A
++    no unsigned entries%0A
+ %0A
+-head:%0A9f97737b292f66e52c06027871be328006f125a9d86fbe1fc4f03ff98303e36f%0A
++    head:%0A    9f97737b292f66e52c06027871be328006f125a9d86fbe1fc4f03ff98303e36f%0A
+ %0A
+-tree matches d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716%0A%60%60%60%0A
++    tree matches d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716%0A
+ %0AWhi
+@@ -7571,312 +7571,309 @@
+ ow:%0A
+-%60%60%60%0A$ codechain createdist -f /tmp/helloproject.tar.gz%0A%60%60%60%0A
++%0A    $ codechain createdist -f /tmp/helloproject.tar.gz%0A
+ %0A
+-Users can apply it a directory %60~/helloproject%60 and verify the hash chain%0Acontains the head with:%0A
++Users can apply it a directory %60~/helloproject%60 and verify the hash%0Achain contains the head with:%0A
+ %0A
+-%60%60%60%0A$ cd ~/helloproject%0A$ codechain apply -f /tmp/helloproject.tar.gz -head 9f97737b292f66e52c06027871be328006f125a9d86fbe1fc4f03ff98303e36f%0A%60%60%60%0A
++    $ cd ~/helloproject%0A    $ codechain apply -f /tmp/helloproject.tar.gz -head 9f97737b292f66e52c06027871be328006f125a9d86fbe1fc4f03ff98303e36f%0A
+ %0AThe
+@@ -7925,102 +7925,103 @@
+ se:%0A
+-%60%60%60%0A$ codechain treehash%0Ad844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716%0A%60%60%60%0A
++%0A    $ codechain treehash%0A    d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716%0A
+ %0ASho
+@@ -8052,1541 +8052,1561 @@
+ n:%0A%0A
+-%60%60%60%0A$ codechain status -p%0Ae3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-19T00:07:02Z cstart KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 sVnVenzHyCOV6nLUkCKg6ARllkYsTV-n 0UmUcDFZ2j3WWnqzEdxX-wzofWlhF3O0Rm1tT6qMUwLu8a1R5MwbK5zDongYZKccpA37Vp6Sp3m0xSreGskzCg Alice %3Calice@example.com%3E%0A40c7e5ca4be98e9cae6931afa4ac09e11ecb1ce20fa18d0faaabfac7e8fad071 2018-05-19T00:09:44Z addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag Bob %3Cbob@example.com%3E%0A34cd10effd93e67ba96fefb29ea751d013459a6de11cc117cf1deacd77d6b7be 2018-05-19T00:10:25Z sigctl 2%0A92d2fc6687b0d36d045adaf34a1615e513ef0e2dc60384cfe19863e9753567f8 2018-05-19T00:11:44Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 r5aZCYGwWCFppaMDV7XSOHoyCl3qbUKGiSuYzjsTl4C0W9n0tCa0MXDy_fOwspV9f4_o0kMcb6XZS706ml3FAQ first release%0Ad258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 2018-05-19T00:12:48Z signtr d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 HKlLKnYSCVzc4b-erETK50EN5gKRKZQsT16grv7eFBklFqXBFoSXSmcY99HLWhAP9BJcA6c3Px1trNBns3KkDA%0A2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 2018-05-19T00:34:51Z signtr 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw%0A%60%60%60%0A
++    $ codechain status -p%0A    e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 2018-05-19T00:07:02Z cstart KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 sVnVenzHyCOV6nLUkCKg6ARllkYsTV-n 0UmUcDFZ2j3WWnqzEdxX-wzofWlhF3O0Rm1tT6qMUwLu8a1R5MwbK5zDongYZKccpA37Vp6Sp3m0xSreGskzCg Alice %3Calice@example.com%3E%0A    40c7e5ca4be98e9cae6931afa4ac09e11ecb1ce20fa18d0faaabfac7e8fad071 2018-05-19T00:09:44Z addkey 1 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc Xsr_L-1_5_B56vocve8s3Pb3vJoc-jpa2-tzIQhEjuoytYfcAiONu3er6RnVNMcsPuZFeqWCQKBwka-F-c13Ag Bob %3Cbob@example.com%3E%0A    34cd10effd93e67ba96fefb29ea751d013459a6de11cc117cf1deacd77d6b7be 2018-05-19T00:10:25Z sigctl 2%0A    92d2fc6687b0d36d045adaf34a1615e513ef0e2dc60384cfe19863e9753567f8 2018-05-19T00:11:44Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 r5aZCYGwWCFppaMDV7XSOHoyCl3qbUKGiSuYzjsTl4C0W9n0tCa0MXDy_fOwspV9f4_o0kMcb6XZS706ml3FAQ first release%0A    d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 2018-05-19T00:12:48Z signtr d258ce20943beeed2d483096702a1449447f112dec7d907d50c285c649c17a24 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 HKlLKnYSCVzc4b-erETK50EN5gKRKZQsT16grv7eFBklFqXBFoSXSmcY99HLWhAP9BJcA6c3Px1trNBns3KkDA%0A    2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 2018-05-19T00:34:51Z signtr 2e34e23ee293e8c0ed174639d325eb3e30f5337d5c5846380367724e93cb619e 91HOu2fvkjHd5S0LtAWTl6dYBk5cqB-NWiJqc0c_7Gc xffZultos-MCbI4cNzAzAoccuDSnpL2nq_BsQanIruYM3RXoD9kdC6WiPEUkxrphKdG742IgBWlB3LwY0i1ZCw%0A
++ f 2251d8e88d3c2576929424a863efab2e19191fa181d0392d187bf9687db8854f hashchain/apply.go
+dmppatch 2
+@@ -0,0 +1,521 @@
++package hashchain%0A%0Aimport (%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/sync%22%0A)%0A%0A// Apply to current working directory and check head if not nil.%0Afunc (c *HashChain) Apply(head *%5B32%5Dbyte) error %7B%0A%09targetHash, _ := c.LastSignedTreeHash()%0A%09treeHashes := c.TreeHashes()%0A%09if head != nil %7B%0A%09%09if err := c.CheckHead(*head); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%09err := sync.Dir(%22.%22, targetHash, def.PatchDir, treeHashes, def.ExcludePaths, false)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09return nil%0A%7D%0A
+- f 417e281f986675474591971be2f697445ef8f8286f571d06fa9e57c0e6edcd4c hashchain/signature.go
++ f 8860cee94eba027d6578fbf27fa4733a63083c8f3144fd21cfa7565a7a1211b4 hashchain/signature.go
+dmppatch 5
+@@ -677,94 +677,93 @@
+ %0A%7D%0A%0A
+-// Signature adds a signature entry for entryHash signed by secKey to the hash chain.%0A
++// Signature adds a signature entry for linkHash signed by secKey to the hash chain.%0A
+ // I
+- f 32b097b04f886f85ea9f9f28417c28daea075076fdb1edd07da0c35345f58156 internal/def/def.go
++ f 2e9cd76fcb2493883b8b2280c9beea1fea244477446e8aa588c829b4590640b8 internal/def/def.go
+dmppatch 4
+@@ -202,16 +202,268 @@
+ chain%22%0A%0A
++// SecretsSubDir is the default subdirectory of a tool's home directory used%0A// to store secret key files%0Aconst SecretsSubDir = %22secrets%22%0A%0A// CodechainTXTName is the TXT name used for Codechain's secpkg entries.%0Aconst CodechainTXTName = %22_codechain.%22%0A%0A
+ // Exclu
++ f 24f0c1f91cfc765aabc4e7c829bf11e8b585133894e5b5884356ec4066c3a3a8 secpkg/command/command.go
+dmppatch 2
+@@ -0,0 +1,67 @@
++// Package command implements the secpkg commands.%0Apackage command%0A
++ f 58b4f48a8e958ab66ab097c57539975e1c9da536619053ef4ec9e2e04ac82abd secpkg/command/install.go
+dmppatch 2
+@@ -0,0 +1,843 @@
++package command%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/secpkg%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0A// Install implements the secpkg 'install' command.%0Afunc Install(argv0 string, args ...string) error %7B%0A%09fs := flag.NewFlagSet(argv0, flag.ContinueOnError)%0A%09fs.Usage = func() %7B%0A%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s project.secpkg%5Cn%22, argv0)%0A%09%09fmt.Fprintf(os.Stderr, %22Download, verify, and install package defined by project.secpkg.%5Cn%22)%0A%09%09fs.PrintDefaults()%0A%09%7D%0A%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A%09if err := fs.Parse(args); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A%09if fs.NArg() != 1 %7B%0A%09%09fs.Usage()%0A%09%09return flag.ErrHelp%0A%09%7D%0A%09// 1. Parse .secpkg file and validate it.%0A%09pkg, err := secpkg.Load(fs.Arg(0))%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09return pkg.Install()%0A%7D%0A
++ f cc598b4c704b729872b1d493feebceb3f0008a02faa3749059b4f3595e7a7963 secpkg/command/update.go
+dmppatch 2
+@@ -0,0 +1,736 @@
++package command%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/secpkg%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0A// Update implements the secpkg 'update' command.%0Afunc Update(argv0 string, args ...string) error %7B%0A%09fs := flag.NewFlagSet(argv0, flag.ContinueOnError)%0A%09fs.Usage = func() %7B%0A%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s project_name%5Cn%22, argv0)%0A%09%09fmt.Fprintf(os.Stderr, %22Update installed package with given project_name, if necessary.%5Cn%22)%0A%09%09fs.PrintDefaults()%0A%09%7D%0A%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A%09if err := fs.Parse(args); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A%09if fs.NArg() != 1 %7B%0A%09%09fs.Usage()%0A%09%09return flag.ErrHelp%0A%09%7D%0A%09return secpkg.Update(fs.Arg(0))%0A%7D%0A
++ f 930786dcadf2cded3178811ccc2a593fbf4cbb1aacd56fdda584eed0ae37cd7a secpkg/doc.go
+dmppatch 2
+@@ -0,0 +1,4586 @@
++/*%0APackage secpkg implements the secpkg package format.%0A%0AA secure package (.secpkg file) contains a JSON object with the following keys:%0A%0A  %7B%0A    %22Name%22: %22the project's package name%22,%0A    %22Head%22: %22head of project's Codechain%22,%0A    %22DNS%22: %22fully qualified domain name%22,%0A    %22URL%22: %22URL to download project files of the from (URL/head.tar.gz)%22%0A  %7D%0A%0AExample .secpkg file for Codechain itself:%0A%0A  %7B%0A    %22Name%22: %22codechain%22,%0A    %22Head%22: %2273fe1313fd924854f149021e969546bce6052eca0c22b2b91245cb448410493c%22,%0A    %22DNS%22: %22codechain.secpkg.net%22,%0A    %22URL%22: %22http://frankbraun.org/codechain%22%0A  %7D%0A%0AInstall specification%0A%0AInstalling software described by a .secpkg file works as follows:%0A%0A   1. Parse .secpkg file and validate it. Save head as HEAD_PKG.%0A%0A   2. Make sure the project with NAME has not been installed before.%0A      That is, the directory ~/.config/secpkg/pkgs/NAME does not exist.%0A%0A   3. Create directory ~/.config/secpkg/pkgs/NAME%0A%0A   4. Save .secpkg file to ~/.config/secpkg/pkgs/NAME/.secpkg%0A%0A   5. Query TXT record from _codechain.DNS and validate the signed head%0A      contained in it (see ssot package). Save head from TXT record (HEAD_SSOT).%0A%0A   6. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head%0A%0A   7. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to%0A      ~/.config/secpkg/pkgs/NAME/dists%0A%0A   8. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz%0A      to ~/.config/secpkg/pkgs/NAME/src with %60codechain apply%0A      -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT%60%0A%0A   9. Make sure HEAD_PKG is contained in%0A      ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain%0A%0A  10. %60cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build%60%0A%0A  11. Call %60make prefix=~/.config/secpkg/local%60 in%0A      ~/.config/secpkg/pkgs/NAME/build%0A%0A  12. Call %60make prefix= ~/.config/secpkg/local install%60 in%0A      ~/.config/secpkg/pkgs/NAME/build%0A%0A  13. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A%0A  If the installation process fails at any stage during the procedure described%0A  above, report the error and remove the directory ~/.config/secpkg/pkgs/NAME.%0A%0AFor the process above to work, the projects distributed as secure packages%0Amust contain a Makefile (for GNU Make) with the %22all%22 target building the%0Asoftware and the %22install%22 target installing it.%0A%0AThe software must be self-contained without any external dependencies, except%0Afor the compiler. For Go software that means at least Go 1.11 must be%0Ainstalled (with module support) and all dependencies must be vendored.%0A%0AUpdate specification%0A%0AUpdating a software package with NAME works as follows:%0A%0A   1. Make sure the project with NAME has been installed before.%0A      That is, the directory ~/.config/secpkg/pkgs/NAME exists.%0A%0A   2. Load .secpkg file from ~/.config/secpkg/pkgs/NAME/.secpkg%0A%0A   3. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head (as DISK)%0A%0A   4. Query TXT record from _codechain.DNS, if it is the same as DISK, goto 16.%0A%0A   5. Validate signed head from TXT (also see ssot package) and store HEAD:%0A%0A      - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK.%0A      - The counter from TXT must be larger than the counter from DISK.%0A      - The signed head must be valid (as defined by validFrom and validTo).%0A%0A      If the validation fails, abort update procedure and report error.%0A%0A   6. If signed head from TXT record is the same as the one from DISK:%0A%0A      - %60cp -f ~/.config/secpkg/pkgs/NAME/signed_head%0A               ~/.config/secpkg/pkgs/NAME/previous_signed_head%60%0A      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).%0A      - Goto 16.%0A%0A   7. Download distribution file from URL/HEAD.tar.gz and save it to%0A      ~/.config/secpkg/pkgs/NAME/dists%0A%0A   8. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz%0A      to ~/.config/secpkg/pkgs/NAME/src with %60codechain apply%0A      -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD%60.%0A%0A   9. %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A%0A  10. %60cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build%60%0A%0A  11. Call %60make%60 in ~/.config/secpkg/pkgs/NAME/build%0A%0A  12. Call %60make install%60 in ~/.config/secpkg/pkgs/NAME/build%0A%0A  14. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A%0A  15. Update signed head:%0A%0A      - %60cp -f ~/.config/secpkg/pkgs/NAME/signed_head%0A               ~/.config/secpkg/pkgs/NAME/previous_signed_head%60%0A      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).%0A%0A  16. The software has been successfully updated.%0A*/%0Apackage secpkg%0A
++ f 9d8acf19d0d87910be353f390a811cb8e1b269927881fe8fc702a7c4a516e726 secpkg/errors.go
+dmppatch 2
+@@ -0,0 +1,219 @@
++package secpkg%0A%0Aimport (%0A%09%22errors%22%0A)%0A%0A// ErrPkgNameWhitespace is returned if a package name contains a white space character.%0Avar ErrPkgNameWhitespace = errors.New(%22secpkg: package name contains white space character%22)%0A
++ f 01231ae0af4ce2560dbb76add8ed2f96cb04b161352631326f20d791588c5565 secpkg/install.go
+dmppatch 2
+@@ -0,0 +1,5154 @@
++package secpkg%0A%0Aimport (%0A%09%22errors%22%0A%09%22fmt%22%0A%09%22io/ioutil%22%0A%09%22net%22%0A%09%22os%22%0A%09%22os/exec%22%0A%09%22path/filepath%22%0A%0A%09%22github.com/frankbraun/codechain/archive%22%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/internal/hex%22%0A%09%22github.com/frankbraun/codechain/ssot%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/homedir%22%0A)%0A%0A// Install pkg, see specification for details.%0Afunc (pkg *Package) Install() error %7B%0A%09// 1. Has already been done by calling Load().%0A%0A%09// 2. Make sure the project has not been installed before.%0A%09//    That is, the directory ~/.config/secpkg/pkgs/NAME does not exist.%0A%09pkgDir := filepath.Join(homedir.SecPkg(), %22pkgs%22, pkg.Name)%0A%09exists, err := file.Exists(pkgDir)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09return fmt.Errorf(%22package already installed: '%25s' exists%22, pkgDir)%0A%09%7D%0A%0A%09// 3. Create directory ~/.config/secpkg/pkgs/NAME%0A%09if err := os.MkdirAll(pkgDir, 0755); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 4. Save .secpkg file to ~/.config/secpkg/pkgs/NAME/.secpkg%0A%09fn := filepath.Join(pkgDir, File)%0A%09err = ioutil.WriteFile(fn, %5B%5Dbyte(pkg.Marshal()+%22%5Cn%22), 0644)%0A%09if err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09fmt.Printf(%22%25s: written%5Cn%22, File)%0A%0A%09// 5. Query TXT record from _codechain.DNS and validate the signed head%0A%09//    contained in it (see ssot package).%0A%09txts, err := net.LookupTXT(def.CodechainTXTName + pkg.DNS)%0A%09if err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09var sh *ssot.SignedHead%0A%09for _, txt := range txts %7B%0A%09%09// parse TXT records and look for signed head%0A%09%09sh, err = ssot.Unmarshal(txt)%0A%09%09if err != nil %7B%0A%09%09%09fmt.Fprintf(os.Stderr, %22cannot unmarshal: %25s%5Cn%22, txt)%0A%09%09%09continue%0A%09%09%7D%0A%09%09fmt.Printf(%22signed head found: %25s%5Cn%22, sh.Head())%0A%09%09break // TXT record found%0A%09%7D%0A%09if sh == nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return errors.New(%22secpkg: no valid TXT record found%22)%0A%09%7D%0A%0A%09// 6. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head%0A%09signedHead := filepath.Join(pkgDir, ssot.File)%0A%09err = ioutil.WriteFile(signedHead, %5B%5Dbyte(sh.Marshal()+%22%5Cn%22), 0644)%0A%09if err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09fmt.Printf(%22%25s: written%5Cn%22, signedHead)%0A%0A%09// 7. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to%0A%09//    ~/.config/secpkg/pkgs/NAME/dists%0A%09distDir := filepath.Join(pkgDir, %22dists%22)%0A%09if err := os.MkdirAll(distDir, 0755); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09fn = sh.Head() + %22.tar.gz%22%0A%09filename := filepath.Join(distDir, fn)%0A%09url := pkg.URL + %22/%22 + fn%0A%09fmt.Printf(%22download %25s%5Cn%22, url)%0A%09err = file.Download(filename, url)%0A%09if err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%0A%09// 8. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz%0A%09//    to ~/.config/secpkg/pkgs/NAME/src with %60codechain apply%0A%09//    -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT%60%0A%09srcDir := filepath.Join(pkgDir, %22src%22)%0A%09if err := os.MkdirAll(srcDir, 0755); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09if err := os.Chdir(srcDir); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09head := sh.HeadBuf()%0A%09distFile := filepath.Join(%22..%22, %22dists%22, fn)%0A%09err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)%0A%09if err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09c, err := hashchain.ReadFile(def.HashchainFile)%0A%09if err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09if err := c.Close(); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09if err := c.Apply(&head); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%0A%09// 9. Make sure HEAD_PKG is contained in%0A%09//   ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain%0A%09h, err := hex.Decode(pkg.Head, 32)%0A%09if err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09copy(head%5B:%5D, h)%0A%09if err := c.CheckHead(head); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%0A%09// 10. %60cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build%60%0A%09buildDir := filepath.Join(pkgDir, %22build%22)%0A%09if err := file.CopyDir(srcDir, buildDir); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%0A%09// 11. Call %60make prefix=~/.config/secpkg/local%60 in%0A%09//     ~/.config/secpkg/pkgs/NAME/build%0A%09localDir := filepath.Join(homedir.SecPkg(), %22local%22)%0A%09if err := os.Chdir(buildDir); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09/* TODO: call via $SHELL%0A%09shell := os.Getenv(%22SHELL%22)%0A%09if shell == %22%22 %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return errors.New(%22secpkg: $SHELL not defined%22)%0A%09%7D%0A%09*/%0A%09prefix := fmt.Sprintf(%22prefix=%25s%22, localDir)%0A%09cmd := exec.Command(%22make%22, prefix)%0A%09cmd.Stdout = os.Stdout%0A%09cmd.Stderr = os.Stderr%0A%09if err := cmd.Run(); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%0A%09// 12. Call %60make prefix=~/.config/secpkg/local install%60 in%0A%09//     ~/.config/secpkg/pkgs/NAME/build%0A%09cmd = exec.Command(%22make%22, prefix, %22install%22)%0A%09cmd.Stdout = os.Stdout%0A%09cmd.Stderr = os.Stderr%0A%09if err := cmd.Run(); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%0A%09// 13. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A%09installDir := filepath.Join(pkgDir, %22install%22)%0A%09if err := os.Rename(buildDir, installDir); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A%09return nil%0A%7D%0A
++ f a6e8eb81b129407d543ecb95bfd834b57649f9f9db00811187010ec4ef555b5c secpkg/secpkg.go
+dmppatch 2
+@@ -0,0 +1,1556 @@
++package secpkg%0A%0Aimport (%0A%09%22encoding/json%22%0A%09%22io/ioutil%22%0A%09%22net/url%22%0A%09%22strings%22%0A%0A%09%22github.com/frankbraun/codechain/internal/hex%22%0A)%0A%0A// File defines the default file (ending) for a secure package.%0Aconst File = %22.secpkg%22%0A%0A// Package defines a package in secpkg format (stored in .secpkg files).%0Atype Package struct %7B%0A%09Name string // the project's package name%0A%09Head string // head of project's Codechain%0A%09DNS  string // fully qualified domain name for _codechain TXT records (SSOT)%0A%09URL  string // URL to download project files from (URL/head.tar.gz)%0A%7D%0A%0A// New creates a new Package.%0Afunc New(name, dns, pkgURL string, head %5B32%5Dbyte) (*Package, error) %7B%0A%09// validate arguments%0A%09if strings.Contains(name, %22 %22) %7B%0A%09%09return nil, ErrPkgNameWhitespace%0A%09%7D%0A%09if _, err := url.Parse(dns); err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09if _, err := url.Parse(pkgURL); err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09// create package%0A%09var pkg Package%0A%09pkg.Name = strings.ToLower(name) // project names are lowercase%0A%09pkg.Head = hex.Encode(head%5B:%5D)%0A%09pkg.DNS = dns%0A%09pkg.URL = pkgURL%0A%09return &pkg, nil%0A%7D%0A%0A// Load a .secpkg file from filename and return the Package struct.%0Afunc Load(filename string) (*Package, error) %7B%0A%09data, err := ioutil.ReadFile(filename)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09var pkg Package%0A%09if err := json.Unmarshal(data, &pkg); err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09return &pkg, err%0A%7D%0A%0A// Marshal pkg as string.%0Afunc (pkg *Package) Marshal() string %7B%0A%09jsn, err := json.MarshalIndent(pkg, %22%22, %22  %22)%0A%09if err != nil %7B%0A%09%09panic(err) // should never happen%0A%09%7D%0A%09return string(jsn)%0A%7D%0A
++ f 5259c5bca5c13f2fa572ba89c713e900379b9e81e61f26afc6870988354a0d34 secpkg/secpkg_test.go
+dmppatch 2
+@@ -0,0 +1,287 @@
++package secpkg%0A%0Aimport (%0A%09%22path/filepath%22%0A%09%22testing%22%0A)%0A%0Afunc TestLoadMarshal(t *testing.T) %7B%0A%09codechainSecPkg := filepath.Join(%22testdata%22, %22codechain.secpkg%22)%0A%09p, err := Load(codechainSecPkg)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Load(%25s) failed: %25v%22, codechainSecPkg, err)%0A%09%7D%0A%09_ = p.Marshal()%0A%7D%0A
++ f cb2566bc79cb320a740b095e606adac4a782ac91d6b476fab1089a582bffcdeb secpkg/testdata/codechain.secpkg
+dmppatch 2
+@@ -0,0 +1,181 @@
++%7B%0A  %22Name%22: %22codechain%22,%0A  %22Head%22: %2273fe1313fd924854f149021e969546bce6052eca0c22b2b91245cb448410493c%22,%0A  %22DNS%22: %22codechain.secpkg.net%22,%0A  %22URL%22: %22http://frankbraun.org/codechain%22%0A%7D%0A
++ f 3cd62c2b45c0d53b681b57472d37922433bc27119b3a7059fd0619506502fe4c secpkg/update.go
+dmppatch 2
+@@ -0,0 +1,180 @@
++package secpkg%0A%0Aimport (%0A%09%22errors%22%0A)%0A%0A// Update package with name, see specification for details.%0Afunc Update(name string) error %7B%0A%09// TODO%0A%09return errors.New(%22not implemented%22)%0A%7D%0A
++ f d2ea27a6eeb5a74c56d6d0f81500d237085f45dd93df7eef757d583503ba8a97 ssot/command/command.go
+dmppatch 2
+@@ -0,0 +1,68 @@
++// Package command implements the ssotpub commands.%0Apackage command%0A
++ f 61a0046baf51f1f18c8e88538139c48ade7e288b7bb2e07033f92603ede37675 ssot/command/createpkg.go
+dmppatch 2
+@@ -0,0 +1,4288 @@
++package command%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22io/ioutil%22%0A%09%22os%22%0A%09%22path/filepath%22%0A%0A%09%22github.com/frankbraun/codechain/archive%22%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/secpkg%22%0A%09%22github.com/frankbraun/codechain/ssot%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/homedir%22%0A%09%22github.com/frankbraun/codechain/util/interrupt%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A%09%22github.com/frankbraun/codechain/util/seckey%22%0A)%0A%0Afunc createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error %7B%0A%09head := c.Head()%0A%09fmt.Printf(%22create package for head %25x%5Cn%22, head)%0A%09secKey, _, _, err := seckey.Read(secKeyFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09// 2. Create package (before 1., because this checks the arguments)%0A%09pkg, err := secpkg.New(name, dns, url, head)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 1. Make sure the project has not been published before%0A%09pkgDir := filepath.Join(homedir.SSOTPub(), %22pkgs%22, pkg.Name)%0A%09exists, err := file.Exists(pkgDir)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09return fmt.Errorf(%22package already published: '%25s' exists%22, pkgDir)%0A%09%7D%0A%0A%09// Create .secpkg file%0A%09exists, err = file.Exists(secpkg.File)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09return fmt.Errorf(%22secure package already exists: %25s%22, secpkg.File)%0A%09%7D%0A%09err = ioutil.WriteFile(secpkg.File, %5B%5Dbyte(pkg.Marshal()+%22%5Cn%22), 0644)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09fmt.Printf(%22%25s: written%5Cn%22, secpkg.File)%0A%0A%09// 3. Create the first signed head with counter set to 0.%0A%09sh := ssot.SignHead(head, 0, *secKey)%0A%0A%09// 4. Create the directory ~/.config/ssotpub/pkgs/NAME/dists%0A%09//    and save the current distribution to%0A%09//    ~/.config/ssotpub/pkgs/NAME/dists/HEAD.tar.gz (%60codechain createdist%60)%0A%09distDir := filepath.Join(pkgDir, %22dists%22)%0A%09if err := os.MkdirAll(distDir, 0755); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09distFile := filepath.Join(distDir, fmt.Sprintf(%22%25x.tar.gz%22, head))%0A%09if err := archive.CreateDist(c, distFile); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 5. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head%0A%09signedHead := filepath.Join(pkgDir, ssot.File)%0A%09err = ioutil.WriteFile(signedHead, %5B%5Dbyte(sh.Marshal()+%22%5Cn%22), 0644)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09fmt.Printf(%22%25s: written%5Cn%22, signedHead)%0A%0A%09// 6. Print the distribution name%0A%09fmt.Println(%22%22)%0A%09fmt.Printf(%22Please upload the following distribution file to: %25s%5Cn%22, pkg.URL)%0A%09fmt.Println(distFile)%0A%09fmt.Println(%22%22)%0A%0A%09// 7. Print DNS TXT record as defined by the .secpkg and the first signed head.%0A%09fmt.Println(%22Please publish the following DNS TXT record:%22)%0A%09fmt.Println(%22%22)%0A%09sh.PrintTXT(pkg.DNS)%0A%09return nil%0A%7D%0A%0A// CreatePkg implements the ssotpub 'createpkg' command.%0Afunc CreatePkg(argv0 string, args ...string) error %7B%0A%09fs := flag.NewFlagSet(argv0, flag.ContinueOnError)%0A%09fs.Usage = func() %7B%0A%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s -name name -dns FQDN -url URL -s seckey.bin%5Cn%22, argv0)%0A%09%09fmt.Fprintf(os.Stderr, %22Create secure package and first signed head.%5Cn%22)%0A%09%09fs.PrintDefaults()%0A%09%7D%0A%09name := fs.String(%22name%22, %22%22, %22The project's package name%22)%0A%09dns := fs.String(%22dns%22, %22%22, %22Fully qualified comain name for _codechain TXT records (SSOT)%22)%0A%09url := fs.String(%22url%22, %22%22, %22URL to download project files from (URL/head.tar.gz)%22)%0A%09secKey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A%09if err := fs.Parse(args); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if *name == %22%22 %7B%0A%09%09return fmt.Errorf(%22%25s: option -name is mandatory%22, argv0)%0A%09%7D%0A%09if *dns == %22%22 %7B%0A%09%09return fmt.Errorf(%22%25s: option -dns is mandatory%22, argv0)%0A%09%7D%0A%09if *url == %22%22 %7B%0A%09%09return fmt.Errorf(%22%25s: option -url is mandatory%22, argv0)%0A%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A%09if err := seckey.Check(homedir.SSOTPub(), *secKey); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if fs.NArg() != 0 %7B%0A%09%09fs.Usage()%0A%09%09return flag.ErrHelp%0A%09%7D%0A%09c, err := hashchain.ReadFile(def.HashchainFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer c.Close()%0A%09// add interrupt handler%0A%09interrupt.AddInterruptHandler(func() %7B%0A%09%09c.Close()%0A%09%7D)%0A%09// run createPkg%0A%09go func() %7B%0A%09%09if err := createPkg(c, *name, *dns, *url, *secKey); err != nil %7B%0A%09%09%09interrupt.ShutdownChannel %3C- err%0A%09%09%09return%0A%09%09%7D%0A%09%09interrupt.ShutdownChannel %3C- nil%0A%09%7D()%0A%09return %3C-interrupt.ShutdownChannel%0A%7D%0A
++ f 36c19288c1a94cbd0d3ac5262af6ed984656ca2934f3c0698a3159ee2df34f51 ssot/command/keyfile.go
+dmppatch 2
+@@ -0,0 +1,285 @@
++package command%0A%0Aimport (%0A%09%22github.com/frankbraun/codechain/command%22%0A%09%22github.com/frankbraun/codechain/util/homedir%22%0A)%0A%0A// KeyFile implements the ssotpub 'keyfile' command.%0Afunc KeyFile(argv0 string, args ...string) error %7B%0A%09return command.KeyFile(homedir.SSOTPub(), argv0, args...)%0A%7D%0A
++ f fab881267ecdf6594927af39a6ef905fc9691e2c004884dd8b2de220735b364a ssot/command/keygen.go
+dmppatch 2
+@@ -0,0 +1,281 @@
++package command%0A%0Aimport (%0A%09%22github.com/frankbraun/codechain/command%22%0A%09%22github.com/frankbraun/codechain/util/homedir%22%0A)%0A%0A// KeyGen implements the ssotpub 'keygen' command.%0Afunc KeyGen(argv0 string, args ...string) error %7B%0A%09return command.KeyGen(homedir.SSOTPub(), argv0, args...)%0A%7D%0A
++ f 5a84e0ff2195abc27982976769ecb4b66ac6166c1c0082f6779a2dd83f8ab5b9 ssot/command/signhead.go
+dmppatch 2
+@@ -0,0 +1,5216 @@
++package command%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22io/ioutil%22%0A%09%22os%22%0A%09%22path/filepath%22%0A%0A%09%22github.com/frankbraun/codechain/archive%22%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/internal/hex%22%0A%09%22github.com/frankbraun/codechain/secpkg%22%0A%09%22github.com/frankbraun/codechain/ssot%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/homedir%22%0A%09%22github.com/frankbraun/codechain/util/interrupt%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A%09%22github.com/frankbraun/codechain/util/seckey%22%0A)%0A%0Afunc signHead(c *hashchain.HashChain) error %7B%0A%09// 1. Parse the .secpkg file in the current working directory.%0A%09log.Println(%221. parse .secpkg%22)%0A%09pkg, err := secpkg.Load(secpkg.File)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 2. Make sure the project with NAME has been published before.%0A%09//    That is, the directory ~/.config/ssotpub/pkgs/NAME exists.%0A%09log.Println(%221. make sure project exists%22)%0A%09pkgDir := filepath.Join(homedir.SSOTPub(), %22pkgs%22, pkg.Name)%0A%09exists, err := file.Exists(pkgDir)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if !exists %7B%0A%09%09return fmt.Errorf(%22package not published yet: '%25s' does not exist%22, pkgDir)%0A%09%7D%0A%0A%09// 3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head%0A%09//    and make sure the corresponding secret key is available.%0A%09log.Println(%223. validate signed head%22)%0A%09signedHeadFile := filepath.Join(pkgDir, %22signed_head%22)%0A%09signedHead, err := ioutil.ReadFile(signedHeadFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09prevSignedHead, err := ssot.Unmarshal(string(signedHead))%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09secKeyFile := filepath.Join(homedir.SSOTPub(), def.SecretsSubDir, prevSignedHead.PubKey())%0A%09secKey, _, _, err := seckey.Read(secKeyFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 4. Get the HEAD from .codechain/hashchain in the current working directory.%0A%09log.Println(%224. get the head%22)%0A%09head := c.Head()%0A%09fmt.Printf(%22signing head %25x%5Cn%22, head)%0A%0A%09// 5. Create a new signed head with current HEAD, the counter of the previous%0A%09/*%0A%09   signed head plus 1, and update the saved signed head:%0A%0A%09   - %60cp -f ~/.config/ssotpub/pkgs/NAME/signed_head%0A%09            ~/.config/ssotpub/pkgs/NAME/previous_signed_head%60%0A%09   - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).%0A%09*/%0A%09newSignedHead := ssot.SignHead(head, prevSignedHead.Counter()+1, *secKey)%0A%09prevSignedHeadFile := filepath.Join(pkgDir, %22previous_signed_head%22)%0A%09exists, err = file.Exists(prevSignedHeadFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09if err := os.Remove(prevSignedHeadFile); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%09if err := file.Copy(signedHeadFile, prevSignedHeadFile); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09newSignedHeadFile := filepath.Join(pkgDir, %22new_signed_head%22)%0A%09err = ioutil.WriteFile(newSignedHeadFile, %5B%5Dbyte(newSignedHead.Marshal()+%22%5Cn%22), 0644)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if err := os.Rename(newSignedHeadFile, signedHeadFile); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09fmt.Printf(%22%25s: written%5Cn%22, signedHeadFile)%0A%0A%09// 6. Save the current distribution to:%0A%09//    ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (%60codechain createdist%60).%0A%09distDir := filepath.Join(pkgDir, %22dists%22)%0A%09distFile := filepath.Join(distDir, fmt.Sprintf(%22%25x.tar.gz%22, head))%0A%09if err := archive.CreateDist(c, distFile); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 7. Print the distribution name: ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz%0A%09fmt.Println(%22%22)%0A%09fmt.Printf(%22Please upload the following distribution file to: %25s%5Cn%22, pkg.URL)%0A%09fmt.Println(distFile)%0A%09fmt.Println(%22%22)%0A%0A%09// 8. Print DNS TXT record as defined by the .secpkg and the signed head.%0A%09fmt.Println(%22Please publish the following DNS TXT record:%22)%0A%09fmt.Println(%22%22)%0A%09newSignedHead.PrintTXT(pkg.DNS)%0A%0A%09// 9. If the HEAD changed, update the .secpkg file accordingly.%0A%09h := hex.Encode(head%5B:%5D)%0A%09if h != pkg.Head %7B%0A%09%09pkg.Head = h%0A%09%09newSecPkgFile := secpkg.File + %22_new%22%0A%09%09err = ioutil.WriteFile(newSecPkgFile, %5B%5Dbyte(pkg.Marshal()+%22%5Cn%22), 0644)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if err := os.Rename(newSecPkgFile, secpkg.File); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09fmt.Printf(%22%5Cn%25s: updated%5Cn%22, secpkg.File)%0A%09%7D%0A%0A%09return nil%0A%7D%0A%0A// SignHead implements the ssotpub 'signhead' command.%0Afunc SignHead(argv0 string, args ...string) error %7B%0A%09fs := flag.NewFlagSet(argv0, flag.ContinueOnError)%0A%09fs.Usage = func() %7B%0A%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s -s seckey.bin%5Cn%22, argv0)%0A%09%09fmt.Fprintf(os.Stderr, %22Sign Codechain head and print it on stdout.%5Cn%22)%0A%09%09fs.PrintDefaults()%0A%09%7D%0A%09//secKey := fs.String(%22s%22, %22%22, %22Secret key file%22)%0A%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A%09if err := fs.Parse(args); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A%09/*%0A%09%09if err := seckey.Check(homedir.SSOTPub(), *secKey); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09*/%0A%09if fs.NArg() != 0 %7B%0A%09%09fs.Usage()%0A%09%09return flag.ErrHelp%0A%09%7D%0A%09c, err := hashchain.ReadFile(def.HashchainFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer c.Close()%0A%09// add interrupt handler%0A%09interrupt.AddInterruptHandler(func() %7B%0A%09%09c.Close()%0A%09%7D)%0A%09// run signHead%0A%09go func() %7B%0A%09%09if err := signHead(c); err != nil %7B%0A%09%09%09interrupt.ShutdownChannel %3C- err%0A%09%09%09return%0A%09%09%7D%0A%09%09interrupt.ShutdownChannel %3C- nil%0A%09%7D()%0A%09return %3C-interrupt.ShutdownChannel%0A%7D%0A
++ f 00e14345f8d8bddcb198efeef3ca574e0fa1ac3701df0d2d4e18f1de7fda835e ssot/doc.go
+dmppatch 2
+@@ -0,0 +1,3114 @@
++/*%0APackage ssot implements a single source of truth (SSOT) with DNS TXT records.%0A%0ACreatePkg specification%0A%0ATo create a new secure package for a project developed with Codechain that%0Ashould be distributed with a SSOT using DNS TXT records, the following%0Aprocedure is defined:%0A%0A  1. Make sure the project with NAME has not been published before.%0A     That is, the directory ~/.config/ssotpub/pkgs/NAME does not exist.%0A%0A  2. Create a new .secpkg file which specifies the following:%0A%0A     - The NAME of the project.%0A     - The fully qualified domain name (DNS) where the TXT records can be%0A       queried.%0A     - The URL under which the distribution .tar.gz files can be downloaded.%0A     - The current HEAD of the project's Codechain.%0A%0A     The .secpkg file is saved to the current working directory, which is%0A     typically added to the root of the project's repository.%0A%0A  3. Create the first signed head (see SignHead) for the current project's%0A     HEAD with a supplied secret key and counter set to 0.%0A%0A  4. Create the directory ~/.config/ssotpub/pkgs/NAME/dists%0A     and save the current distribution to%0A      ~/.config/ssotpub/pkgs/NAME/dists/HEAD.tar.gz (%60codechain createdist%60).%0A%0A  5. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head%0A%0A  6. Print the distribution name: ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz%0A%0A  7. Print DNS TXT record as defined by the .secpkg and the first signed head.%0A%0A  Afterwards the administrator manually uploads the distribution HEAD.tar.gz%0A  to the download URL and publishes the new DNS TXT record in the defined%0A  zone. DNSSEC should be enabled.%0A%0ASignHead specification%0A%0ATo publish an update of a secure package with SSOT do the following:%0A%0A  1. Parse the .secpkg file in the current working directory.%0A%0A  2. Make sure the project with NAME has been published before.%0A     That is, the directory ~/.config/ssotpub/pkgs/NAME exists.%0A%0A  3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head%0A     and make sure the corresponding secret key is available.%0A%0A  4. Get the HEAD from .codechain/hashchain in the current working directory.%0A%0A  5. Create a new signed head with current HEAD, the counter of the previous%0A     signed head plus 1, and update the saved signed head:%0A%0A     - %60cp -f ~/.config/ssotpub/pkgs/NAME/signed_head%0A              ~/.config/ssotpub/pkgs/NAME/previous_signed_head%60%0A     - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).%0A%0A  6. Save the current distribution to:%0A     ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (%60codechain createdist%60).%0A%0A  7. Print the distribution name: ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz%0A%0A  8. Print DNS TXT record as defined by the .secpkg and the signed head.%0A%0A  9. If the HEAD changed, update the .secpkg file accordingly.%0A%0A  Afterwards the administrator manually uploads the distribution HEAD.tar.gz%0A  to the download URL and publishes the new DNS TXT record in the defined%0A  zone. DNSSEC should be enabled.%0A%0ATODO%0A%0AThe following should be specified:%0A%0A  - Key rotation.%0A  - Automatic publishing of TXT records. With https://github.com/xenolf/lego?%0A*/%0Apackage ssot%0A
++ f a0668e06f56deca418a2d678b884b0c00732b6e574e4a8f05fc5966ca6fbb35f ssot/errors.go
+dmppatch 2
+@@ -0,0 +1,205 @@
++package ssot%0A%0Aimport (%0A%09%22errors%22%0A)%0A%0A// ErrSignedHeadSignature is returned if a signed head signature does not verify.%0Avar ErrSignedHeadSignature = errors.New(%22ssot: signed head signature does not verify%22)%0A
++ f 3b0d6d48ff61988f4ebc7048290c225ba184d464b27056602f83053e6c494e1b ssot/signhead.go
+dmppatch 2
+@@ -0,0 +1,559 @@
++package ssot%0A%0Aimport (%0A%09%22time%22%0A%0A%09%22golang.org/x/crypto/ed25519%22%0A)%0A%0A// SignHead signs the given Codechain head.%0Afunc SignHead(head %5B32%5Dbyte, counter uint64, secKey %5B64%5Dbyte) *SignedHead %7B%0A%09var sh SignedHead%0A%09copy(sh.pubKey%5B:%5D, secKey%5B32:%5D)%0A%09// TODO: allow to set pubKeyRotate%0A%09now := time.Now().UTC().Unix()%0A%09// TODO: allow to set validFrom and validTo%0A%09sh.validFrom = now%0A%09sh.validTo = now + MaximumValidity%0A%09sh.counter = counter%0A%09copy(sh.head%5B:%5D, head%5B:%5D)%0A%09msg := sh.marshal()%0A%09sig := ed25519.Sign(secKey%5B:%5D, msg%5B:%5D)%0A%09copy(sh.signature%5B:%5D, sig)%0A%09return &sh%0A%7D%0A
++ f 14da65f1c2241a01084305407b9f9cda2aa4be526db052105d75a6c25951aba6 ssot/ssot.go
+dmppatch 2
+@@ -0,0 +1,3146 @@
++package ssot%0A%0Aimport (%0A%09%22encoding/binary%22%0A%09%22fmt%22%0A%0A%09%22github.com/frankbraun/codechain/internal/base64%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/internal/hex%22%0A%09%22golang.org/x/crypto/ed25519%22%0A)%0A%0A// File defines the default file name for a signed head.%0Aconst File = %22signed_head%22%0A%0A// MaximumValidity of signed heads.%0Aconst MaximumValidity = 30 * 24 * 60 * 60 // 30d%0A%0A// TTL of signed head TXT records%0Aconst TTL = 600 // 10m%0A%0A// SignedHead is a signed Codechain head ready for publication as a SSOT with%0A// DNS TXT records.%0Atype SignedHead struct %7B%0A%09pubKey       %5B32%5Dbyte // Ed25519 public key of SSOT head signer%0A%09pubKeyRotate %5B32%5Dbyte // Ed25519 pubkey to rotate to, all 0 if unused%0A%09validFrom    int64    // this signed head is valid from the given Unix time%0A%09validTo      int64    // this signed head is valid to the given Unix time%0A%09counter      uint64   // signature counter%0A%09head         %5B32%5Dbyte // the Codechain head to sign%0A%09signature    %5B64%5Dbyte // signature with pubkey over all previous fields%0A%7D%0A%0A// marshal signed head without signature.%0Afunc (sh *SignedHead) marshal() %5B120%5Dbyte %7B%0A%09var m %5B120%5Dbyte%0A%09var b %5B8%5Dbyte%0A%09copy(m%5B:32%5D, sh.pubKey%5B:%5D)%0A%09copy(m%5B32:64%5D, sh.pubKeyRotate%5B:%5D)%0A%09binary.BigEndian.PutUint64(b%5B:%5D, uint64(sh.validFrom))%0A%09copy(m%5B64:72%5D, b%5B:%5D)%0A%09binary.BigEndian.PutUint64(b%5B:%5D, uint64(sh.validTo))%0A%09copy(m%5B72:80%5D, b%5B:%5D)%0A%09binary.BigEndian.PutUint64(b%5B:%5D, sh.counter)%0A%09copy(m%5B80:88%5D, b%5B:%5D)%0A%09copy(m%5B88:120%5D, sh.head%5B:%5D)%0A%09return m%0A%7D%0A%0A// Marshal signed head with signature and encode it as base64.%0Afunc (sh *SignedHead) Marshal() string %7B%0A%09var m %5B184%5Dbyte%0A%09b := sh.marshal()%0A%09copy(m%5B:120%5D, b%5B:%5D)%0A%09copy(m%5B120:184%5D, sh.signature%5B:%5D)%0A%09return base64.Encode(m%5B:%5D)%0A%7D%0A%0Afunc unmarshal(m %5B184%5Dbyte) (*SignedHead, error) %7B%0A%09var sh SignedHead%0A%09copy(sh.pubKey%5B:%5D, m%5B:32%5D)%0A%09copy(sh.pubKeyRotate%5B:%5D, m%5B32:64%5D)%0A%09sh.validFrom = int64(binary.BigEndian.Uint64(m%5B64:72%5D))%0A%09sh.validTo = int64(binary.BigEndian.Uint64(m%5B72:80%5D))%0A%09sh.counter = binary.BigEndian.Uint64(m%5B80:88%5D)%0A%09copy(sh.head%5B:%5D, m%5B88:120%5D)%0A%09copy(sh.signature%5B:%5D, m%5B120:184%5D)%0A%09msg := sh.marshal()%0A%09if !ed25519.Verify(sh.pubKey%5B:%5D, msg%5B:%5D, sh.signature%5B:%5D) %7B%0A%09%09return nil, ErrSignedHeadSignature%0A%09%7D%0A%09return &sh, nil%0A%7D%0A%0A// Unmarshal and verify a base64 encoded signed head.%0Afunc Unmarshal(signedHead string) (*SignedHead, error) %7B%0A%09b, err := base64.Decode(signedHead, 184)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09var m %5B184%5Dbyte%0A%09copy(m%5B:%5D, b)%0A%09return unmarshal(m)%0A%7D%0A%0A// Head returns the signed head.%0Afunc (sh *SignedHead) Head() string %7B%0A%09return hex.Encode(sh.head%5B:%5D)%0A%7D%0A%0A// PubKey returns the public key in base64 notation.%0Afunc (sh *SignedHead) PubKey() string %7B%0A%09return base64.Encode(sh.pubKey%5B:%5D)%0A%7D%0A%0A// Counter returns the counter of signed head.%0Afunc (sh *SignedHead) Counter() uint64 %7B%0A%09return sh.counter%0A%7D%0A%0A// HeadBuf returns the signed head.%0Afunc (sh *SignedHead) HeadBuf() %5B32%5Dbyte %7B%0A%09var b %5B32%5Dbyte%0A%09copy(b%5B:%5D, sh.head%5B:%5D)%0A%09return b%0A%7D%0A%0A// PrintTXT prints the TXT record to publish the signed head.%0Afunc (sh *SignedHead) PrintTXT(dns string) %7B%0A%09fmt.Printf(%22%25s%25s.%5Ct%5Ct%25d%5CtIN%5CtTXT%5Ct%5C%22%25s%5C%22%5Cn%22,%0A%09%09def.CodechainTXTName, dns, TTL, sh.Marshal())%0A%7D%0A
++ f 02651cda0616c31631e329a4cdc4acff5825dee210a6e241653ed228cf14effb ssot/ssot_test.go
+dmppatch 2
+@@ -0,0 +1,686 @@
++package ssot%0A%0Aimport (%0A%09%22crypto/rand%22%0A%09%22testing%22%0A%0A%09%22github.com/frankbraun/codechain/internal/hex%22%0A%09%22golang.org/x/crypto/ed25519%22%0A)%0A%0Aconst headStr = %2273fe1313fd924854f149021e969546bce6052eca0c22b2b91245cb448410493c%22%0A%0Afunc TestSignedHead(t *testing.T) %7B%0A%09buf, err := hex.Decode(headStr, 32)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22hex.Decode() failed: %25v%22, err)%0A%09%7D%0A%09var head %5B32%5Dbyte%0A%09copy(head%5B:%5D, buf)%0A%09_, sec, err := ed25519.GenerateKey(rand.Reader)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ed25519.GenerateKey() failed: %25v%22, err)%0A%09%7D%0A%09var sk %5B64%5Dbyte%0A%09copy(sk%5B:%5D, sec)%0A%09sh := SignHead(head, 0, sk)%0A%09txt := sh.Marshal()%0A%09_, err = Unmarshal(txt)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Unmarshal() failed: %25v%22, err)%0A%09%7D%0A%7D%0A
+- f a80dd0cdc3c914c2d0730b356047c5394284990c626d745a5634b18be4243817 sync/sync.go
++ f 7fe6b14ffa35df83720acdef6cccf656ccec2bc35619554548fdeeceec222cb5 sync/sync.go
+dmppatch 5
+@@ -545,80 +545,81 @@
+ ith%0A
+-// tree.EmptyHash and contain the targetHash. Syncronization happens by%0A
++// tree.EmptyHash and contain the targetHash. Synchronization happens by%0A
+ // a
+- f b24a46b2e00b77df3ee40222f67c3850d54bad0afb9aa6b96a2ab2f4af21e253 tree/tree.go
++ f 8c282820feb58234dd88162cce87041c298934c5841c460e7e034c1bedb30961 tree/tree.go
+dmppatch 5
+@@ -4094,82 +4094,81 @@
+ %0A%7D%0A%0A
+-// printList printes a list of entries in the canonical tree list format.%0A
++// printList prints a list of entries in the canonical tree list format.%0A
+ func
+- f b321ec8cd17a84296c549cdbec3124d011aad38f7d34c00ae3dc6e79ae9c2030 util/file/file.go
++ f f250ddce0f9bd37c9f0f472cbe16ec7581ff629aade0e4a507d0f1092f726928 util/file/file.go
+dmppatch 7
+@@ -101,16 +101,28 @@
+ ioutil%22%0A
++%09%22net/http%22%0A
+ %09%22os%22%0A%09%22
+@@ -4492,28 +4492,453 @@
+ rn err%0A%09%09%7D%0A%09%7D%0A%09return nil%0A%7D%0A
++%0A// Download file from url and write it to filepath.%0A// If the file with filepath already exists, it will be overwritten!%0Afunc Download(filepath string, url string) error %7B%0A%09out, err := os.Create(filepath)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer out.Close()%0A%09resp, err := http.Get(url)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09defer resp.Body.Close()%0A%09_, err = io.Copy(out, resp.Body)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09return nil%0A%7D%0A
++ f ffa43fb0d14b329a000ad6d91326067fee30acaeeef7a41f0c6dd79a9b4cb91d util/homedir/homedir.go
+dmppatch 2
+@@ -0,0 +1,812 @@
++// Package homedir implements helper methods to get the home directories of%0A// various tools.%0Apackage homedir%0A%0Aimport (%0A%09%22os%22%0A%09%22strings%22%0A%0A%09%22github.com/frankbraun/codechain/util/home%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0Afunc get(app string) string %7B%0A%09env := strings.ToUpper(app) + %22HOMEDIR%22%0A%09if homeDir := os.Getenv(env); homeDir != %22%22 %7B%0A%09%09log.Printf(%22$%25s=%25s%22, env, homeDir)%0A%09%09return homeDir%0A%09%7D%0A%09homeDir := home.AppDataDir(app, false)%0A%09log.Printf(%22homeDir: %25s%22, homeDir)%0A%09return homeDir%0A%7D%0A%0A// Codechain returns the home directory for 'codechain'.%0Afunc Codechain() string %7B%0A%09return get(%22codechain%22)%0A%7D%0A%0A// SecPkg returns the home directory for 'secpkg'.%0Afunc SecPkg() string %7B%0A%09return get(%22secpkg%22)%0A%7D%0A%0A// SSOTPub returns the home directory for 'ssotpub'.%0Afunc SSOTPub() string %7B%0A%09return get(%22ssotpub%22)%0A%7D%0A
++ f 201e2ff52e3d8c216493df815ab4cbecb68797f8fb64f9824b612a870168ae3f util/seckey/seckey.go
+dmppatch 2
+@@ -0,0 +1,2955 @@
++// Package seckey implements helper functions for secret key files.%0Apackage seckey%0A%0Aimport (%0A%09%22fmt%22%0A%09%22io/ioutil%22%0A%09%22path/filepath%22%0A%09%22syscall%22%0A%0A%09%22github.com/frankbraun/codechain/hashchain%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A%09%22github.com/frankbraun/codechain/keyfile%22%0A%09%22github.com/frankbraun/codechain/util/bzero%22%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/terminal%22%0A%09%22golang.org/x/crypto/ed25519%22%0A)%0A%0A// TestPass is a passphrase used for testing purposes.%0Avar TestPass string%0A%0A// Check that the file seckey exists, if it is given.%0A// Otherwise make sure that at least the secrets subdirectory of homeDir%0A// exists.%0Afunc Check(homeDir, seckey string) error %7B%0A%09if seckey != %22%22 %7B%0A%09%09exists, err := file.Exists(seckey)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if !exists %7B%0A%09%09%09return fmt.Errorf(%22file '%25s' doesn't exists%22, seckey)%0A%09%09%7D%0A%09%7D else %7B%0A%09%09secretDir := filepath.Join(homeDir, def.SecretsSubDir)%0A%09%09// make sure we have the secrets directory present%0A%09%09exists, err := file.Exists(secretDir)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if !exists %7B%0A%09%09%09return fmt.Errorf(%22directory '%25s' doesn't exists: you have no secrets%22,%0A%09%09%09%09homeDir)%0A%09%09%7D%0A%09%7D%0A%09return nil%0A%7D%0A%0A// Read reads the secret key from given filename.%0Afunc Read(filename string) (*%5B64%5Dbyte, *%5B64%5Dbyte, %5B%5Dbyte, error) %7B%0A%09exists, err := file.Exists(filename)%0A%09if err != nil %7B%0A%09%09return nil, nil, nil, err%0A%09%7D%0A%09if !exists %7B%0A%09%09return nil, nil, nil, fmt.Errorf(%22keyfile '%25s' does not exist%22, filename)%0A%09%7D%0A%09fmt.Printf(%22opening keyfile: %25s%5Cn%22, filename)%0A%09var pass %5B%5Dbyte%0A%09if TestPass == %22%22 %7B%0A%09%09pass, err = terminal.ReadPassphrase(syscall.Stdin, false)%0A%09%09if err != nil %7B%0A%09%09%09return nil, nil, nil, err%0A%09%09%7D%0A%09%09defer bzero.Bytes(pass)%0A%09%7D else %7B%0A%09%09pass = %5B%5Dbyte(TestPass)%0A%09%7D%0A%09sec, sig, comment, err := keyfile.Read(filename, pass)%0A%09if err != nil %7B%0A%09%09return nil, nil, nil, err%0A%09%7D%0A%09if !ed25519.Verify(sec%5B32:%5D, append(sec%5B32:%5D, comment...), sig%5B:%5D) %7B%0A%09%09return nil, nil, nil, fmt.Errorf(%22signature does not verify%22)%0A%09%7D%0A%09return sec, sig, comment, nil%0A%7D%0A%0A// Load loads secret from filename, if given.%0A// Otherwise it loads the secret corresponding to the signer in given hash%0A// chain and makes sure that only one such secret exists.%0Afunc Load(c *hashchain.HashChain, homeDir, filename string) (*%5B64%5Dbyte, *%5B64%5Dbyte, %5B%5Dbyte, error) %7B%0A%09if filename != %22%22 %7B%0A%09%09return Read(filename)%0A%09%7D%0A%09secretDir := filepath.Join(homeDir, def.SecretsSubDir)%0A%09signer := c.Signer()%0A%09files, err := ioutil.ReadDir(secretDir)%0A%09if err != nil %7B%0A%09%09return nil, nil, nil, err%0A%09%7D%0A%09var pubKey string%0A%09for _, fi := range files %7B%0A%09%09if signer%5Bfi.Name()%5D %7B%0A%09%09%09if pubKey == %22%22 %7B%0A%09%09%09%09pubKey = fi.Name()%0A%09%09%09%7D else %7B%0A%09%09%09%09return nil, nil, nil,%0A%09%09%09%09%09fmt.Errorf(%22more than one matching keyfile found: you have too many secrets%22)%0A%09%09%09%7D%0A%09%09%7D%0A%09%7D%0A%09if pubKey == %22%22 %7B%0A%09%09return nil, nil, nil,%0A%09%09%09fmt.Errorf(%22directory '%25s' doesn't contain any matching secret keyfile%22, secretDir)%0A%09%7D%0A%09return Read(filepath.Join(secretDir, pubKey))%0A%7D%0A
+treehash 599d5e0a720f7499534895f70e8832470c2cca0152ffc093197d85d1bc4d98ab

@@ -31,7 +31,7 @@ Codechain uses files to store the hash chain, not a distributed
 ### Installation
 
 ```
-go get -u -v github.com/frankbraun/codechain
+go get -u -v github.com/frankbraun/codechain/...
 ```
 
 ### Features

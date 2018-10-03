@@ -15,7 +15,7 @@ import (
 func TestDir(t *testing.T) {
 	tmpdir, err := ioutil.TempDir("", "sync_test")
 	if err != nil {
-		t.Fatalf("TempDir() failed: %v", err)
+		t.Fatalf("ioutil.TempDir() failed: %v", err)
 	}
 	defer os.RemoveAll(tmpdir)
 

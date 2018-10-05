@@ -24,7 +24,7 @@ separated with single newline characters.
 Directories are only implicitly listed (i.e., if they
 contain files). Entries start with 'f' if it is a regular file (read and
 write permission for user) and with 'x' if it is an executable (read,
-write, and executabele for user).
+write, and executable for user).
 
 The directory tree must only contain directories, regular files, or executables.
 

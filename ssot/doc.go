@@ -1,6 +1,31 @@
 /*
 Package ssot implements a single source of truth (SSOT) with DNS TXT records.
 
+Signed head specification
+
+Signed heads have the following fields:
+
+  - PUBKEY (32-byte), the Ed25519 public key of SSOT head signer.
+  - PUBKEY_ROTATE (32-byte), Ed25519 pubkey to rotate to, set to 0 if unused.
+  - VALID_FROM (8-byte), the signed head is valid from the given Unix time.
+  - VALID_TO (8-byte), the signed head is valid to the given Unix time.
+  - COUNTER (8-byte), strictly increasing signature counter.
+  - HEAD, the Codechain head to sign.
+  - SIGNATURE, signature with PUBKEY.
+
+The SIGNATURE is over all previous fields:
+
+  PUBKEY|PUBKEY_ROTATE|VALID_FROM|VALID_TO|COUNTER|HEAD
+
+The signed head is a concatenation of
+
+  PUBKEY|PUBKEY_ROTATE|VALID_FROM|VALID_TO|COUNTER|HEAD|SIGNATURE
+
+encoded in base64 (URL encoding without padding).
+
+All integers (VALID_FROM, VALID_TO, COUNTER) are encoded in network order
+(big-endian).
+
 CreatePkg specification
 
 To create a new secure package for a project developed with Codechain that

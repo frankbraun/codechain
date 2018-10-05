@@ -53,11 +53,11 @@ Codechain depends on the `git` binary (for `git diff`), but that's optional.
 
 - [Walkthrough](doc/walkthrough.md)
 - [Presentation about Codechain](http://frankbraun.org/in-code-we-trust.pdf)
+- [Directory tree hashes and lists](https://godoc.org/github.com/frankbraun/codechain/tree)
 - [Hash chain file format](https://godoc.org/github.com/frankbraun/codechain/hashchain)
 - [Patchfile format](https://godoc.org/github.com/frankbraun/codechain/patchfile)
-- [Directory tree hashes and lists](https://godoc.org/github.com/frankbraun/codechain/tree)
-- [Secure packages (`.secpkg` files)](https://godoc.org/github.com/frankbraun/codechain/secpkg)
 - [SSOT with DNS TXT records](https://godoc.org/github.com/frankbraun/codechain/ssot)
+- [Secure packages (`.secpkg` files)](https://godoc.org/github.com/frankbraun/codechain/secpkg)
 
 ### Acknowledgments
 

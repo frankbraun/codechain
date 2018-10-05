@@ -70,7 +70,7 @@ the patchfile has been applied (example):
 
   treehash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 
-Patchfiles are optimzed for robustness, not for compactness or human
+Patchfiles are optimized for robustness, not for compactness or human
 readability (although the human readability is reasonable).
 A complete example containing a single UTF-8 file addition:
 

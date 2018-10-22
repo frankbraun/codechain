@@ -14,10 +14,10 @@ func usage() {
 	cmd := os.Args[0]
 	fmt.Fprintf(os.Stderr, "Usage: %s treehash [-l]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s keygen [-s seckey.bin]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s keyfile -s seckey.bin [-c]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s keyfile [-l] -s seckey.bin [-c]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s start -s seckey.bin\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s publish [-s seckey.bin]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s review [-s seckey.bin] [treehash]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s review [-a] [-d] [-s seckey.bin] [treehash]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s addkey [-w] pubkey signature [comment]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s remkey pubkey\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s sigctl -m\n", cmd)

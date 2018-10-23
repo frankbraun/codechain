@@ -3,10 +3,10 @@ exec_prefix ?= $(prefix)
 bindir ?= $(exec_prefix)/bin
 
 all:
-	env GO111MODULE=on go build -mod vendor -v ./...
+	env GO111MODULE=on go build -mod vendor -v . ./cmd/...
 
 install:
-	env GO111MODULE=on GOBIN=$(bindir) go install -mod vendor -v ./...
+	env GO111MODULE=on GOBIN=$(bindir) go install -mod vendor -v . ./cmd/secpkg ./cmd/ssotpub
 
 .PHONY: test update-vendor
 

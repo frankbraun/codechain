@@ -117,7 +117,7 @@ func signHead(c *hashchain.HashChain) error {
 func SignHead(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s -s seckey.bin\n", argv0)
+		fmt.Fprintf(os.Stderr, "Usage: %s\n", argv0)
 		fmt.Fprintf(os.Stderr, "Sign Codechain head and print it on stdout.\n")
 		fs.PrintDefaults()
 	}

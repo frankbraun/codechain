@@ -142,6 +142,10 @@ func (pkg *Package) Install() error {
 	// 12. Call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	localDir := filepath.Join(homedir.SecPkg(), "local")
+	if err := os.MkdirAll(localDir, 0755); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
 	if err := os.Chdir(buildDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err

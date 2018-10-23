@@ -13,6 +13,7 @@ func usage() {
 	cmd := os.Args[0]
 	fmt.Fprintf(os.Stderr, "Usage: %s install project.secpkg\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s update package_name\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s list\n", cmd)
 	os.Exit(2)
 }
 
@@ -28,6 +29,8 @@ func main() {
 		err = command.Install(argv0, args...)
 	case "update":
 		err = command.Update(argv0, args...)
+	case "list":
+		err = command.List(argv0, args...)
 	default:
 		usage()
 	}

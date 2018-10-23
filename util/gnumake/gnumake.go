@@ -24,3 +24,12 @@ func Install(prefix string) error {
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
+
+// Uninstall calls 'make uninstall' with prefix=prefix.
+func Uninstall(prefix string) error {
+	prefixStr := fmt.Sprintf("prefix=%s", prefix)
+	cmd := exec.Command("make", prefixStr, "uninstall")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}

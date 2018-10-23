@@ -7,5 +7,5 @@ require (
 	github.com/mutecomm/mute v0.0.0-20180427225835-8124193e6371
 	github.com/sergi/go-diff v1.0.0
 	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
-	golang.org/x/sys v0.0.0-20181022134430-8a28ead16f52 // indirect
+	golang.org/x/sys v0.0.0-20181023152157-44b849a8bc13 // indirect
 )

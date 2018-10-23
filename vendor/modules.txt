@@ -18,7 +18,7 @@ golang.org/x/crypto/blake2b
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/salsa20/salsa
-# golang.org/x/sys v0.0.0-20181022134430-8a28ead16f52
+# golang.org/x/sys v0.0.0-20181023152157-44b849a8bc13
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows

@@ -155,12 +155,12 @@ func Update(name string) error {
 	}
 
 	// 14. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
-	installDir := filepath.Join(pkgDir, "install")
-	if err := os.RemoveAll(installDir); err != nil {
+	installedDir := filepath.Join(pkgDir, "installed")
+	if err := os.RemoveAll(installedDir); err != nil {
 		return err
 	}
 
-	if err := os.Rename(buildDir, installDir); err != nil {
+	if err := os.Rename(buildDir, installedDir); err != nil {
 		return err
 	}
 

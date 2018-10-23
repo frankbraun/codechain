@@ -166,8 +166,8 @@ func (pkg *Package) Install() error {
 	}
 
 	// 14. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
-	installDir := filepath.Join(pkgDir, "install")
-	if err := os.Rename(buildDir, installDir); err != nil {
+	installedDir := filepath.Join(pkgDir, "installed")
+	if err := os.Rename(buildDir, installedDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}

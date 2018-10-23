@@ -6,17 +6,15 @@ A secure package (.secpkg file) contains a JSON object with the following keys:
   {
     "Name": "the project's package name",
     "Head": "head of project's Codechain",
-    "DNS": "fully qualified domain name",
-    "URL": "URL to download project files of the from (URL/head.tar.gz)"
+    "DNS": "fully qualified domain name for Codechain's TXT records",
   }
 
 Example .secpkg file for Codechain itself:
 
   {
     "Name": "codechain",
-    "Head": "73fe1313fd924854f149021e969546bce6052eca0c22b2b91245cb448410493c",
+    "Head": "53f2c26d92e173306e83d54e3103ef2e0bd87a561315bc4b49e1ee6c78dfb583",
     "DNS": "codechain.secpkg.net",
-    "URL": "http://frankbraun.org/codechain"
   }
 
 Install specification
@@ -32,30 +30,32 @@ Installing software described by a .secpkg file works as follows:
 
    4. Save .secpkg file to ~/.config/secpkg/pkgs/NAME/.secpkg
 
-   5. Query TXT record from _codechain.DNS and validate the signed head
+   5. Query TXT record from _codechain-head.DNS and validate the signed head
       contained in it (see ssot package). Save head from TXT record (HEAD_SSOT).
 
-   6. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head
+   6. Query TXT record from _codechain-url.DNS and save it as URL.
 
-   7. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to
+   7. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head
+
+   8. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to
       ~/.config/secpkg/pkgs/NAME/dists
 
-   8. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz
+   9. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz
       to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
       -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT`
 
-   9. Make sure HEAD_PKG is contained in
+  10. Make sure HEAD_PKG is contained in
       ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain
 
-  10. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+  11. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 
-  11. Call `make prefix=~/.config/secpkg/local` in
+  12. Call `make prefix=~/.config/secpkg/local` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  12. Call `make prefix= ~/.config/secpkg/local install` in
+  14. Call `make prefix= ~/.config/secpkg/local install` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  13. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+  15. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
   If the installation process fails at any stage during the procedure described
   above, report the error and remove the directory ~/.config/secpkg/pkgs/NAME.
@@ -79,9 +79,11 @@ Updating a software package with NAME works as follows:
 
    3. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head (as DISK)
 
-   4. Query TXT record from _codechain.DNS, if it is the same as DISK, goto 15.
+   4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, goto 16.
 
-   5. Validate signed head from TXT (also see ssot package) and store HEAD:
+   5. Query TXT record from _codechain-url.DNS and save it as URL.
+
+   6. Validate signed head from TXT (also see ssot package) and store HEAD:
 
       - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK.
       - The counter from TXT must be larger than the counter from DISK.
@@ -89,38 +91,38 @@ Updating a software package with NAME works as follows:
 
       If the validation fails, abort update procedure and report error.
 
-   6. If signed head from TXT record is the same as the one from DISK:
+   7. If signed head from TXT record is the same as the one from DISK:
 
       - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
                ~/.config/secpkg/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
-      - Goto 15.
+      - Goto 16.
 
-   7. Download distribution file from URL/HEAD.tar.gz and save it to
+   8. Download distribution file from URL/HEAD.tar.gz and save it to
       ~/.config/secpkg/pkgs/NAME/dists
 
-   8. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+   9. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
       to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
       -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
 
-   9. `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+  10. `rm -rf ~/.config/secpkg/pkgs/NAME/build`
 
-  10. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+  11. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 
-  11. Call `make prefix=~/.config/secpkg/local` in
+  12. Call `make prefix=~/.config/secpkg/local` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  12. Call `make prefix= ~/.config/secpkg/local install` in
+  13. Call `make prefix= ~/.config/secpkg/local install` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  13. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+  14. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
-  14. Update signed head:
+  15. Update signed head:
 
       - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
                ~/.config/secpkg/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
 
-  15. The software has been successfully updated.
+  16. The software has been successfully updated.
 */
 package secpkg

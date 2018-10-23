@@ -44,8 +44,8 @@ func Update(name string) error {
 		return err
 	}
 
-	// 4. Query TXT record from _codechain.DNS, if it is the same as DISK, goto 15.
-	shDNS, err := ssot.Lookup(pkg.DNS)
+	// 4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, goto 16.
+	shDNS, err := ssot.LookupHead(pkg.DNS)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,14 @@ func Update(name string) error {
 		return nil
 	}
 
-	// 5. Validate signed head from TXT (also see ssot package) and store HEAD:
+	// 5. Query TXT record from _codechain-url.DNS and save it as URL.
+	URL, err := ssot.LookupURL(pkg.DNS)
+	if err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+
+	// 6. Validate signed head from TXT (also see ssot package) and store HEAD:
 	//
 	//    - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK.
 	//    - The counter from TXT must be larger than the counter from DISK.
@@ -72,30 +79,30 @@ func Update(name string) error {
 		return err
 	}
 
-	// 6. If signed head from TXT record is the same as the one from DISK:
+	// 7. If signed head from TXT record is the same as the one from DISK:
 	//
 	//    - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
 	//             ~/.config/secpkg/pkgs/NAME/previous_signed_head`
 	//     - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
-	//     - Goto 15.
+	//     - Goto 16.
 
 	if shDNS.Head() == shDisk.Head() {
 		return shDNS.RotateFile(pkgDir)
 	}
 
-	// 7. Download distribution file from URL/HEAD.tar.gz and save it to
+	// 8. Download distribution file from URL/HEAD.tar.gz and save it to
 	//    ~/.config/secpkg/pkgs/NAME/dists
 	distDir := filepath.Join(pkgDir, "dists")
 	fn = shDNS.Head() + ".tar.gz"
 	filename := filepath.Join(distDir, fn)
-	url := pkg.URL + "/" + fn
+	url := URL + "/" + fn
 	fmt.Printf("download %s\n", url)
 	err = file.Download(filename, url)
 	if err != nil {
 		return err
 	}
 
-	// 8. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+	// 9. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
 	//	  to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
 	//	  -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
 	srcDir := filepath.Join(pkgDir, "src")
@@ -119,18 +126,18 @@ func Update(name string) error {
 		return err
 	}
 
-	// 9. `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+	// 10. `rm -rf ~/.config/secpkg/pkgs/NAME/build`
 	buildDir := filepath.Join(pkgDir, "build")
 	if err := os.RemoveAll(buildDir); err != nil {
 		return err
 	}
 
-	// 10. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+	// 11. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 	if err := file.CopyDir(srcDir, buildDir); err != nil {
 		return err
 	}
 
-	// 11. Call `make prefix=~/.config/secpkg/local` in
+	// 12. Call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	localDir := filepath.Join(homedir.SecPkg(), "local")
 	if err := os.Chdir(buildDir); err != nil {
@@ -141,13 +148,13 @@ func Update(name string) error {
 		return err
 	}
 
-	// 12. Call `make prefix= ~/.config/secpkg/local install` in
+	// 13. Call `make prefix= ~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	if err := gnumake.Install(localDir); err != nil {
 		return err
 	}
 
-	// 13. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+	// 14. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 	installDir := filepath.Join(pkgDir, "install")
 	if err := os.RemoveAll(installDir); err != nil {
 		return err
@@ -157,12 +164,12 @@ func Update(name string) error {
 		return err
 	}
 
-	// 14. Update signed head:
+	// 15. Update signed head:
 	//
 	//      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
 	//               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
 	//      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
 	return shDNS.RotateFile(pkgDir)
 
-	// 15. The software has been successfully updated.
+	// 16. The software has been successfully updated.
 }

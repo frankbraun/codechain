@@ -40,7 +40,6 @@ procedure is defined:
      - The NAME of the project.
      - The fully qualified domain name (DNS) where the TXT records can be
        queried.
-     - The URL under which the distribution .tar.gz files can be downloaded.
      - The current HEAD of the project's Codechain.
 
      The .secpkg file is saved to the current working directory, which is
@@ -57,7 +56,8 @@ procedure is defined:
 
   6. Print the distribution name: ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
 
-  7. Print DNS TXT record as defined by the .secpkg and the first signed head.
+  7. Print DNS TXT records as defined by the .secpkg, the first signed head,
+     and the download URL.
 
   Afterwards the administrator manually uploads the distribution HEAD.tar.gz
   to the download URL and publishes the new DNS TXT record in the defined
@@ -87,7 +87,8 @@ To publish an update of a secure package with SSOT do the following:
   6. Save the current distribution to:
      ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
 
-  7. Print the distribution name: ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
+  7. Lookup the download URL and print where to upload the distribution file:
+     ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
 
   8. Print DNS TXT record as defined by the .secpkg and the signed head.
 

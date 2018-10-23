@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -19,7 +20,7 @@ import (
 	"github.com/frankbraun/codechain/util/seckey"
 )
 
-func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error {
+func createPkg(c *hashchain.HashChain, name, dns, URL, secKeyFile string) error {
 	head := c.Head()
 	fmt.Printf("create package for head %x\n", head)
 	secKey, _, _, err := seckey.Read(secKeyFile)
@@ -27,7 +28,10 @@ func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error 
 		return err
 	}
 	// 2. Create package (before 1., because this checks the arguments)
-	pkg, err := secpkg.New(name, dns, url, head)
+	if _, err := url.Parse(URL); err != nil {
+		return err
+	}
+	pkg, err := secpkg.New(name, dns, head)
 	if err != nil {
 		return err
 	}
@@ -81,14 +85,17 @@ func createPkg(c *hashchain.HashChain, name, dns, url, secKeyFile string) error 
 
 	// 6. Print the distribution name
 	fmt.Println("")
-	fmt.Printf("Please upload the following distribution file to: %s\n", pkg.URL)
+	fmt.Printf("Please upload the following distribution file to: %s\n", URL)
 	fmt.Println(distFile)
 	fmt.Println("")
 
-	// 7. Print DNS TXT record as defined by the .secpkg and the first signed head.
-	fmt.Println("Please publish the following DNS TXT record:")
+	// 7. Print DNS TXT records as defined by the .secpkg, the first signed head,
+	//    and the URL.
+	fmt.Println("Please publish the following DNS TXT records:")
 	fmt.Println("")
-	sh.PrintTXT(pkg.DNS)
+	sh.TXTPrintHead(pkg.DNS)
+	fmt.Println("")
+	ssot.TXTPrintURL(pkg.DNS, URL)
 	return nil
 }
 
@@ -101,7 +108,7 @@ func CreatePkg(argv0 string, args ...string) error {
 		fs.PrintDefaults()
 	}
 	name := fs.String("name", "", "The project's package name")
-	dns := fs.String("dns", "", "Fully qualified comain name for _codechain TXT records (SSOT)")
+	dns := fs.String("dns", "", "Fully qualified comain name for Codechain's TXT records (SSOT)")
 	url := fs.String("url", "", "URL to download project files from (URL/head.tar.gz)")
 	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")

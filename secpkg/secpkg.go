@@ -16,12 +16,11 @@ const File = ".secpkg"
 type Package struct {
 	Name string // the project's package name
 	Head string // head of project's Codechain
-	DNS  string // fully qualified domain name for _codechain TXT records (SSOT)
-	URL  string // URL to download project files from (URL/head.tar.gz)
+	DNS  string // fully qualified domain name for Codechain's TXT records (SSOT)
 }
 
 // New creates a new Package.
-func New(name, dns, pkgURL string, head [32]byte) (*Package, error) {
+func New(name, dns string, head [32]byte) (*Package, error) {
 	// validate arguments
 	if strings.Contains(name, " ") {
 		return nil, ErrPkgNameWhitespace
@@ -29,15 +28,11 @@ func New(name, dns, pkgURL string, head [32]byte) (*Package, error) {
 	if _, err := url.Parse(dns); err != nil {
 		return nil, err
 	}
-	if _, err := url.Parse(pkgURL); err != nil {
-		return nil, err
-	}
 	// create package
 	var pkg Package
 	pkg.Name = strings.ToLower(name) // project names are lowercase
 	pkg.Head = hex.Encode(head[:])
 	pkg.DNS = dns
-	pkg.URL = pkgURL
 	return &pkg, nil
 }
 

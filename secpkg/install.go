@@ -45,15 +45,22 @@ func (pkg *Package) Install() error {
 	}
 	fmt.Printf("%s: written\n", File)
 
-	// 5. Query TXT record from _codechain.DNS and validate the signed head
+	// 5. Query TXT record from _codechain-head.DNS and validate the signed head
 	//    contained in it (see ssot package).
-	sh, err := ssot.Lookup(pkg.DNS)
+	sh, err := ssot.LookupHead(pkg.DNS)
 	if err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 6. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head
+	// 6. Query TXT record from _codechain-url.DNS and save it as URL.
+	URL, err := ssot.LookupURL(pkg.DNS)
+	if err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+
+	// 7. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head
 	signedHead := filepath.Join(pkgDir, ssot.File)
 	err = ioutil.WriteFile(signedHead, []byte(sh.Marshal()+"\n"), 0644)
 	if err != nil {
@@ -62,7 +69,7 @@ func (pkg *Package) Install() error {
 	}
 	fmt.Printf("%s: written\n", signedHead)
 
-	// 7. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to
+	// 8. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to
 	//    ~/.config/secpkg/pkgs/NAME/dists
 	distDir := filepath.Join(pkgDir, "dists")
 	if err := os.MkdirAll(distDir, 0755); err != nil {
@@ -71,7 +78,7 @@ func (pkg *Package) Install() error {
 	}
 	fn = sh.Head() + ".tar.gz"
 	filename := filepath.Join(distDir, fn)
-	url := pkg.URL + "/" + fn
+	url := URL + "/" + fn
 	fmt.Printf("download %s\n", url)
 	err = file.Download(filename, url)
 	if err != nil {
@@ -79,7 +86,7 @@ func (pkg *Package) Install() error {
 		return err
 	}
 
-	// 8. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz
+	// 9. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz
 	//    to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
 	//    -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT`
 	srcDir := filepath.Join(pkgDir, "src")
@@ -112,8 +119,8 @@ func (pkg *Package) Install() error {
 		return err
 	}
 
-	// 9. Make sure HEAD_PKG is contained in
-	//   ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain
+	// 10. Make sure HEAD_PKG is contained in
+	//     ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain
 	h, err := hex.Decode(pkg.Head, 32)
 	if err != nil {
 		os.RemoveAll(pkgDir)
@@ -125,14 +132,14 @@ func (pkg *Package) Install() error {
 		return err
 	}
 
-	// 10. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+	// 11. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 	buildDir := filepath.Join(pkgDir, "build")
 	if err := file.CopyDir(srcDir, buildDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 11. Call `make prefix=~/.config/secpkg/local` in
+	// 12. Call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	localDir := filepath.Join(homedir.SecPkg(), "local")
 	if err := os.Chdir(buildDir); err != nil {
@@ -151,14 +158,14 @@ func (pkg *Package) Install() error {
 		return err
 	}
 
-	// 12. Call `make prefix=~/.config/secpkg/local install` in
+	// 13. Call `make prefix=~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	if err := gnumake.Install(localDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 13. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+	// 14. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 	installDir := filepath.Join(pkgDir, "install")
 	if err := os.Rename(buildDir, installDir); err != nil {
 		os.RemoveAll(pkgDir)

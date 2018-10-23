@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/url"
 	"os"
 
 	"github.com/frankbraun/codechain/internal/base64"
@@ -100,9 +101,9 @@ func Load(filename string) (*SignedHead, error) {
 	return sh, nil
 }
 
-// Lookup and verify base64 encoded signed head from dns.
-func Lookup(dns string) (*SignedHead, error) {
-	txts, err := net.LookupTXT(def.CodechainTXTName + dns)
+// LookupHead and verify base64 encoded signed head from dns.
+func LookupHead(dns string) (*SignedHead, error) {
+	txts, err := net.LookupTXT(def.CodechainHeadName + dns)
 	if err != nil {
 		return nil, err
 	}
@@ -121,9 +122,32 @@ func Lookup(dns string) (*SignedHead, error) {
 		break // valid TXT record found
 	}
 	if sh == nil {
-		return nil, errors.New("secpkg: no valid TXT record found")
+		return nil, errors.New("ssot: no valid TXT record for head found")
 	}
 	return sh, nil
+}
+
+// LookupURL looks up URL from dns and returns it.
+func LookupURL(dns string) (string, error) {
+	txts, err := net.LookupTXT(def.CodechainURLName + dns)
+	if err != nil {
+		return "", err
+	}
+	var URL string
+	for _, txt := range txts {
+		// parse TXT records as URL
+		if _, err := url.Parse(txt); err != nil {
+			fmt.Fprintf(os.Stderr, "cannot parse as URL: %s\n", txt)
+			continue
+		}
+		URL = txt
+		fmt.Printf("URL found: %s\n", URL)
+		break // valid TXT record found
+	}
+	if URL == "" {
+		return "", errors.New("ssot: no valid TXT record for URL found")
+	}
+	return URL, nil
 }
 
 // Head returns the signed head.
@@ -153,8 +177,14 @@ func (sh *SignedHead) HeadBuf() [32]byte {
 	return b
 }
 
-// PrintTXT prints the TXT record to publish the signed head.
-func (sh *SignedHead) PrintTXT(dns string) {
+// TXTPrintHead prints the TXT record to publish the signed head.
+func (sh *SignedHead) TXTPrintHead(dns string) {
 	fmt.Printf("%s%s.\t\t%d\tIN\tTXT\t\"%s\"\n",
-		def.CodechainTXTName, dns, TTL, sh.Marshal())
+		def.CodechainHeadName, dns, TTL, sh.Marshal())
+}
+
+// TXTPrintURL prints the TXT record to publish the url.
+func TXTPrintURL(dns, url string) {
+	fmt.Printf("%s%s.\t\t%d\tIN\tTXT\t\"%s\"\n",
+		def.CodechainURLName, dns, TTL, url)
 }

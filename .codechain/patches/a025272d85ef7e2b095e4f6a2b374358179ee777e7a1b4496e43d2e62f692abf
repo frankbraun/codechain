@@ -1,0 +1,202 @@
+codechain patchfile version 1
+treehash a025272d85ef7e2b095e4f6a2b374358179ee777e7a1b4496e43d2e62f692abf
++ f be9e0ed67f2cbca99daca3db71e3f2e5f80742b07ede6903fe568e440b305e98 .secpkg
+dmppatch 2
+@@ -0,0 +1,137 @@
++%7B%0A  %22Name%22: %22codechain%22,%0A  %22Head%22: %22a2f4f947235d2766cc56f54390b05a34ecb44d9baf77dd0185c5a5d2d0484334%22,%0A  %22DNS%22: %22codechain.secpkg.net%22%0A%7D%0A
+- f b89ce42c22193e1dace04a8b1bedb4d7421f69360f9b64a8d6e78f6589d8f797 Makefile
++ f ac8d8bb695e79c78412b64ad2cacfd0221b1379c6bc26bc1c747be6ee4c1bc5d Makefile
+dmppatch 15
+@@ -73,63 +73,119 @@
+ in%0A%0A
++.PHONY: all install uninstall test update-vendor%0A%0A
+ all:%0A
+-%09env GO111MODULE=on go build -mod vendor -v ./...%0A
++%09env GO111MODULE=on go build -mod vendor -v . ./cmd/...%0A
+ %0Ains
+@@ -194,104 +194,173 @@
+ ll:%0A
+-%09env GO111MODULE=on GOBIN=$(bindir) go install -mod vendor -v ./...%0A
++%09env GO111MODULE=on GOBIN=$(bindir) go install -mod vendor -v . ./cmd/secpkg ./cmd/ssotpub%0A
+ %0A
+-.PHONY: test update-vendor%0A
++uninstall:%0A%09rm -f $(bindir)/codechain $(bindir)/secpkg $(bindir)/ssotpub%0A
+ %0Ates
+- f 85c3b3c117b5332cf876fe87f42c24c2d9dfc9cbc126d8f950b6ab6fa97a0a03 cmd/secpkg/secpkg.go
++ f 58251442228f8ccd44360e1e965bbe589f1adfb42b46176e2955bd42f8754c48 cmd/secpkg/secpkg.go
+dmppatch 8
+@@ -314,16 +314,132 @@
+ %22, cmd)%0A
++%09fmt.Fprintf(os.Stderr, %22       %25s uninstall package_name%5Cn%22, cmd)%0A%09fmt.Fprintf(os.Stderr, %22       %25s list%5Cn%22, cmd)%0A
+ %09os.Exit
+@@ -704,16 +704,128 @@
+ rgs...)%0A
++%09case %22uninstall%22:%0A%09%09err = command.Uninstall(argv0, args...)%0A%09case %22list%22:%0A%09%09err = command.List(argv0, args...)%0A
+ %09default
+- f 66edc4176c0330982f63d0c93279927e8d4dec6b53cec4e07786d0fbe1f2d057 cmd/ssotpub/ssotpub.go
++ f a05261ddcdc5ce908314cdfb99a478373613fd9bc7ff73a156820d87ad3b4909 cmd/ssotpub/ssotpub.go
+dmppatch 5
+@@ -438,75 +438,61 @@
+ md)%0A
+-%09fmt.Fprintf(os.Stderr, %22       %25s signhead -s seckey.bin%5Cn%22, cmd)%0A
++%09fmt.Fprintf(os.Stderr, %22       %25s signhead%5Cn%22, cmd)%0A
+ %09os.
+- f 030d4a98dc0f2a21e9d71e698a3256688c05f8bc608a49eb3e988f745679673d go.mod
++ f 130cbe78a48e04f4a075b02ca28a05a492cf43968937d90715695b8e4aef7fec go.mod
+dmppatch 5
+@@ -325,71 +325,71 @@
+ a0e%0A
+-%09golang.org/x/sys v0.0.0-20181022134430-8a28ead16f52 // indirect%0A
++%09golang.org/x/sys v0.0.0-20181023152157-44b849a8bc13 // indirect%0A
+ )%0A
+- f c3b906ee8a6d455f91a9efe09cb44c28ab46ab5dd0e2805b5c623031e06a26cd go.sum
++ f e56e0336543c21ec025caee2a82e7a63a9b849a4c4acbf511b158f122664d8e3 go.sum
+dmppatch 8
+@@ -898,221 +898,8 @@
+ go=%0A
+-golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b h1:2b9XGzhjiYsYPnKXoEfL7klWZQIt8IfyRCz62gCqqlQ=%0Agolang.org/x/crypto v0.0.0-20180910181607-0e37d006457b/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=%0A
+ gola
+@@ -1111,418 +1111,211 @@
+ b4=%0A
+-golang.org/x/sys v0.0.0-20180926160741-c2ed4eda69e7 h1:bit1t3mgdR35yN0cX0G8orgLtOuyL9Wqxa1mccLB0ig=%0Agolang.org/x/sys v0.0.0-20180926160741-c2ed4eda69e7/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=%0Agolang.org/x/sys v0.0.0-20181022134430-8a28ead16f52 h1:iuRaATs1WHBt1WKav1CczVukq8i0T8geqpAMCUAnT+o=%0Agolang.org/x/sys v0.0.0-20181022134430-8a28ead16f52/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=%0A
++golang.org/x/sys v0.0.0-20181023152157-44b849a8bc13 h1:ICvJQ9FL9kAAfwGwpoAmcE1O51M0zE++iVRxQ3xyiGE=%0Agolang.org/x/sys v0.0.0-20181023152157-44b849a8bc13/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=%0A
++ f be9e0ed67f2cbca99daca3db71e3f2e5f80742b07ede6903fe568e440b305e98 packages/codechain.secpkg
+dmppatch 2
+@@ -0,0 +1,137 @@
++%7B%0A  %22Name%22: %22codechain%22,%0A  %22Head%22: %22a2f4f947235d2766cc56f54390b05a34ecb44d9baf77dd0185c5a5d2d0484334%22,%0A  %22DNS%22: %22codechain.secpkg.net%22%0A%7D%0A
++ f d74c52ecf1c826c92de7c0a4ab0cf56ba74340b7f70fc1c5d46719e84ded4eda packages/golang.secpkg
+dmppatch 2
+@@ -0,0 +1,131 @@
++%7B%0A  %22Name%22: %22golang%22,%0A  %22Head%22: %226283d56b9d38d231482e52ad0fda9f2881d94d51994ab600b9f243005245b02a%22,%0A  %22DNS%22: %22golang.secpkg.net%22%0A%7D%0A
++ f 180615345030e9333d7c7c6f30afa1e8b4c21b36b68252f7b17d2a42526ee8a4 packages/gonacl.secpkg
+dmppatch 2
+@@ -0,0 +1,131 @@
++%7B%0A  %22Name%22: %22gonacl%22,%0A  %22Head%22: %22605793222b7a173a5e6ece86bcb65e7228bb480e0b8fb44cf3994bbb92b8a0fa%22,%0A  %22DNS%22: %22gonacl.secpkg.net%22%0A%7D%0A
++ f 730932c441c8aa9bbd6372b62706a92cd378380c4df7b0d3025db9a994ddcded packages/hello.secpkg
+dmppatch 2
+@@ -0,0 +1,129 @@
++%7B%0A  %22Name%22: %22hello%22,%0A  %22Head%22: %229d1be5458507cadeda9e402485e6d96ce4466c07429cd86c8a3932524ba2b449%22,%0A  %22DNS%22: %22hello.secpkg.net%22%0A%7D%0A
++ f da05897d8c82c7651f924afb1451d6482ae10806d2f04f05b5f83dc4ca4d8e16 packages/tor.secpkg
+dmppatch 2
+@@ -0,0 +1,125 @@
++%7B%0A  %22Name%22: %22tor%22,%0A  %22Head%22: %22a2e7c07348349ba97fe3f0215dd632e6b4c03a31cd8d8e5ee34f129292fff628%22,%0A  %22DNS%22: %22tor.secpkg.net%22%0A%7D%0A
++ f f47e8bc9be31dddd9e69c70f3216d4075d10f18484c4e41fddfdc68d763348d2 secpkg/command/list.go
+dmppatch 2
+@@ -0,0 +1,768 @@
++package command%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/secpkg%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0A// List implements the secpkg 'list' command.%0Afunc List(argv0 string, args ...string) error %7B%0A%09fs := flag.NewFlagSet(argv0, flag.ContinueOnError)%0A%09fs.Usage = func() %7B%0A%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s%5Cn%22, argv0)%0A%09%09fmt.Fprintf(os.Stderr, %22List installed packages.%5Cn%22)%0A%09%09fs.PrintDefaults()%0A%09%7D%0A%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A%09if err := fs.Parse(args); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A%09if fs.NArg() != 0 %7B%0A%09%09fs.Usage()%0A%09%09return flag.ErrHelp%0A%09%7D%0A%09pkgs, err := secpkg.List()%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09for _, pkg := range pkgs %7B%0A%09%09fmt.Println(pkg)%0A%09%7D%0A%09return nil%0A%7D%0A
++ f 0bb20b366e1d6a1c448f7b52739f992a2a591384deb5f2b0e507c1e03ddbbc72 secpkg/command/uninstall.go
+dmppatch 2
+@@ -0,0 +1,727 @@
++package command%0A%0Aimport (%0A%09%22flag%22%0A%09%22fmt%22%0A%09%22os%22%0A%0A%09%22github.com/frankbraun/codechain/secpkg%22%0A%09%22github.com/frankbraun/codechain/util/log%22%0A)%0A%0A// Uninstall implements the secpkg 'uninstall' command.%0Afunc Uninstall(argv0 string, args ...string) error %7B%0A%09fs := flag.NewFlagSet(argv0, flag.ContinueOnError)%0A%09fs.Usage = func() %7B%0A%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s project_name%5Cn%22, argv0)%0A%09%09fmt.Fprintf(os.Stderr, %22Uninstall package with given project_name.%5Cn%22)%0A%09%09fs.PrintDefaults()%0A%09%7D%0A%09verbose := fs.Bool(%22v%22, false, %22Be verbose%22)%0A%09if err := fs.Parse(args); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if *verbose %7B%0A%09%09log.Std = log.NewStd(os.Stdout)%0A%09%7D%0A%09if fs.NArg() != 1 %7B%0A%09%09fs.Usage()%0A%09%09return flag.ErrHelp%0A%09%7D%0A%09return secpkg.Uninstall(fs.Arg(0))%0A%7D%0A
+- f 0511d5602fd9958a8e92b92f8db7668b3d5cf28acee3262694d0899a170fee85 secpkg/install.go
++ f 99d202ea9bd169b9486086813389f33c5006c3d35c58ae7d56a0423a10813150 secpkg/install.go
+dmppatch 9
+@@ -3946,24 +3946,116 @@
+ ), %22local%22)%0A
++%09if err := os.MkdirAll(localDir, 0755); err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A%09%7D%0A
+ %09if err := o
+@@ -4646,113 +4646,119 @@
+ ed%60%0A
+-%09installDir := filepath.Join(pkgDir, %22install%22)%0A%09if err := os.Rename(buildDir, installDir); err != nil %7B%0A
++%09installedDir := filepath.Join(pkgDir, %22installed%22)%0A%09if err := os.Rename(buildDir, installedDir); err != nil %7B%0A
+ %09%09os
++ f a5d64ff0019b0df0c13e78ac2f68c0a2bd41d79c4aea21b71b07e0b4e329ff97 secpkg/list.go
+dmppatch 2
+@@ -0,0 +1,645 @@
++package secpkg%0A%0Aimport (%0A%09%22fmt%22%0A%09%22io/ioutil%22%0A%09%22path/filepath%22%0A%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/homedir%22%0A)%0A%0A// List all installed packages and return them as.%0Afunc List() (%5B%5Dstring, error) %7B%0A%09pkgDir := filepath.Join(homedir.SecPkg(), %22pkgs%22)%0A%09exists, err := file.Exists(pkgDir)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09if !exists %7B%0A%09%09return nil, fmt.Errorf(%22no package installed: '%25s' does not exist%22, pkgDir)%0A%09%7D%0A%09files, err := ioutil.ReadDir(pkgDir)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09var pkgs %5B%5Dstring%0A%09for _, file := range files %7B%0A%09%09pkgs = append(pkgs, file.Name())%0A%09%7D%0A%09return pkgs, nil%0A%7D%0A
++ f 26af67b0e34966eabd744fcbfa6e9e48bf83eaf3dd9a36db75c95b109929c3c7 secpkg/uninstall.go
+dmppatch 2
+@@ -0,0 +1,1054 @@
++package secpkg%0A%0Aimport (%0A%09%22fmt%22%0A%09%22os%22%0A%09%22path/filepath%22%0A%0A%09%22github.com/frankbraun/codechain/util/file%22%0A%09%22github.com/frankbraun/codechain/util/gnumake%22%0A%09%22github.com/frankbraun/codechain/util/homedir%22%0A)%0A%0A// Uninstall package with name.%0Afunc Uninstall(name string) error %7B%0A%09// 1. Make sure the project with NAME has been installed before.%0A%09//    That is, the directory ~/.config/secpkg/pkgs/NAME exists.%0A%09pkgDir := filepath.Join(homedir.SecPkg(), %22pkgs%22, name)%0A%09exists, err := file.Exists(pkgDir)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if !exists %7B%0A%09%09return fmt.Errorf(%22package not installed: '%25s' does not exist%22, pkgDir)%0A%09%7D%0A%0A%09// 2. Call %60make prefix= ~/.config/secpkg/local uninstall%60 in%0A%09//    ~/.config/secpkg/pkgs/NAME/installed%0A%09installedDir := filepath.Join(pkgDir, %22installed%22)%0A%09localDir := filepath.Join(homedir.SecPkg(), %22local%22)%0A%09if err := os.Chdir(installedDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if err := gnumake.Uninstall(localDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 3. Remove package directory ~/.config/secpkg/pkgs/NAME%0A%09return os.RemoveAll(pkgDir)%0A%7D%0A
+- f 5f589f1fb5498c8051fede22985d38fade49a6291f97e6708bdfae12350480b8 secpkg/update.go
++ f e3f6d4bd5bb78ec9413c566a1cf04ab3756b53eec59d4cf488ecad2dc8926b5b secpkg/update.go
+dmppatch 10
+@@ -4727,106 +4727,112 @@
+ ed%60%0A
+-%09installDir := filepath.Join(pkgDir, %22install%22)%0A%09if err := os.RemoveAll(installDir); err != nil %7B%0A
++%09installedDir := filepath.Join(pkgDir, %22installed%22)%0A%09if err := os.RemoveAll(installedDir); err != nil %7B%0A
+ %09%09re
+@@ -4848,65 +4848,67 @@
+ %09%7D%0A%0A
+-%09if err := os.Rename(buildDir, installDir); err != nil %7B%0A
++%09if err := os.Rename(buildDir, installedDir); err != nil %7B%0A
+ %09%09re
+- f 5acfbc42f14b35fa20295be71657aee1831919140845f4ce32d1dc98528fdeaf ssot/command/signhead.go
++ f 5de42673adb7ff23112c77e84d6d6a1077c264db37c00f37e7151e34749b8426 ssot/command/signhead.go
+dmppatch 5
+@@ -3787,69 +3787,55 @@
+ ) %7B%0A
+-%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s -s seckey.bin%5Cn%22, argv0)%0A
++%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s%5Cn%22, argv0)%0A
+ %09%09fm
+- f 20b2830a7483c82d5a8ba173cc709f7fcb5dcb565664bce0cb12cf651d829ec5 util/gnumake/gnumake.go
++ f 68d2f96820b34425a1027cc173f171311fbeafbf161471926ccf7a09d4ebee81 util/gnumake/gnumake.go
+dmppatch 3
+@@ -572,28 +572,291 @@
+ .Stderr%0A%09return cmd.Run()%0A%7D%0A
++%0A// Uninstall calls 'make uninstall' with prefix=prefix.%0Afunc Uninstall(prefix string) error %7B%0A%09prefixStr := fmt.Sprintf(%22prefix=%25s%22, prefix)%0A%09cmd := exec.Command(%22make%22, prefixStr, %22uninstall%22)%0A%09cmd.Stdout = os.Stdout%0A%09cmd.Stderr = os.Stderr%0A%09return cmd.Run()%0A%7D%0A
+- f 7132640795a307a90290e58af5d67e1ba3da44a47f680a3fea923f9abbc180db vendor/golang.org/x/sys/unix/syscall_openbsd.go
++ f 3596d13ba60f45af5e53eaec75a2aecb1eae48b56b0d5fc060f5290af3c8c856 vendor/golang.org/x/sys/unix/syscall_openbsd.go
+dmppatch 4
+@@ -3935,24 +3935,319 @@
+ lue, err%0A%7D%0A%0A
++//sys%09ppoll(fds *PollFd, nfds int, timeout *Timespec, sigmask *Sigset_t) (n int, err error)%0A%0Afunc Ppoll(fds %5B%5DPollFd, timeout *Timespec, sigmask *Sigset_t) (n int, err error) %7B%0A%09if len(fds) == 0 %7B%0A%09%09return ppoll(nil, 0, timeout, sigmask)%0A%09%7D%0A%09return ppoll(&fds%5B0%5D, len(fds), timeout, sigmask)%0A%7D%0A%0A
+ func Uname(u
+- f 7a46c800be5c8aff229842cdaad32116f93c2157cbe91fe8af7792f3d1fd2c40 vendor/golang.org/x/sys/unix/types_openbsd.go
++ f a1cf5a0d27ece67eac7bd1771e288c03a7811898466cc57b78561d865fd51587 vendor/golang.org/x/sys/unix/types_openbsd.go
+dmppatch 4
+@@ -5198,16 +5198,58 @@
+ NORM%0A)%0A%0A
++// Signal Sets%0A%0Atype Sigset_t C.sigset_t%0A%0A
+ // Uname
+- f b62c8fb76246bde6b933fd92bd204788033f9b1eaad70d512c70027f5168fd34 vendor/golang.org/x/sys/unix/zsyscall_openbsd_386.go
++ f 4cb375ac2e28899a0b842eb89ef40883454463bf4853884609b7d02f0b55bc1f vendor/golang.org/x/sys/unix/zsyscall_openbsd_386.go
+dmppatch 4
+@@ -11134,24 +11134,398 @@
+ O NOT EDIT%0A%0A
++func ppoll(fds *PollFd, nfds int, timeout *Timespec, sigmask *Sigset_t) (n int, err error) %7B%0A%09r0, _, e1 := Syscall6(SYS_PPOLL, uintptr(unsafe.Pointer(fds)), uintptr(nfds), uintptr(unsafe.Pointer(timeout)), uintptr(unsafe.Pointer(sigmask)), 0, 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func Access(
+- f b8addcf2367814df1ae0de1317d1b21f6f9eb9d6a04b192587664c2f70ad587a vendor/golang.org/x/sys/unix/zsyscall_openbsd_amd64.go
++ f a5c1fe9bdf1b6884fb5f0bce0d3a11947ecab4ae7bfa3ccd1c40e52fdcf6785d vendor/golang.org/x/sys/unix/zsyscall_openbsd_amd64.go
+dmppatch 4
+@@ -11135,24 +11135,398 @@
+ O NOT EDIT%0A%0A
++func ppoll(fds *PollFd, nfds int, timeout *Timespec, sigmask *Sigset_t) (n int, err error) %7B%0A%09r0, _, e1 := Syscall6(SYS_PPOLL, uintptr(unsafe.Pointer(fds)), uintptr(nfds), uintptr(unsafe.Pointer(timeout)), uintptr(unsafe.Pointer(sigmask)), 0, 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func Access(
+- f d6408a91955376df77996486b3f8d2a81bcb480fd1d56824ae35a2412f7f9c3c vendor/golang.org/x/sys/unix/zsyscall_openbsd_arm.go
++ f 9d51e9203db120ddd75d825884b9f676d44fb8cdd1f47ef13e281b3962e296db vendor/golang.org/x/sys/unix/zsyscall_openbsd_arm.go
+dmppatch 4
+@@ -11139,24 +11139,398 @@
+ O NOT EDIT%0A%0A
++func ppoll(fds *PollFd, nfds int, timeout *Timespec, sigmask *Sigset_t) (n int, err error) %7B%0A%09r0, _, e1 := Syscall6(SYS_PPOLL, uintptr(unsafe.Pointer(fds)), uintptr(nfds), uintptr(unsafe.Pointer(timeout)), uintptr(unsafe.Pointer(sigmask)), 0, 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func Access(
+- f 97435b53fcbb16e74ac19134ae89d5e2abddc0d0acafb94e2d87f6785f98217d vendor/golang.org/x/sys/unix/ztypes_openbsd_386.go
++ f 7c0a98f84ec4ab6e7057cdc097c4fef461cd43ac0efaf52ffb76aa27add15ec8 vendor/golang.org/x/sys/unix/ztypes_openbsd_386.go
+dmppatch 4
+@@ -7008,24 +7008,46 @@
+ RM = 0x4%0A)%0A%0A
++type Sigset_t uint32%0A%0A
+ type Utsname
+- f 3970e8b29c3977619bda80545ac0d0dd63f94de629b2c810b0f0a37ddb2eb6c2 vendor/golang.org/x/sys/unix/ztypes_openbsd_amd64.go
++ f 1de310ebad05ffa17a0ffaf0c5ac34a27e8f5091b17cfefdc2540b40fceb9a1d vendor/golang.org/x/sys/unix/ztypes_openbsd_amd64.go
+dmppatch 4
+@@ -6888,24 +6888,46 @@
+ RM = 0x4%0A)%0A%0A
++type Sigset_t uint32%0A%0A
+ type Utsname
+- f 0fe1f8e2282e17865721ba23b5cbcfd44991c2bed55a32f64fd661e22ac20c46 vendor/golang.org/x/sys/unix/ztypes_openbsd_arm.go
++ f 84a4b0dc21ce2f5616e2b384a0776280f6fef91a58ec7ac7fb3854c0933668f0 vendor/golang.org/x/sys/unix/ztypes_openbsd_arm.go
+dmppatch 4
+@@ -6917,24 +6917,46 @@
+ RM = 0x4%0A)%0A%0A
++type Sigset_t uint32%0A%0A
+ type Utsname
+- f 90fbccb8944eacfa23ff1b9e2b54d6829fb8d6baf5134585687fe2b3fd79a29f vendor/modules.txt
++ f ada72d05a71b8c5bd546ee7d160af697782d483abbc341bee6167329a1483323 vendor/modules.txt
+dmppatch 5
+@@ -714,62 +714,62 @@
+ lsa%0A
+-# golang.org/x/sys v0.0.0-20181022134430-8a28ead16f52%0A
++# golang.org/x/sys v0.0.0-20181023152157-44b849a8bc13%0A
+ gola
+treehash 18da573397a0324af5638c2e45ea53ff5863912a089c4bf7eac00c0b8a335fa3

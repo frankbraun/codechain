@@ -9,7 +9,7 @@ import (
 	"github.com/frankbraun/codechain/util/homedir"
 )
 
-// List all installed packages and return them as.
+// List all installed packages and return them.
 func List() ([]string, error) {
 	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs")
 	exists, err := file.Exists(pkgDir)

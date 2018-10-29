@@ -12,7 +12,7 @@ import (
 func usage() {
 	cmd := os.Args[0]
 	fmt.Fprintf(os.Stderr, "Usage: %s install project.secpkg\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s update package_name\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s update [-all] [package_name]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s uninstall package_name\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s list\n", cmd)
 	os.Exit(2)

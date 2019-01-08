@@ -22,7 +22,7 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit, yesPrompt bool) error {
+func publish(c *hashchain.HashChain, secKeyFile, message string, dryRun, useGit, yesPrompt bool) error {
 	var (
 		secKey *[64]byte
 		err    error
@@ -109,10 +109,15 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit, yesPromp
 	}
 
 	// read comment
-	fmt.Println("comment describing code change (can be empty):")
-	comment, err := terminal.ReadLine(os.Stdin)
-	if err != nil {
-		return err
+	var comment []byte
+	if message != "" {
+		comment = []byte(message)
+	} else {
+		fmt.Println("comment describing code change (can be empty):")
+		comment, err = terminal.ReadLine(os.Stdin)
+		if err != nil {
+			return err
+		}
 	}
 
 	// get and write patch
@@ -150,6 +155,7 @@ func Publish(argv0 string, args ...string) error {
 		fs.PrintDefaults()
 	}
 	dryRun := fs.Bool("d", false, "Dry run, just show diff without signing anything")
+	message := fs.String("m", "", "Use the given message as the comment describing the code change")
 	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
 	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
@@ -189,7 +195,7 @@ func Publish(argv0 string, args ...string) error {
 	})
 	// run publish
 	go func() {
-		if err := publish(c, *secKey, *dryRun, *useGit, *yesPrompt); err != nil {
+		if err := publish(c, *secKey, *message, *dryRun, *useGit, *yesPrompt); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

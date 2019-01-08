@@ -8,7 +8,7 @@ github.com/mattn/go-isatty
 github.com/mutecomm/mute/util/fuzzer
 # github.com/sergi/go-diff v1.0.0
 github.com/sergi/go-diff/diffmatchpatch
-# golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
+# golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/argon2
 golang.org/x/crypto/nacl/secretbox
@@ -18,7 +18,7 @@ golang.org/x/crypto/blake2b
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/salsa20/salsa
-# golang.org/x/sys v0.0.0-20181023152157-44b849a8bc13
+# golang.org/x/sys v0.0.0-20190108104531-7fbe1cd0fcc2
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows

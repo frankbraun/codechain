@@ -2,11 +2,31 @@
 package def
 
 import (
+	"os"
 	"path/filepath"
 )
 
-// CodechainDir is the default directory used for Codechain related files.
-const CodechainDir = ".codechain"
+// DefaultCodechainDir is the default directory used for Codechain related files.
+// Can be overwritten with the environment variable CODECHAIN_DIR.
+const DefaultCodechainDir = ".codechain"
+
+// CodechainDir is the directory used for Codechain releated files. If not set
+// with the environment variable CODECHAIN_DIR, DefaultCodechainDir is used.
+// If CODECHAIN_DIR is used, the environment variable CODECHAIN_EXCLUDE can be
+// used to exclude a second Codechain directory from all Codechain commands.
+var CodechainDir = DefaultCodechainDir
+
+func init() {
+	dir := os.Getenv("CODECHAIN_DIR")
+	if dir != "" {
+		CodechainDir = dir
+		ExcludePaths = append(ExcludePaths, dir)
+	}
+	exclude := os.Getenv("CODECHAIN_EXCLUDE")
+	if exclude != "" {
+		ExcludePaths = append(ExcludePaths, exclude)
+	}
+}
 
 // SecretsSubDir is the default subdirectory of a tool's home directory used
 // to store secret key files
@@ -20,7 +40,7 @@ const CodechainURLName = "_codechain-url."
 
 // ExcludePaths is the default list of paths not considered by Codechain.
 var ExcludePaths = []string{
-	CodechainDir,
+	DefaultCodechainDir,
 	".git",
 	".gitignore",
 	".travis.yml",

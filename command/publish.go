@@ -22,7 +22,7 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) error {
+func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit, yesPrompt bool) error {
 	var (
 		secKey *[64]byte
 		err    error
@@ -100,8 +100,12 @@ func publish(c *hashchain.HashChain, secKeyFile string, dryRun, useGit bool) err
 	}
 
 	// confirm patch
-	if err := terminal.Confirm("publish patch?"); err != nil {
-		return err
+	if yesPrompt {
+		fmt.Println("patch published automatically (-y was used).")
+	} else {
+		if err := terminal.Confirm("publish patch?"); err != nil {
+			return err
+		}
 	}
 
 	// read comment
@@ -149,6 +153,7 @@ func Publish(argv0 string, args ...string) error {
 	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
 	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
+	yesPrompt := fs.Bool("y", false, "Automatic yes to prompts, use with care!")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -184,7 +189,7 @@ func Publish(argv0 string, args ...string) error {
 	})
 	// run publish
 	go func() {
-		if err := publish(c, *secKey, *dryRun, *useGit); err != nil {
+		if err := publish(c, *secKey, *dryRun, *useGit, *yesPrompt); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

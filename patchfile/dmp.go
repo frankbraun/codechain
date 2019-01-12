@@ -10,7 +10,7 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-// dmpDiff employs Myer's diff algorithm (as implemented in Diff Match Patch)
+// dmpDiff employs Myers' diff algorithm (as implemented in Diff Match Patch)
 // to calculate a diff between fileA and fileB, and writes it to w as a
 // "dmppatch" section.
 func dmpDiff(w io.Writer, fileA, fileB string) error {

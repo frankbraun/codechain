@@ -26,6 +26,8 @@ func init() {
 	if exclude != "" {
 		ExcludePaths = append(ExcludePaths, exclude)
 	}
+	HashchainFile = filepath.Join(CodechainDir, "hashchain")
+	PatchDir = filepath.Join(CodechainDir, "patches")
 }
 
 // SecretsSubDir is the default subdirectory of a tool's home directory used
@@ -47,7 +49,7 @@ var ExcludePaths = []string{
 }
 
 // HashchainFile is the default name of the hashchain file.
-var HashchainFile = filepath.Join(CodechainDir, "hashchain")
+var HashchainFile string
 
 // PatchDir is the default name of the patch file directory.
-var PatchDir = filepath.Join(CodechainDir, "patches")
+var PatchDir string

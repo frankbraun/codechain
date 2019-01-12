@@ -112,7 +112,7 @@ func Read(filename string, passphrase []byte) (*[64]byte, *[64]byte, []byte, err
 	copy(key[:], derivedKey)
 	msg, verify := secretbox.Open(nil, enc, &nonce, &key)
 	if !verify {
-		return nil, nil, nil, fmt.Errorf("cannot decrypt '%s'", filename)
+		return nil, nil, nil, ErrDecrypt
 	}
 	var sec [64]byte
 	var decSig [64]byte

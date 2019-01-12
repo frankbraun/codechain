@@ -85,7 +85,7 @@ func publish(c *hashchain.HashChain, secKeyFile, message string, dryRun, useGit,
 		}
 	}
 
-	if useGit {
+	if useGit && !yesPrompt {
 		// display diff pager
 		if err := git.DiffPager(treeDirA, treeDirB); err != nil {
 			return err

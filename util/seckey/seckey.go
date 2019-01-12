@@ -47,6 +47,8 @@ func Check(homeDir, seckey string) error {
 }
 
 // Read reads the secret key from given filename.
+// It reads the the passphrase from the terminal. If the wrong passphrase is
+// given, the function reads the passphrase again.
 func Read(filename string) (*[64]byte, *[64]byte, []byte, error) {
 	exists, err := file.Exists(filename)
 	if err != nil {
@@ -56,19 +58,31 @@ func Read(filename string) (*[64]byte, *[64]byte, []byte, error) {
 		return nil, nil, nil, fmt.Errorf("keyfile '%s' does not exist", filename)
 	}
 	fmt.Printf("opening keyfile: %s\n", filename)
-	var pass []byte
-	if TestPass == "" {
-		pass, err = terminal.ReadPassphrase(syscall.Stdin, false)
+	var (
+		pass    []byte
+		sec     *[64]byte
+		sig     *[64]byte
+		comment []byte
+	)
+	for {
+		if TestPass == "" {
+			pass, err = terminal.ReadPassphrase(syscall.Stdin, false)
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			defer bzero.Bytes(pass)
+		} else {
+			pass = []byte(TestPass)
+		}
+		sec, sig, comment, err = keyfile.Read(filename, pass)
 		if err != nil {
+			if TestPass == "" && err == keyfile.ErrDecrypt {
+				fmt.Println("wrong passphrase, try again")
+				continue
+			}
 			return nil, nil, nil, err
 		}
-		defer bzero.Bytes(pass)
-	} else {
-		pass = []byte(TestPass)
-	}
-	sec, sig, comment, err := keyfile.Read(filename, pass)
-	if err != nil {
-		return nil, nil, nil, err
+		break
 	}
 	if !ed25519.Verify(sec[32:], append(sec[32:], comment...), sig[:]) {
 		return nil, nil, nil, fmt.Errorf("signature does not verify")

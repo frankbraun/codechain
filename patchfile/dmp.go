@@ -10,6 +10,15 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
+func diff(a, b string) string {
+	dmp := diffmatchpatch.New()
+	textA, textB, lineArray := dmp.DiffLinesToRunes(a, b)
+	diffs := dmp.DiffMainRunes(textA, textB, true)
+	diffs = dmp.DiffCharsToLines(diffs, lineArray)
+	patches := dmp.PatchMake(a, diffs)
+	return dmp.PatchToText(patches)
+}
+
 // dmpDiff employs Myers' diff algorithm (as implemented in Diff Match Patch)
 // to calculate a diff between fileA and fileB, and writes it to w as a
 // "dmppatch" section.
@@ -26,12 +35,7 @@ func dmpDiff(w io.Writer, fileA, fileB string) error {
 	if err != nil {
 		return err
 	}
-	dmp := diffmatchpatch.New()
-	textA, textB, lineArray := dmp.DiffLinesToRunes(string(a), string(b))
-	diffs := dmp.DiffMainRunes(textA, textB, true)
-	diffs = dmp.DiffCharsToLines(diffs, lineArray)
-	patches := dmp.PatchMake(string(a), diffs)
-	patch := dmp.PatchToText(patches)
+	patch := diff(string(a), string(b))
 	fmt.Fprintf(w, "dmppatch %d\n", strings.Count(patch, "\n"))
 	if _, err := io.WriteString(w, patch); err != nil {
 		return err
@@ -39,19 +43,27 @@ func dmpDiff(w io.Writer, fileA, fileB string) error {
 	return nil
 }
 
-// dmpApply decodes the DMP patch in patch, applies it to text, and writes it
-// to w. patch must not include the "dmppatch" section header.
-func dmpApply(w io.Writer, text string, patch []byte) error {
+func patchApply(text, patch string) (string, error) {
 	dmp := diffmatchpatch.New()
-	patches, err := dmp.PatchFromText(string(patch))
+	patches, err := dmp.PatchFromText(patch)
 	if err != nil {
-		return err
+		return "", err
 	}
 	newText, applies := dmp.PatchApply(patches, text)
 	for _, applied := range applies {
 		if !applied {
-			return errors.New("patchfile: could not apply all patches")
+			return "", errors.New("patchfile: could not apply all patches")
 		}
+	}
+	return newText, nil
+}
+
+// dmpApply decodes the DMP patch in patch, applies it to text, and writes it
+// to w. patch must not include the "dmppatch" section header.
+func dmpApply(w io.Writer, text string, patch []byte) error {
+	newText, err := patchApply(text, string(patch))
+	if err != nil {
+		return err
 	}
 	if _, err := io.WriteString(w, newText); err != nil {
 		return err

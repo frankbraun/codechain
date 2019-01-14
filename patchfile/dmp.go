@@ -10,6 +10,7 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
+// Can panic!
 func diff(a, b string) string {
 	dmp := diffmatchpatch.New()
 	textA, textB, lineArray := dmp.DiffLinesToRunes(a, b)

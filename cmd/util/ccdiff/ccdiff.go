@@ -12,8 +12,8 @@ import (
 	"github.com/frankbraun/codechain/util/log"
 )
 
-func diff(a, b string) error {
-	return patchfile.Diff(os.Stdout, a, b, def.ExcludePaths)
+func diff(version int, a, b string) error {
+	return patchfile.Diff(version, os.Stdout, a, b, def.ExcludePaths)
 }
 
 func usage() {
@@ -25,15 +25,20 @@ func usage() {
 
 func main() {
 	verbose := flag.Bool("v", false, "Be verbose (on stderr)")
+	// TODO: bump patchfile version to 2
+	version := flag.Int("version", 1, "Patchfile version to publish")
 	flag.Usage = usage
 	flag.Parse()
 	if *verbose {
 		log.Std = log.NewStd(os.Stderr)
 	}
+	if *version < 1 || *version > patchfile.Version {
+		util.Fatal(patchfile.ErrHeaderVersion)
+	}
 	if flag.NArg() != 2 {
 		usage()
 	}
-	if err := diff(flag.Arg(0), flag.Arg(1)); err != nil {
+	if err := diff(*version, flag.Arg(0), flag.Arg(1)); err != nil {
 		util.Fatal(err)
 	}
 }

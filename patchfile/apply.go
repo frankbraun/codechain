@@ -32,23 +32,23 @@ const (
 	terminal                        // end state
 )
 
-// codechain patchfile version 1
-func procStart(line string) (state, error) {
+// codechain patchfile version
+func procStart(line string) (state, int, error) {
 	fields := strings.SplitN(line, " ", 4)
 	if len(fields) != 4 {
-		return 0, ErrHeaderFieldsNum
+		return 0, 0, ErrHeaderFieldsNum
 	}
 	if fields[0] != "codechain" || fields[1] != "patchfile" || fields[2] != "version" {
-		return 0, ErrHeaderFieldsText
+		return 0, 0, ErrHeaderFieldsText
 	}
-	ver, err := strconv.Atoi(fields[3])
+	version, err := strconv.Atoi(fields[3])
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
-	if ver != 1 { // only support Version = 1
-		return 0, ErrHeaderVersion
+	if version != 1 && version != 2 { // only support Version 1 and 2
+		return 0, 0, ErrHeaderVersion
 	}
-	return treehash, nil
+	return treehash, version, nil
 }
 
 // treehash hex_hash
@@ -266,6 +266,7 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 	buf := make([]byte, bufio.MaxScanTokenSize)
 	s.Buffer(buf, 64*1024*1024) // 64MB, entire files can be encoded as single lines
 	state := start
+	version := 0
 	for s.Scan() {
 		line := s.Text()
 		log.Println("line:")
@@ -273,7 +274,7 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 		switch state {
 		case start:
 			log.Println("state: start")
-			state, err = procStart(line)
+			state, version, err = procStart(line)
 			if err != nil {
 				return err
 			}
@@ -352,6 +353,13 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 				if numLines < 0 {
 					return ErrDiffLinesNegative
 				}
+			case "utf8file":
+				if version < 2 {
+					return ErrDiffModeUnknown
+				}
+				if numLines < 1 {
+					return ErrDiffLinesNonPositive
+				}
 			default:
 				return ErrDiffModeUnknown
 			}
@@ -386,6 +394,15 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 					buf = strings.Join(lines, "\n") + "\n"
 				}
 				err = apply(dir, []byte(buf), state, prevDiffInfo, curDiffInfo, dmpApply)
+				if err != nil {
+					return err
+				}
+				// reset
+				prevDiffInfo = nil
+				curDiffInfo = nil
+			case "utf8file":
+				buf := strings.Join(lines, "\n")
+				err = apply(dir, []byte(buf), state, prevDiffInfo, curDiffInfo, utf8fileApply)
 				if err != nil {
 					return err
 				}

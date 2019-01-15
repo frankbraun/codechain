@@ -22,7 +22,7 @@ func writeFileDeletion(w io.Writer, entry tree.ListEntry) {
 //
 // It determines if the file in entry is binary or UTF-8 and encodes it
 // accordingly as an "ascii85" or "dmppatch" patch.
-func writeFileAddition(w io.Writer, dir string, entry tree.ListEntry) error {
+func writeFileAddition(version int, w io.Writer, dir string, entry tree.ListEntry) error {
 	// file addition
 	fmt.Fprintf(w, "+ %c %x %s\n", entry.Mode, entry.Hash, entry.Filename)
 	// filename regarding the root dir
@@ -38,11 +38,20 @@ func writeFileAddition(w io.Writer, dir string, entry tree.ListEntry) error {
 		if err != nil {
 			return err
 		}
-	} else {
-		// write "dmppatch" patch
-		err := dmpDiff(w, "", filename)
+	} else if version > 1 {
+		// write "utf8file" patch
+		err := utf8fileDiff(w, filename)
 		if err != nil {
 			return err
+		}
+	} else {
+		// write "dmppatch" patch
+		clean, err := dmpDiff(w, "", filename)
+		if err != nil {
+			return err
+		}
+		if !clean {
+			return ErrDiffNotClean
 		}
 	}
 	return nil
@@ -57,7 +66,7 @@ func writeFileAddition(w io.Writer, dir string, entry tree.ListEntry) error {
 // If the file hashes differ, the function determines if either of the files
 // is binary or both are UTF-8 and encodes the diff accordingly as an
 // "ascii85" or "dmppatch" patch.
-func writeFileDiff(w io.Writer, a, b string, entryA, entryB tree.ListEntry) error {
+func writeFileDiff(version int, w io.Writer, a, b string, entryA, entryB tree.ListEntry) error {
 	// Assert that file diffs are only used if the file names are the same.
 	if !(entryA.Filename == entryB.Filename) {
 		panic(errors.New("patchfile: entryA.Filename != entryB.Filename"))
@@ -88,10 +97,20 @@ func writeFileDiff(w io.Writer, a, b string, entryA, entryB tree.ListEntry) erro
 				return err
 			}
 		} else {
-			// write "dmppatch" patch
-			err := dmpDiff(w, filenameA, filenameB)
+			// write "dmppatch" patch, if possible
+			clean, err := dmpDiff(w, filenameA, filenameB)
 			if err != nil {
 				return err
+			}
+			if !clean {
+				// for version 1 we have to give up here.
+				if version == 1 {
+					return ErrDiffNotClean
+				}
+				// write "utf8file" patch instead
+				if err := utf8fileDiff(w, filenameB); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -102,7 +121,11 @@ func writeFileDiff(w io.Writer, a, b string, entryA, entryB tree.ListEntry) erro
 // writes it to w. If a and b have the same tree hash ErrNoDifference is
 // returned. In case of error, some data might have been written to w already.
 // The paths given in excludePaths are excluded from all tree hash calculations.
-func Diff(w io.Writer, a, b string, excludePaths []string) error {
+func Diff(version int, w io.Writer, a, b string, excludePaths []string) error {
+	// only support version 1 and 2
+	if version != 1 && version != 2 {
+		return ErrHeaderVersion
+	}
 	// Calculate tree list of "source" directory tree.
 	listA, err := tree.List(a, excludePaths)
 	if err != nil {
@@ -120,7 +143,7 @@ func Diff(w io.Writer, a, b string, excludePaths []string) error {
 		return ErrNoDifference
 	}
 	// version line
-	fmt.Fprintf(w, "codechain patchfile version %d\n", Version)
+	fmt.Fprintf(w, "codechain patchfile version %d\n", version)
 	// initial treehash line
 	fmt.Fprintf(w, "treehash %x\n", hashA[:])
 	idxA := 0
@@ -130,7 +153,7 @@ func Diff(w io.Writer, a, b string, excludePaths []string) error {
 		entryB := listB[idxB]
 		if entryA.Filename == entryB.Filename {
 			// write file diff, if necessary
-			if err := writeFileDiff(w, a, b, entryA, entryB); err != nil {
+			if err := writeFileDiff(version, w, a, b, entryA, entryB); err != nil {
 				return err
 			}
 		} else if entryA.Filename < entryB.Filename {
@@ -138,7 +161,7 @@ func Diff(w io.Writer, a, b string, excludePaths []string) error {
 			idxA++
 			continue
 		} else { // entryA.Filename > entryB.Filename
-			if err := writeFileAddition(w, b, entryB); err != nil {
+			if err := writeFileAddition(version, w, b, entryB); err != nil {
 				return err
 			}
 			idxB++
@@ -152,7 +175,7 @@ func Diff(w io.Writer, a, b string, excludePaths []string) error {
 		idxA++
 	}
 	for idxB < len(listB) {
-		if err := writeFileAddition(w, b, listB[idxB]); err != nil {
+		if err := writeFileAddition(version, w, b, listB[idxB]); err != nil {
 			return err
 		}
 		idxB++

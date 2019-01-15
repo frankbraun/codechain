@@ -22,7 +22,11 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-func publish(c *hashchain.HashChain, secKeyFile, message string, dryRun, useGit, yesPrompt bool) error {
+func publish(
+	c *hashchain.HashChain, secKeyFile, message string,
+	dryRun, useGit, yesPrompt bool,
+	version int,
+) error {
 	var (
 		secKey *[64]byte
 		err    error
@@ -125,7 +129,7 @@ func publish(c *hashchain.HashChain, secKeyFile, message string, dryRun, useGit,
 	if err != nil {
 		return err
 	}
-	err = patchfile.Diff(f, treeDirA, treeDirB, def.ExcludePaths)
+	err = patchfile.Diff(version, f, treeDirA, treeDirB, def.ExcludePaths)
 	if err != nil {
 		f.Close()
 		os.Remove(f.Name())
@@ -159,12 +163,17 @@ func Publish(argv0 string, args ...string) error {
 	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
 	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
+	// TODO: bump patchfile version to 2
+	version := fs.Int("version", 1, "Patchfile version to publish")
 	yesPrompt := fs.Bool("y", false, "Automatic yes to prompts, use with care!")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
+	}
+	if *version < 1 || *version > patchfile.Version {
+		return patchfile.ErrHeaderVersion
 	}
 	if !*dryRun {
 		if err := seckey.Check(homedir.Codechain(), *secKey); err != nil {
@@ -195,7 +204,8 @@ func Publish(argv0 string, args ...string) error {
 	})
 	// run publish
 	go func() {
-		if err := publish(c, *secKey, *message, *dryRun, *useGit, *yesPrompt); err != nil {
+		err := publish(c, *secKey, *message, *dryRun, *useGit, *yesPrompt, *version)
+		if err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

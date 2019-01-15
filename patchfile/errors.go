@@ -70,3 +70,6 @@ var ErrPrematureDiffEnd = errors.New("patchfile: diff ends prematurely")
 
 // ErrPrematurePatchfileEnd is returned if a patchfile ends prematurely.
 var ErrPrematurePatchfileEnd = errors.New("patchfile: ends prematurely")
+
+// ErrDiffNotClean is returned if no clean diff could be computed.
+var ErrDiffNotClean = errors.New("patchfile: computed diff is not clean (use patchfile version 2)")

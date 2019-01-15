@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/frankbraun/go-diff/diffmatchpatch"
 )
 
 // Can panic!

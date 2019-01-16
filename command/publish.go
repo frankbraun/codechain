@@ -163,8 +163,7 @@ func Publish(argv0 string, args ...string) error {
 	useGit := fs.Bool("git", true, "Use git-diff to show diffs")
 	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
-	// TODO: bump patchfile version to 2
-	version := fs.Int("version", 1, "Patchfile version to publish")
+	version := fs.Int("version", patchfile.Version, "Patchfile version to publish")
 	yesPrompt := fs.Bool("y", false, "Automatic yes to prompts, use with care!")
 	if err := fs.Parse(args); err != nil {
 		return err

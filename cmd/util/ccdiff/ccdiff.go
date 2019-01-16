@@ -25,8 +25,7 @@ func usage() {
 
 func main() {
 	verbose := flag.Bool("v", false, "Be verbose (on stderr)")
-	// TODO: bump patchfile version to 2
-	version := flag.Int("version", 1, "Patchfile version to publish")
+	version := flag.Int("version", patchfile.Version, "Patchfile version to publish")
 	flag.Usage = usage
 	flag.Parse()
 	if *verbose {

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/frankbraun/codechain/internal/ascii85"
 	"github.com/frankbraun/codechain/util/file"
 )
 
@@ -36,23 +35,7 @@ func TestDiffNotClean(t *testing.T) {
 	if err := os.Mkdir(startDir, 0755); err != nil {
 		t.Fatalf("os.Mkdir() failed: %v", err)
 	}
-	dmpDir := filepath.Join(tmpdir, "dmp")
-	if err := os.Mkdir(dmpDir, 0755); err != nil {
-		t.Fatalf("os.Mkdir() failed: %v", err)
-	}
-	filename := filepath.Join("testdata", "dmp", "tables.go.bin")
-	enc, err := ioutil.ReadFile(filename)
-	if err != nil {
-		t.Fatalf("ioutil.ReadFile() failed: %v", err)
-	}
-	dec, err := ascii85.Decode(enc)
-	if err != nil {
-		t.Fatalf("ascii85.Decode() failed: %v", err)
-	}
-	err = ioutil.WriteFile(filepath.Join(dmpDir, "tables.go"), dec, 0644)
-	if err != nil {
-		t.Fatalf("ioutil.WriteFile() failed: %v", err)
-	}
+	dmpDir := filepath.Join("testdata", "dmp")
 
 	// version 1 should fail
 	err = Diff(1, ioutil.Discard, emptyDir, dmpDir, nil)

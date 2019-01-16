@@ -140,6 +140,15 @@ func publish(
 	}
 	log.Printf("%s: written\n", patchFile)
 
+	// apply patch file to .codechain/tree/a to make sure it works
+	treeHashes = append(treeHashes, curHashStr)
+	err = sync.Dir(treeDirA, curHashStr, def.PatchDir, treeHashes, def.ExcludePaths, false)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s: is faulty (this is a bug, please report it)\n",
+			patchFile)
+		return err
+	}
+
 	// sign patch and add to hash chain
 	entry, err := c.Source(*curHash, *secKey, comment)
 	if err != nil {

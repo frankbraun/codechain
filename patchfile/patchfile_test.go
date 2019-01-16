@@ -21,6 +21,7 @@ func TestNoDifference(t *testing.T) {
 
 }
 
+/*
 func TestDiffNotClean(t *testing.T) {
 	tmpdir, err := ioutil.TempDir("", "patchfile_test")
 	if err != nil {
@@ -64,6 +65,7 @@ func TestDiffNotClean(t *testing.T) {
 		t.Fatalf("Diff() failed: %v", err)
 	}
 }
+*/
 
 func TestErrorCases(t *testing.T) {
 	testCases := []struct {

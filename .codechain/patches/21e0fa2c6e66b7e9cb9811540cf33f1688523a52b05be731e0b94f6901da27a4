@@ -1,0 +1,80 @@
+codechain patchfile version 1
+treehash 21e0fa2c6e66b7e9cb9811540cf33f1688523a52b05be731e0b94f6901da27a4
+- f 0e2bcd85753cb918217509a1c40d31f58c9b8145a541c809e8b41f9a4b11fab1 cmd/util/ascii852file/asii852file.go
+- f f2fe7b27cd4df7e83337d824e6343478d6609c9d40025a50206e20ee69422459 cmd/util/ccdiff/ccdiff.go
++ f 74a890131130ff3b90da0f666e8b8fecccc6262fdd8f0fbdc0c428db1d6718d5 cmd/util/ccdiff/ccdiff.go
+dmppatch 5
+@@ -706,113 +706,91 @@
+ )%22)%0A
+-%09// TODO: bump patchfile version to 2%0A%09version := flag.Int(%22version%22, 1, %22Patchfile version to publish%22)%0A
++%09version := flag.Int(%22version%22, patchfile.Version, %22Patchfile version to publish%22)%0A
+ %09fla
+- f fe6a73496b408e2a20b7dfa5309de34402f943c1c20ae1bfd7909cb0a226a349 cmd/util/file2ascii85/file2ascii85.go
+- f 12f62452e0aa615112ea24c42a2f1a94a64727542d97690dc12e0dbe44e56b4e command/publish.go
++ f 958ca8f39b465912ea1fe355387ee4cc23d885ac48f207edd0e875b603ce6357 command/publish.go
+dmppatch 9
+@@ -3365,16 +3365,340 @@
+ hFile)%0A%0A
++%09// apply patch file to .codechain/tree/a to make sure it works%0A%09treeHashes = append(treeHashes, curHashStr)%0A%09err = sync.Dir(treeDirA, curHashStr, def.PatchDir, treeHashes, def.ExcludePaths, false)%0A%09if err != nil %7B%0A%09%09fmt.Fprintf(os.Stderr, %22%25s: is faulty (this is a bug, please report it)%5Cn%22,%0A%09%09%09patchFile)%0A%09%09return err%0A%09%7D%0A%0A
+ %09// sign
+@@ -4539,111 +4539,89 @@
+ e%22)%0A
+-%09// TODO: bump patchfile version to 2%0A%09version := fs.Int(%22version%22, 1, %22Patchfile version to publish%22)%0A
++%09version := fs.Int(%22version%22, patchfile.Version, %22Patchfile version to publish%22)%0A
+ %09yes
+- f 3e3f3db13b58648306eb4652cfba6d25c02f45472e8c3cccfd8278a040835fe5 patchfile/apply.go
++ f 0bde41d96bed24d5894ccf844b000f997a04d652d8804964c6b2c4afa59dc920 patchfile/apply.go
+dmppatch 8
+@@ -6257,16 +6257,783 @@
+ ring%0A%7D%0A%0A
++// scanNewlines is a split function for a Scanner that returns each line of%0A// text, stripped of any trailing end-of-line marker. The returned line may be%0A// empty. The end-of-line marker is one mandatory newline. In regular%0A// expression notation, it is %60%5Cn%60. The last non-empty line of input will be%0A// returned even if it has no newline.%0Afunc scanNewlines(data %5B%5Dbyte, atEOF bool) (advance int, token %5B%5Dbyte, err error) %7B%0A%09if atEOF && len(data) == 0 %7B%0A%09%09return 0, nil, nil%0A%09%7D%0A%09if i := bytes.IndexByte(data, '%5Cn'); i %3E= 0 %7B%0A%09%09// We have a full newline-terminated line.%0A%09%09return i + 1, data%5B0:i%5D, nil%0A%0A%09%7D%0A%09// If we're at EOF, we have a final, non-terminated line. Return it.%0A%09if atEOF %7B%0A%09%09return len(data), data, nil%0A%09%7D%0A%09// Request more data.%0A%09return 0, nil, nil%0A%7D%0A%0A
+ // Apply
+@@ -7506,16 +7506,39 @@
+ e lines%0A
++%09s.Split(scanNewlines)%0A
+ %09state :
+- f a5208b026461fc4cca2cf33dd1e79e09e11df6d7b31cd5af919aa18592bca748 patchfile/dmp_test.go
+- f 7c0ae0289e4553043bd74d01f8a90e31db8aea86210b19e34caba14445db9519 patchfile/patchfile_test.go
++ f d6b16bfd022242f2d85ec84293d02129316255e47769c3114534555179c24566 patchfile/patchfile_test.go
+dmppatch 32
+@@ -109,62 +109,8 @@
+ g%22%0A%0A
+-%09//%22github.com/frankbraun/codechain/internal/ascii85%22%0A
+ %09%22gi
+@@ -368,24 +368,27 @@
+ ce%22)%0A%09%7D%0A%0A%7D%0A%0A
++/*%0A
+ func TestDif
+@@ -417,1815 +417,1236 @@
+ ) %7B%0A
+-%09// TODO: enable test%0A%09/*%0A%09%09tmpdir, err := ioutil.TempDir(%22%22, %22patchfile_test%22)%0A%09%09if err != nil %7B%0A%09%09%09t.Fatalf(%22ioutil.TempDir() failed: %25v%22, err)%0A%09%09%7D%0A%09%09defer os.RemoveAll(tmpdir)%0A%09%09emptyDir := filepath.Join(tmpdir, %22empty%22)%0A%09%09if err := os.Mkdir(emptyDir, 0755); err != nil %7B%0A%09%09%09t.Fatalf(%22os.Mkdir() failed: %25v%22, err)%0A%09%09%7D%0A%09%09startDir := filepath.Join(tmpdir, %22start%22)%0A%09%09if err := os.Mkdir(startDir, 0755); err != nil %7B%0A%09%09%09t.Fatalf(%22os.Mkdir() failed: %25v%22, err)%0A%09%09%7D%0A%09%09dmpDir := filepath.Join(tmpdir, %22dmp%22)%0A%09%09if err := os.Mkdir(dmpDir, 0755); err != nil %7B%0A%09%09%09t.Fatalf(%22os.Mkdir() failed: %25v%22, err)%0A%09%09%7D%0A%09%09filename := filepath.Join(%22testdata%22, %22dmp%22, %22tables.go.bin%22)%0A%09%09enc, err := ioutil.ReadFile(filename)%0A%09%09if err != nil %7B%0A%09%09%09t.Fatalf(%22ioutil.ReadFile() failed: %25v%22, err)%0A%09%09%7D%0A%09%09dec, err := ascii85.Decode(enc)%0A%09%09if err != nil %7B%0A%09%09%09t.Fatalf(%22ascii85.Decode() failed: %25v%22, err)%0A%09%09%7D%0A%09%09err = ioutil.WriteFile(filepath.Join(dmpDir, %22tables.go%22), dec, 0644)%0A%09%09if err != nil %7B%0A%09%09%09t.Fatalf(%22ioutil.WriteFile() failed: %25v%22, err)%0A%09%09%7D%0A
++%09tmpdir, err := ioutil.TempDir(%22%22, %22patchfile_test%22)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ioutil.TempDir() failed: %25v%22, err)%0A%09%7D%0A%09defer os.RemoveAll(tmpdir)%0A%09emptyDir := filepath.Join(tmpdir, %22empty%22)%0A%09if err := os.Mkdir(emptyDir, 0755); err != nil %7B%0A%09%09t.Fatalf(%22os.Mkdir() failed: %25v%22, err)%0A%09%7D%0A%09startDir := filepath.Join(tmpdir, %22start%22)%0A%09if err := os.Mkdir(startDir, 0755); err != nil %7B%0A%09%09t.Fatalf(%22os.Mkdir() failed: %25v%22, err)%0A%09%7D%0A%09dmpDir := filepath.Join(%22testdata%22, %22dmp%22)%0A
+ %0A
+-%09%09// version 1 should fail%0A%09%09err = Diff(1, ioutil.Discard, emptyDir, dmpDir, nil)%0A%09%09if err != ErrDiffNotClean %7B%0A%09%09%09t.Fatal(%22Diff() should fail with ErrDiffNotClean%22)%0A%09%09%7D%0A%09%09// version 2 should succeed%0A%09%09err = Diff(2, ioutil.Discard, emptyDir, dmpDir, nil)%0A%09%09if err != nil %7B%0A%09%09%09t.Fatalf(%22Diff() failed: %25v%22, err)%0A%09%09%7D%0A
++%09// version 1 should fail%0A%09err = Diff(1, ioutil.Discard, emptyDir, dmpDir, nil)%0A%09if err != ErrDiffNotClean %7B%0A%09%09t.Fatal(%22Diff() should fail with ErrDiffNotClean%22)%0A%09%7D%0A%09// version 2 should succeed%0A%09err = Diff(2, ioutil.Discard, emptyDir, dmpDir, nil)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Diff() failed: %25v%22, err)%0A%09%7D%0A
+ %0A
+-%09%09err = ioutil.WriteFile(filepath.Join(startDir, %22tables.go%22), nil, 0644)%0A%09%09if err != nil %7B%0A%09%09%09t.Fatalf(%22ioutil.WriteFile() failed: %25v%22, err)%0A%09%09%7D%0A
++%09err = ioutil.WriteFile(filepath.Join(startDir, %22tables.go%22), nil, 0644)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ioutil.WriteFile() failed: %25v%22, err)%0A%09%7D%0A
+ %0A
+-%09%09// version 1 should fail%0A%09%09err = Diff(1, ioutil.Discard, startDir, dmpDir, nil)%0A%09%09if err != ErrDiffNotClean %7B%0A%09%09%09t.Fatal(%22Diff() should fail with ErrDiffNotClean%22)%0A%09%09%7D%0A%09%09// version 2 should succeed%0A%09%09err = Diff(2, ioutil.Discard, startDir, dmpDir, nil)%0A%09%09if err != nil %7B%0A%09%09%09t.Fatalf(%22Diff() failed: %25v%22, err)%0A%09%09%7D%0A%09*/%0A
++%09// version 1 should fail%0A%09err = Diff(1, ioutil.Discard, startDir, dmpDir, nil)%0A%09if err != ErrDiffNotClean %7B%0A%09%09t.Fatal(%22Diff() should fail with ErrDiffNotClean%22)%0A%09%7D%0A%09// version 2 should succeed%0A%09err = Diff(2, ioutil.Discard, startDir, dmpDir, nil)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Diff() failed: %25v%22, err)%0A%09%7D%0A
+ %7D%0A
++*/%0A
+ %0Afun
+@@ -6854,16 +6854,68 @@
+ ript2%22)%0A
++%09windowsDir := filepath.Join(%22testdata%22, %22windows%22)%0A
+ %09xyDir :
+@@ -17262,24 +17262,804 @@
+ ccd0da93%0A%60,%0A
++%09%09%7D,%0A%09%09%7B%0A%09%09%091,%0A%09%09%09emptyDir,%0A%09%09%09windowsDir,%0A%09%09%09%60codechain patchfile version 1%0Atreehash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855%0A+ f c74a0d7ee56e85b9235425adb26c44d56fba04fa8131a7996fe5c540dfdc03e2 test.txt%0Admppatch 2%0A@@ -0,0 +1,15 @@%0A+foo%250D%250Abar%250D%250Abaz%250D%250A%0Atreehash 51400bd59c9ba8e05474c39e2c7cda018b524a99910521e358d791817a51af55%0A%60,%0A%09%09%7D,%0A%09%09%7B%0A%09%09%092,%0A%09%09%09emptyDir,%0A%09%09%09windowsDir,%0A%09%09%09%22codechain patchfile version 2%5Cn%22 +%0A%09%09%09%09%22treehash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855%5Cn%22 +%0A%09%09%09%09%22+ f c74a0d7ee56e85b9235425adb26c44d56fba04fa8131a7996fe5c540dfdc03e2 test.txt%5Cn%22 +%0A%09%09%09%09%22utf8file 4%5Cn%22 +%0A%09%09%09%09%22foo%5Cr%5Cn%22 +%0A%09%09%09%09%22bar%5Cr%5Cn%22 +%0A%09%09%09%09%22baz%5Cr%5Cn%22 +%0A%09%09%09%09%22%5Cn%22 +%0A%09%09%09%09%22treehash 51400bd59c9ba8e05474c39e2c7cda018b524a99910521e358d791817a51af55%5Cn%22,%0A
+ %09%09%7D,%0A%09%7D%0A%0A%09fo
++ f c74a0d7ee56e85b9235425adb26c44d56fba04fa8131a7996fe5c540dfdc03e2 patchfile/testdata/test.txt
+dmppatch 2
+@@ -0,0 +1,15 @@
++foo%0D%0Abar%0D%0Abaz%0D%0A
++ f c74a0d7ee56e85b9235425adb26c44d56fba04fa8131a7996fe5c540dfdc03e2 patchfile/testdata/windows/test.txt
+dmppatch 2
+@@ -0,0 +1,15 @@
++foo%0D%0Abar%0D%0Abaz%0D%0A
+treehash 3af54bd5b9f3f3414232b08041f35a2135512e48ee64a1c70f6cbabffb487e7a

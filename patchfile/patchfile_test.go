@@ -255,6 +255,7 @@ func TestDiffApply(t *testing.T) {
 	scriptfileDir := filepath.Join("testdata", "scriptfile")
 	scriptDir := filepath.Join("testdata", "script")
 	script2Dir := filepath.Join("testdata", "script2")
+	windowsDir := filepath.Join("testdata", "windows")
 	xyDir := filepath.Join("testdata", "xy")
 	yDir := filepath.Join("testdata", "y")
 
@@ -618,6 +619,33 @@ utf8file 1
 
 treehash 1951dd180a9b108c190e95afd5d0635dff0a5f9fa875ecb089e5cde7ccd0da93
 `,
+		},
+		{
+			1,
+			emptyDir,
+			windowsDir,
+			`codechain patchfile version 1
+treehash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
++ f c74a0d7ee56e85b9235425adb26c44d56fba04fa8131a7996fe5c540dfdc03e2 test.txt
+dmppatch 2
+@@ -0,0 +1,15 @@
++foo%0D%0Abar%0D%0Abaz%0D%0A
+treehash 51400bd59c9ba8e05474c39e2c7cda018b524a99910521e358d791817a51af55
+`,
+		},
+		{
+			2,
+			emptyDir,
+			windowsDir,
+			"codechain patchfile version 2\n" +
+				"treehash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n" +
+				"+ f c74a0d7ee56e85b9235425adb26c44d56fba04fa8131a7996fe5c540dfdc03e2 test.txt\n" +
+				"utf8file 4\n" +
+				"foo\r\n" +
+				"bar\r\n" +
+				"baz\r\n" +
+				"\n" +
+				"treehash 51400bd59c9ba8e05474c39e2c7cda018b524a99910521e358d791817a51af55\n",
 		},
 	}
 

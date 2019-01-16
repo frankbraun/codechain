@@ -253,6 +253,28 @@ type diffInfo struct {
 	name string
 }
 
+// scanNewlines is a split function for a Scanner that returns each line of
+// text, stripped of any trailing end-of-line marker. The returned line may be
+// empty. The end-of-line marker is one mandatory newline. In regular
+// expression notation, it is `\n`. The last non-empty line of input will be
+// returned even if it has no newline.
+func scanNewlines(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	if i := bytes.IndexByte(data, '\n'); i >= 0 {
+		// We have a full newline-terminated line.
+		return i + 1, data[0:i], nil
+
+	}
+	// If we're at EOF, we have a final, non-terminated line. Return it.
+	if atEOF {
+		return len(data), data, nil
+	}
+	// Request more data.
+	return 0, nil, nil
+}
+
 // Apply applies the patch read from r to the directory tree dir.
 // The paths given in excludePaths are excluded from all tree hash calculations.
 func Apply(dir string, r io.Reader, excludePaths []string) error {
@@ -265,6 +287,7 @@ func Apply(dir string, r io.Reader, excludePaths []string) error {
 	s := bufio.NewScanner(r)
 	buf := make([]byte, bufio.MaxScanTokenSize)
 	s.Buffer(buf, 64*1024*1024) // 64MB, entire files can be encoded as single lines
+	s.Split(scanNewlines)
 	state := start
 	version := 0
 	for s.Scan() {

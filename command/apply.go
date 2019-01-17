@@ -8,7 +8,7 @@ import (
 	"github.com/frankbraun/codechain/archive"
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
-	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/log"
 )
 

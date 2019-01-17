@@ -9,12 +9,12 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
-	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/patchfile"
 	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/git"
+	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/interrupt"
 	"github.com/frankbraun/codechain/util/log"

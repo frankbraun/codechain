@@ -11,7 +11,7 @@ import (
 
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/def"
-	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/util/hex"
 	"golang.org/x/crypto/ed25519"
 )
 

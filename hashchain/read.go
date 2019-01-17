@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/frankbraun/codechain/internal/hex"
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/lockfile"
 	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/time"

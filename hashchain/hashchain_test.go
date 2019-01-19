@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/util/hex"
 	"golang.org/x/crypto/ed25519"
 )
 

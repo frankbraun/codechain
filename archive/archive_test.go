@@ -9,7 +9,7 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
-	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/util/hex"
 )
 
 const headStr = "cae03e83f3eb27d1f48a2a8f8a0687aa70118aa87291d7da7267324ee4324e8a"

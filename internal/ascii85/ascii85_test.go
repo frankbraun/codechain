@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/util/hex"
 )
 
 const (

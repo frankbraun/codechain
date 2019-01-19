@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/frankbraun/codechain/internal/hex"
+	"github.com/frankbraun/codechain/util/hex"
 )
 
 // File defines the default file (ending) for a secure package.

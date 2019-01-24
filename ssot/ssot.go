@@ -113,11 +113,14 @@ func LookupHead(dns string) (*SignedHead, error) {
 		sh, err = Unmarshal(txt)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "cannot unmarshal: %s\n", txt)
-			continue
+			sh = nil // reset head (invalid)
+			continue // try next TXT record
 		}
 		fmt.Printf("signed head found: %s\n", sh.Head())
 		if err := sh.Valid(); err != nil {
 			fmt.Printf("not valid: %v\n", err)
+			sh = nil // reset head (invalid)
+			continue // try next TXT record
 		}
 		break // valid TXT record found
 	}

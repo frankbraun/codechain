@@ -43,7 +43,7 @@ func (pkg *Package) Install() error {
 		os.RemoveAll(pkgDir)
 		return err
 	}
-	fmt.Printf("%s: written\n", File)
+	fmt.Printf("%s: written\n", fn)
 
 	// 5. Query TXT record from _codechain-head.DNS and validate the signed head
 	//    contained in it (see ssot package).

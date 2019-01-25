@@ -84,10 +84,11 @@ To publish an update of a secure package with SSOT do the following:
               ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
      - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 
-  6. Save the current distribution to:
+  6. If the HEAD changed, save the current distribution to:
      ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
 
-  7. Lookup the download URL and print where to upload the distribution file:
+  7. If the HEAD changed, lookup the download URL and print where to upload
+     the distribution file:
      ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
 
   8. Print DNS TXT record as defined by the .secpkg and the signed head.

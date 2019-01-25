@@ -72,26 +72,33 @@ func signHead(c *hashchain.HashChain) error {
 		return err
 	}
 
-	// 6. Save the current distribution to:
+	// 6. If the HEAD changed, save the current distribution to:
 	//    ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
-	log.Println("6. save the current distribution")
-	distDir := filepath.Join(pkgDir, "dists")
-	distFile := filepath.Join(distDir, fmt.Sprintf("%x.tar.gz", head))
-	if err := archive.CreateDist(c, distFile); err != nil {
-		return err
+	log.Println("6. if the HEAD changed, save the current distribution")
+	h := hex.Encode(head[:])
+	var distFile string
+	if h != pkg.Head {
+		distDir := filepath.Join(pkgDir, "dists")
+		distFile = filepath.Join(distDir, fmt.Sprintf("%x.tar.gz", head))
+		if err := archive.CreateDist(c, distFile); err != nil {
+			return err
+		}
 	}
 
-	// 7. Lookup the download URL and print where to upload the distribution file:
+	// 7. If the HEAD changed, lookup the download URL and print where to upload
+	//    the distribution file:
 	//    ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
-	log.Println("7. lookup the download URL")
-	URL, err := ssot.LookupURL(pkg.DNS)
-	if err != nil {
-		return err
+	log.Println("7. if the HEAD changed, lookup the download URL")
+	if h != pkg.Head {
+		URL, err := ssot.LookupURL(pkg.DNS)
+		if err != nil {
+			return err
+		}
+		fmt.Println("")
+		fmt.Printf("Please upload the following distribution file to: %s\n", URL)
+		fmt.Println(distFile)
+		fmt.Println("")
 	}
-	fmt.Println("")
-	fmt.Printf("Please upload the following distribution file to: %s\n", URL)
-	fmt.Println(distFile)
-	fmt.Println("")
 
 	// 8. Print DNS TXT record as defined by the .secpkg and the signed head.
 	log.Println("8. print DNS TXT record")
@@ -101,7 +108,6 @@ func signHead(c *hashchain.HashChain) error {
 
 	// 9. If the HEAD changed, update the .secpkg file accordingly.
 	log.Println("9. if the HEAD changed, update the .secpkg file")
-	h := hex.Encode(head[:])
 	if h != pkg.Head {
 		pkg.Head = h
 		newSecPkgFile := secpkg.File + "_new"

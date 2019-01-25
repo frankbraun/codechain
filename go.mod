@@ -7,6 +7,6 @@ require (
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mutecomm/mute v0.0.0-20180427225835-8124193e6371
 	github.com/sergi/go-diff v1.0.0 // indirect
-	golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc
-	golang.org/x/sys v0.0.0-20190114130336-2be517255631 // indirect
+	golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b
+	golang.org/x/sys v0.0.0-20190124100055-b90733256f2e // indirect
 )

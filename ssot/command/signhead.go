@@ -66,6 +66,7 @@ func signHead(c *hashchain.HashChain) error {
 	//    - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
 	//           ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
 	//    - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
+	log.Println("5. create a new signed head")
 	newSignedHead := ssot.SignHead(head, prevSignedHead.Counter()+1, *secKey)
 	if err := newSignedHead.RotateFile(pkgDir); err != nil {
 		return err
@@ -73,6 +74,7 @@ func signHead(c *hashchain.HashChain) error {
 
 	// 6. Save the current distribution to:
 	//    ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
+	log.Println("6. save the current distribution")
 	distDir := filepath.Join(pkgDir, "dists")
 	distFile := filepath.Join(distDir, fmt.Sprintf("%x.tar.gz", head))
 	if err := archive.CreateDist(c, distFile); err != nil {
@@ -81,6 +83,7 @@ func signHead(c *hashchain.HashChain) error {
 
 	// 7. Lookup the download URL and print where to upload the distribution file:
 	//    ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
+	log.Println("7. lookup the download URL")
 	URL, err := ssot.LookupURL(pkg.DNS)
 	if err != nil {
 		return err
@@ -91,11 +94,13 @@ func signHead(c *hashchain.HashChain) error {
 	fmt.Println("")
 
 	// 8. Print DNS TXT record as defined by the .secpkg and the signed head.
+	log.Println("8. print DNS TXT record")
 	fmt.Println("Please publish the following DNS TXT record:")
 	fmt.Println("")
 	newSignedHead.TXTPrintHead(pkg.DNS)
 
 	// 9. If the HEAD changed, update the .secpkg file accordingly.
+	log.Println("9. if the HEAD changed, update the .secpkg file")
 	h := hex.Encode(head[:])
 	if h != pkg.Head {
 		pkg.Head = h

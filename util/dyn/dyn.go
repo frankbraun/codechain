@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/frankbraun/codechain/util/log"
 )
@@ -38,7 +39,7 @@ func New(customerName, userName, password string) (*Session, error) {
 	log.Printf("Start new session with customer_name=%s, user_name=%s, and password=%s",
 		customerName, userName, password)
 
-	jsn := map[string]string{
+	jsn := map[string]interface{}{
 		"customer_name": customerName,
 		"user_name":     userName,
 		"password":      password,
@@ -104,4 +105,185 @@ func (s *Session) Close() {
 		log.Printf("Error: %v", err)
 		return
 	}
+}
+
+// TXTCreate creates a TXT record.
+func (s *Session) TXTCreate(zone, fqdn, txtdata string, ttl int) error {
+	log.Printf("Create new TXT record with zone=%s, fqdn=%s, txtdata=%s, and ttl=%d",
+		zone, fqdn, txtdata, ttl)
+
+	jsn := map[string]interface{}{
+		"rdata": map[string]string{
+			"txtdata": txtdata,
+		},
+		"ttl": strconv.Itoa(ttl),
+	}
+	enc, err := json.Marshal(jsn)
+	if err != nil {
+		return err
+	}
+
+	var c http.Client
+	req, err := http.NewRequest(http.MethodPost,
+		URI+"/REST/TXTRecord/"+zone+"/"+fqdn+"/", bytes.NewBuffer(enc))
+	if err != nil {
+		return err
+	}
+	req.Header = s.authHeader
+	resp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	log.Println(string(data))
+
+	// parse returned data
+	_, err = parseReturnedData(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TXTUpdate updates a TXT record (replaces all existing TXT records).
+func (s *Session) TXTUpdate(zone, fqdn, txtdata string, ttl int) error {
+	log.Printf("Update TXT record with zone=%s, fqdn=%s, txtdata=%s, and ttl=%d",
+		zone, fqdn, txtdata, ttl)
+
+	jsn := map[string]interface{}{
+		"rdata": map[string]string{
+			"txtdata": txtdata,
+		},
+		"ttl": strconv.Itoa(ttl),
+	}
+	enc, err := json.Marshal(jsn)
+	if err != nil {
+		return err
+	}
+
+	var c http.Client
+	req, err := http.NewRequest(http.MethodPut,
+		URI+"/REST/TXTRecord/"+zone+"/"+fqdn+"/", bytes.NewBuffer(enc))
+	if err != nil {
+		return err
+	}
+	req.Header = s.authHeader
+	resp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	log.Println(string(data))
+
+	// parse returned data
+	_, err = parseReturnedData(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TXTDelete deletes all TXT records.
+func (s *Session) TXTDelete(zone, fqdn string) error {
+	log.Printf("Delete TXT records with zone=%s and fqdn=%s", zone, fqdn)
+
+	var c http.Client
+	req, err := http.NewRequest(http.MethodDelete,
+		URI+"/REST/TXTRecord/"+zone+"/"+fqdn+"/", nil)
+	if err != nil {
+		return err
+	}
+	req.Header = s.authHeader
+	resp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	log.Println(string(data))
+
+	// parse returned data
+	_, err = parseReturnedData(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ZoneChangeset returns the pending changset for zone.
+func (s *Session) ZoneChangeset(zone string) (map[string]interface{}, error) {
+	log.Printf("Get Zone Changeset for zone=%s", zone)
+
+	var c http.Client
+	req, err := http.NewRequest(http.MethodGet, URI+"/REST/ZoneChanges/"+zone, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = s.authHeader
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	log.Println(string(data))
+
+	// parse returned data
+	ret, err := parseReturnedData(data)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// ZoneUpdate publishes the pending update for zone.
+func (s *Session) ZoneUpdate(zone string) error {
+	log.Printf("Publish pending changes for zone=%s", zone)
+
+	jsn := map[string]bool{
+		"publish": true,
+	}
+	enc, err := json.Marshal(jsn)
+	if err != nil {
+		return err
+	}
+
+	var c http.Client
+	req, err := http.NewRequest(http.MethodPut, URI+"/REST/Zone/"+zone+"/",
+		bytes.NewBuffer(enc))
+	if err != nil {
+		return err
+	}
+	req.Header = s.authHeader
+	resp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	log.Println(string(data))
+
+	// parse returned data
+	_, err = parseReturnedData(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }

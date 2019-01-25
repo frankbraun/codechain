@@ -36,13 +36,13 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 	if *customerName == "" {
-		util.Fatal(errors.New("Customer name (-c) is mandatory."))
+		util.Fatal(errors.New("customer name (-c) is mandatory"))
 	}
 	if *userName == "" {
-		util.Fatal(errors.New("User name (-u) is mandatory."))
+		util.Fatal(errors.New("user name (-u) is mandatory"))
 	}
 	if *password == "" {
-		util.Fatal(errors.New("Password (-p) is mandatory."))
+		util.Fatal(errors.New("password (-p) is mandatory"))
 	}
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)

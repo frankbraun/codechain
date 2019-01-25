@@ -103,6 +103,6 @@ TODO
 The following should be specified:
 
   - Key rotation.
-  - Automatic publishing of TXT records. With https://github.com/xenolf/lego?
+  - Automatic publishing of TXT records (with dyn package).
 */
 package ssot

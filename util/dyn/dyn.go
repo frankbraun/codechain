@@ -76,6 +76,11 @@ func New(customerName, userName, password string) (*Session, error) {
 	return &s, nil
 }
 
+// NewWithConfig opens a new Dyn Managed DNS session with parameters from config.
+func NewWithConfig(c *Config) (*Session, error) {
+	return New(c.CustomerName, c.UserName, c.Password)
+}
+
 // Close a new Dyn Managed DNS session.
 func (s *Session) Close() {
 	log.Println("Closing session")

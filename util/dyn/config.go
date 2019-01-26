@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/file"
 )
 
@@ -46,6 +47,20 @@ func (c *Config) Write(filename string) error {
 		return err
 	}
 	if err := ioutil.WriteFile(filename, jsn, 0644); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Check that the config is valid.
+func (c *Config) Check(zone, fqdn string) error {
+	s, err := NewWithConfig(c)
+	if err != nil {
+		return err
+	}
+	defer s.Close()
+	// create TXT record, but do not commit it
+	if err := s.TXTCreate(zone, fqdn, "test", ssot.TTL); err != nil {
 		return err
 	}
 	return nil

@@ -13,7 +13,7 @@ func usage() {
 	cmd := os.Args[0]
 	fmt.Fprintf(os.Stderr, "Usage: %s keygen [-s seckey.bin]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s keyfile -s seckey.bin [-c]\n", cmd)
-	fmt.Fprintf(os.Stderr, "       %s createpkg -name name -dns FQDN -url URL -s seckey.bin\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s createpkg -name name -dns FQDN -url URL -s seckey.bin [-dyn]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s signhead\n", cmd)
 	os.Exit(2)
 }

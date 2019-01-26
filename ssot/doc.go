@@ -35,7 +35,9 @@ procedure is defined:
   1. Make sure the project with NAME has not been published before.
      That is, the directory ~/.config/ssotpub/pkgs/NAME does not exist.
 
-  2. Create a new .secpkg file which specifies the following:
+  2. If TXT records are to be published automatically, check credentials.
+
+  3. Create a new .secpkg file which specifies the following:
 
      - The NAME of the project.
      - The fully qualified domain name (DNS) where the TXT records can be
@@ -45,19 +47,20 @@ procedure is defined:
      The .secpkg file is saved to the current working directory, which is
      typically added to the root of the project's repository.
 
-  3. Create the first signed head (see SignHead) for the current project's
+  4. Create the first signed head (see SignHead) for the current project's
      HEAD with a supplied secret key and counter set to 0.
 
-  4. Create the directory ~/.config/ssotpub/pkgs/NAME/dists
+  5. Create the directory ~/.config/ssotpub/pkgs/NAME/dists
      and save the current distribution to
       ~/.config/ssotpub/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
 
-  5. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head
+  6. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head
 
-  6. Print the distribution name: ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+  7. Print the distribution name: ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
 
-  7. Print DNS TXT records as defined by the .secpkg, the first signed head,
-     and the download URL.
+  8. Print DNS TXT records as defined by the .secpkg, the first signed head,
+     and the download URL. If TXT records are to be published automatically,
+     save credentials and publish the TXT record.
 
   Afterwards the administrator manually uploads the distribution HEAD.tar.gz
   to the download URL and publishes the new DNS TXT record in the defined

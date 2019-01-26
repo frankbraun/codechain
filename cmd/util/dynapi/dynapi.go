@@ -36,7 +36,6 @@ func callDynAPI(
 		if err := s.TXTCreate(zone, fqdn, data, ttl); err != nil {
 			return err
 		}
-
 	}
 	ret, err := s.ZoneChangeset(zone)
 	if err != nil {

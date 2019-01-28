@@ -64,49 +64,52 @@ procedure is defined:
 
   Afterwards the administrator manually uploads the distribution HEAD.tar.gz
   to the download URL and publishes the new DNS TXT record in the defined
-  zone. DNSSEC should be enabled.
+  zone (if not published automatically). DNSSEC should be enabled.
 
 SignHead specification
 
 To publish an update of a secure package with SSOT do the following:
 
-  1. Parse the .secpkg file in the current working directory.
+   1. Parse the .secpkg file in the current working directory.
 
-  2. Make sure the project with NAME has been published before.
-     That is, the directory ~/.config/ssotpub/pkgs/NAME exists.
+   2. Make sure the project with NAME has been published before.
+      That is, the directory ~/.config/ssotpub/pkgs/NAME exists.
 
-  3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
-     and make sure the corresponding secret key is available.
+   3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
+      and make sure the corresponding secret key is available.
 
-  4. Get the HEAD from .codechain/hashchain in the current working directory.
+   4. Get the HEAD from .codechain/hashchain in the current working directory.
 
-  5. Create a new signed head with current HEAD, the counter of the previous
-     signed head plus 1, and update the saved signed head:
+   5. If ~/.config/ssotpub/pkgs/NAME/dyn.json exits, check the contained Dyn
+      credentials and switch on automatic publishing of TXT records.
 
-     - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
-              ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
-     - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
+   6. Create a new signed head with current HEAD, the counter of the previous
+      signed head plus 1, and update the saved signed head:
 
-  6. If the HEAD changed, save the current distribution to:
-     ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
+      - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
+               ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
+      - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 
-  7. If the HEAD changed, lookup the download URL and print where to upload
-     the distribution file:
-     ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
+   7. If the HEAD changed, save the current distribution to:
+      ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
 
-  8. Print DNS TXT record as defined by the .secpkg and the signed head.
+   8. If the HEAD changed, lookup the download URL and print where to upload
+      the distribution file:
+      ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
 
-  9. If the HEAD changed, update the .secpkg file accordingly.
+   9. Print DNS TXT record as defined by the .secpkg and the signed head.
+      If TXT records are to be published automatically, publish the TXT record.
+
+  10. If the HEAD changed, update the .secpkg file accordingly.
 
   Afterwards the administrator manually uploads the distribution HEAD.tar.gz
   to the download URL and publishes the new DNS TXT record in the defined
-  zone. DNSSEC should be enabled.
+  zone (if not published automatically). DNSSEC should be enabled.
 
 TODO
 
 The following should be specified:
 
   - Key rotation.
-  - Automatic publishing of TXT records (with dyn package).
 */
 package ssot

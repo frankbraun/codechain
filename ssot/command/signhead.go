@@ -1,17 +1,20 @@
 package command
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/frankbraun/codechain/archive"
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
+	"github.com/frankbraun/codechain/util/dyn"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/homedir"
@@ -19,6 +22,33 @@ import (
 	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/seckey"
 )
+
+func writeTXTRecord(
+	s *dyn.Session,
+	zone string,
+	DNS string,
+	sh *ssot.SignedHead,
+) error {
+	// Update TXT record to publish the signed head.
+	log.Println("update TXT record to publish the signed head")
+	err := s.TXTUpdate(zone, def.CodechainHeadName+DNS, sh.Marshal(), ssot.TTL)
+	if err != nil {
+		return err
+	}
+	ret, err := s.ZoneChangeset(zone)
+	if err != nil {
+		return err
+	}
+	jsn, err := json.MarshalIndent(ret, "", "  ")
+	if err != nil {
+		return err
+	}
+	log.Println(string(jsn))
+	if err := s.ZoneUpdate(zone); err != nil {
+		return err
+	}
+	return nil
+}
 
 func signHead(c *hashchain.HashChain) error {
 	// 1. Parse the .secpkg file in the current working directory.
@@ -30,7 +60,7 @@ func signHead(c *hashchain.HashChain) error {
 
 	// 2. Make sure the project with NAME has been published before.
 	//    That is, the directory ~/.config/ssotpub/pkgs/NAME exists.
-	log.Println("1. make sure project exists")
+	log.Println("2. make sure project exists")
 	pkgDir := filepath.Join(homedir.SSOTPub(), "pkgs", pkg.Name)
 	exists, err := file.Exists(pkgDir)
 	if err != nil {
@@ -60,21 +90,42 @@ func signHead(c *hashchain.HashChain) error {
 	head := c.Head()
 	fmt.Printf("signing head %x\n", head)
 
-	// 5. Create a new signed head with current HEAD, the counter of the previous
+	// 5. If ~/.config/ssotpub/pkgs/NAME/dyn.json exits, check the contained Dyn
+	//    credentials and switch on automatic publishing of TXT records.
+	dynFile := filepath.Join(pkgDir, dyn.ConfigFilename)
+	exists, err = file.Exists(dynFile)
+	if err != nil {
+		return err
+	}
+	var dynSession *dyn.Session
+	if exists {
+		log.Printf("%s exists", dynFile)
+		dynConfig, err := dyn.ReadConfig(dynFile)
+		if err != nil {
+			return err
+		}
+		dynSession, err = dyn.NewWithConfig(dynConfig)
+		if err != nil {
+			return err
+		}
+		defer dynSession.Close()
+	}
+
+	// 6. Create a new signed head with current HEAD, the counter of the previous
 	//    signed head plus 1, and update the saved signed head:
 	//
 	//    - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
 	//           ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
 	//    - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
-	log.Println("5. create a new signed head")
+	log.Println("6. create a new signed head")
 	newSignedHead := ssot.SignHead(head, prevSignedHead.Counter()+1, *secKey)
 	if err := newSignedHead.RotateFile(pkgDir); err != nil {
 		return err
 	}
 
-	// 6. If the HEAD changed, save the current distribution to:
+	// 7. If the HEAD changed, save the current distribution to:
 	//    ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
-	log.Println("6. if the HEAD changed, save the current distribution")
+	log.Println("7. if the HEAD changed, save the current distribution")
 	h := hex.Encode(head[:])
 	var distFile string
 	if h != pkg.Head {
@@ -85,10 +136,10 @@ func signHead(c *hashchain.HashChain) error {
 		}
 	}
 
-	// 7. If the HEAD changed, lookup the download URL and print where to upload
+	// 8. If the HEAD changed, lookup the download URL and print where to upload
 	//    the distribution file:
 	//    ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
-	log.Println("7. if the HEAD changed, lookup the download URL")
+	log.Println("8. if the HEAD changed, lookup the download URL")
 	if h != pkg.Head {
 		URL, err := ssot.LookupURL(pkg.DNS)
 		if err != nil {
@@ -100,14 +151,27 @@ func signHead(c *hashchain.HashChain) error {
 		fmt.Println("")
 	}
 
-	// 8. Print DNS TXT record as defined by the .secpkg and the signed head.
-	log.Println("8. print DNS TXT record")
-	fmt.Println("Please publish the following DNS TXT record:")
+	// 9. Print DNS TXT record as defined by the .secpkg and the signed head.
+	// If TXT records are to be published automatically, publish the TXT record.
+	log.Println("9. print DNS TXT record")
+	if dynSession != nil {
+		// Write TXT record
+		log.Printf("DNS=%s", pkg.DNS)
+		parts := strings.Split(pkg.DNS, ".")
+		zone := parts[len(parts)-2] + "." + parts[len(parts)-1]
+		err := writeTXTRecord(dynSession, zone, pkg.DNS, newSignedHead)
+		if err != nil {
+			return nil
+		}
+		fmt.Println("The following DNS TXT record has been published:")
+	} else {
+		fmt.Println("Please publish the following DNS TXT record:")
+	}
 	fmt.Println("")
 	newSignedHead.TXTPrintHead(pkg.DNS)
 
-	// 9. If the HEAD changed, update the .secpkg file accordingly.
-	log.Println("9. if the HEAD changed, update the .secpkg file")
+	// 10. If the HEAD changed, update the .secpkg file accordingly.
+	log.Println("10. if the HEAD changed, update the .secpkg file")
 	if h != pkg.Head {
 		pkg.Head = h
 		newSecPkgFile := secpkg.File + "_new"

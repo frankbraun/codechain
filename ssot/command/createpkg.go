@@ -26,19 +26,19 @@ import (
 func writeTXTRecords(
 	s *dyn.Session,
 	zone string,
-	pkg *secpkg.Package,
+	DNS string,
 	sh *ssot.SignedHead,
 	URL string,
 ) error {
 	// Create TXT record to publish the signed head.
 	log.Println("create TXT record to publish the signed head")
-	err := s.TXTCreate(zone, def.CodechainHeadName+pkg.DNS, sh.Marshal(), ssot.TTL)
+	err := s.TXTCreate(zone, def.CodechainHeadName+DNS, sh.Marshal(), ssot.TTL)
 	if err != nil {
 		return err
 	}
 	// Create TXT record to publish the url.
 	log.Println("create TXT record to publish the url")
-	err = s.TXTCreate(zone, def.CodechainURLName+pkg.DNS, URL, ssot.TTL)
+	err = s.TXTCreate(zone, def.CodechainURLName+DNS, URL, ssot.TTL)
 	if err != nil {
 		return err
 	}
@@ -160,10 +160,11 @@ func createPkg(
 			return err
 		}
 		// Write TXT records
-		log.Printf("dns=%s", dns)
-		parts := strings.Split(dns, ".")
+		log.Printf("DNS=%s", pkg.DNS)
+		parts := strings.Split(pkg.DNS, ".")
 		zone := parts[len(parts)-2] + "." + parts[len(parts)-1]
-		if err := writeTXTRecords(dynSession, zone, pkg, sh, URL); err != nil {
+		err := writeTXTRecords(dynSession, zone, pkg.DNS, sh, URL)
+		if err != nil {
 			return nil
 		}
 		fmt.Println("The following DNS TXT records have been published:")

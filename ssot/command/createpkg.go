@@ -51,10 +51,7 @@ func writeTXTRecords(
 		return err
 	}
 	log.Println(string(jsn))
-	if err := s.ZoneUpdate(zone); err != nil {
-		return err
-	}
-	return nil
+	return s.ZoneUpdate(zone)
 }
 
 func createPkg(

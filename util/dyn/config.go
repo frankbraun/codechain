@@ -45,8 +45,5 @@ func (c *Config) Write(filename string) error {
 	if err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(filename, jsn, 0644); err != nil {
-		return err
-	}
-	return nil
+	return ioutil.WriteFile(filename, jsn, 0644)
 }

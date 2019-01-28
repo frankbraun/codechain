@@ -40,7 +40,7 @@ const CodechainHeadName = "_codechain-head."
 // CodechainURLName is the TXT entry used for Codechain's secpkg URLs.
 const CodechainURLName = "_codechain-url."
 
-// CodechainTestName is the TXT entry used for test Dyn credentials.
+// CodechainTestName is the TXT entry used to test Dyn credentials.
 const CodechainTestName = "_codechain-test."
 
 // ExcludePaths is the default list of paths not considered by Codechain.

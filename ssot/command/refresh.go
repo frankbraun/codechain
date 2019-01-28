@@ -94,7 +94,7 @@ func refresh(secpkgFilename string) error {
 	}
 
 	// 7. Print DNS TXT record as defined by the .secpkg file and the signed head.
-	//    If TXT records are to be published automatically, publish the TXT record.
+	//    If TXT record is to be published automatically, publish the TXT record.
 	log.Println("7. print DNS TXT record")
 	if dynSession != nil {
 		// Write TXT record

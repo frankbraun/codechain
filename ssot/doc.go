@@ -132,7 +132,7 @@ To refresh the published head of a secure package with SSOT do the following:
       - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 
    7. Print DNS TXT record as defined by the .secpkg file and the signed head.
-      If TXT records are to be published automatically, publish the TXT record.
+      If TXT record is to be published automatically, publish the TXT record.
 
   Afterwards the administrator publishes the new DNS TXT record in the defined
   zone (if not published automatically). DNSSEC should be enabled.

@@ -24,20 +24,15 @@ import (
 )
 
 func writeTXTRecords(
-	dynConfig *dyn.Config,
+	s *dyn.Session,
 	zone string,
 	pkg *secpkg.Package,
 	sh *ssot.SignedHead,
 	URL string,
 ) error {
-	s, err := dyn.NewWithConfig(dynConfig)
-	if err != nil {
-		return err
-	}
-	defer s.Close()
 	// Create TXT record to publish the signed head.
 	log.Println("create TXT record to publish the signed head")
-	err = s.TXTCreate(zone, def.CodechainHeadName+pkg.DNS, sh.Marshal(), ssot.TTL)
+	err := s.TXTCreate(zone, def.CodechainHeadName+pkg.DNS, sh.Marshal(), ssot.TTL)
 	if err != nil {
 		return err
 	}
@@ -94,23 +89,20 @@ func createPkg(
 
 	// 2. If TXT records are to be published automatically, check credentials.
 	var (
-		dynConfig *dyn.Config
-		zone      string
+		dynConfig  *dyn.Config
+		dynSession *dyn.Session
 	)
 	if useDyn {
-		log.Printf("dns=%s", dns)
-		parts := strings.Split(dns, ".")
-		zone = parts[len(parts)-2] + "." + parts[len(parts)-1]
 		dynConfig = &dyn.Config{
 			CustomerName: customerName,
 			UserName:     userName,
 			Password:     password,
 		}
-		log.Println("check Dyn configuration")
-		err := dynConfig.Check(zone, def.CodechainTestName+pkg.DNS)
+		dynSession, err = dyn.NewWithConfig(dynConfig)
 		if err != nil {
 			return err
 		}
+		defer dynSession.Close()
 	} else {
 		fmt.Println("Publishing TXT records manually, restart with -dyn to switch to automatic")
 	}
@@ -168,7 +160,10 @@ func createPkg(
 			return err
 		}
 		// Write TXT records
-		if err := writeTXTRecords(dynConfig, zone, pkg, sh, URL); err != nil {
+		log.Printf("dns=%s", dns)
+		parts := strings.Split(dns, ".")
+		zone := parts[len(parts)-2] + "." + parts[len(parts)-1]
+		if err := writeTXTRecords(dynSession, zone, pkg, sh, URL); err != nil {
 			return nil
 		}
 		fmt.Println("The following DNS TXT records have been published:")

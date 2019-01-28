@@ -97,13 +97,44 @@ To publish an update of a secure package with SSOT do the following:
       the distribution file:
       ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
 
-   9. Print DNS TXT record as defined by the .secpkg and the signed head.
+   9. Print DNS TXT record as defined by the .secpkg file and the signed head.
       If TXT records are to be published automatically, publish the TXT record.
 
   10. If the HEAD changed, update the .secpkg file accordingly.
 
   Afterwards the administrator manually uploads the distribution HEAD.tar.gz
   to the download URL and publishes the new DNS TXT record in the defined
+  zone (if not published automatically). DNSSEC should be enabled.
+
+Refresh specification
+
+To refresh the published head of a secure package with SSOT do the following:
+
+   1. Parse the supplied .secpkg file.
+
+   2. Make sure the project with NAME has been published before.
+      That is, the directory ~/.config/ssotpub/pkgs/NAME exists.
+
+   3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
+      and make sure the corresponding secret key is available.
+
+   4. Make sure the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
+      matches the HEAD in the .secpkg file.
+
+   5. If ~/.config/ssotpub/pkgs/NAME/dyn.json exits, check the contained Dyn
+      credentials and switch on automatic publishing of TXT records.
+
+   6. Create a new signed head with the same HEAD, the counter of the previous
+      signed head plus 1, and update the saved signed head:
+
+      - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
+               ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
+      - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
+
+   7. Print DNS TXT record as defined by the .secpkg file and the signed head.
+      If TXT records are to be published automatically, publish the TXT record.
+
+  Afterwards the administrator publishes the new DNS TXT record in the defined
   zone (if not published automatically). DNSSEC should be enabled.
 
 TODO

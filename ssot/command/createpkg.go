@@ -56,7 +56,7 @@ func writeTXTRecords(
 
 func createPkg(
 	c *hashchain.HashChain, name, dns, URL, secKeyFile string,
-	useDyn bool,
+	useDyn, encrypted bool,
 	customerName, userName, password string,
 ) error {
 	head := c.Head()
@@ -69,7 +69,7 @@ func createPkg(
 	if _, err := url.Parse(URL); err != nil {
 		return err
 	}
-	pkg, err := secpkg.New(name, dns, head)
+	pkg, err := secpkg.New(name, dns, head, encrypted)
 	if err != nil {
 		return err
 	}
@@ -128,9 +128,23 @@ func createPkg(
 	if err := os.MkdirAll(distDir, 0755); err != nil {
 		return err
 	}
-	distFile := filepath.Join(distDir, fmt.Sprintf("%x.tar.gz", head))
-	if err := archive.CreateDist(c, distFile); err != nil {
-		return err
+	var encPrefix string
+	if encrypted {
+		encPrefix = ".enc"
+	}
+	distFile := filepath.Join(distDir, fmt.Sprintf("%x.tar.gz%s", head, encPrefix))
+	if encrypted {
+		key, err := pkg.GetKey()
+		if err != nil {
+			return err
+		}
+		if err := archive.CreateEncryptedDist(c, distFile, *key); err != nil {
+			return err
+		}
+	} else {
+		if err := archive.CreateDist(c, distFile); err != nil {
+			return err
+		}
 	}
 
 	// 6. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head
@@ -189,6 +203,7 @@ func CreatePkg(argv0 string, args ...string) error {
 	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	useDyn := fs.Bool("dyn", false, "Use Dyn Managed DNS API to publish TXT records automatically")
+	encrypted := fs.Bool("encrypted", false, "Encrypt source code archives")
 	customerName := fs.String("customer", "", "Customer name for Dyn Managed DNS API")
 	userName := fs.String("user", "", "User name for Dyn Managed DNS API")
 	password := fs.String("password", "", "Password for Dyn Managed DNS API")
@@ -234,8 +249,8 @@ func CreatePkg(argv0 string, args ...string) error {
 	})
 	// run createPkg
 	go func() {
-		err := createPkg(c, *name, *dns, *url, *secKey, *useDyn, *customerName,
-			*userName, *password)
+		err := createPkg(c, *name, *dns, *url, *secKey, *useDyn, *encrypted,
+			*customerName, *userName, *password)
 		if err != nil {
 			interrupt.ShutdownChannel <- err
 			return

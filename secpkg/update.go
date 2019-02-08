@@ -123,7 +123,6 @@ func Update(name string) error {
 		err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,
 			distFile, &head, key)
 		if err != nil {
-			os.RemoveAll(pkgDir)
 			return err
 		}
 	} else {

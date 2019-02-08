@@ -93,7 +93,11 @@ func Update(name string) error {
 	// 8. Download distribution file from URL/HEAD.tar.gz and save it to
 	//    ~/.config/secpkg/pkgs/NAME/dists
 	distDir := filepath.Join(pkgDir, "dists")
-	fn = shDNS.Head() + ".tar.gz"
+	var encSuffix string
+	if pkg.Key != "" {
+		encSuffix = ".enc"
+	}
+	fn = shDNS.Head() + ".tar.gz" + encSuffix
 	filename := filepath.Join(distDir, fn)
 	url := URL + "/" + fn
 	fmt.Printf("download %s\n", url)
@@ -111,9 +115,22 @@ func Update(name string) error {
 	}
 	head := shDNS.HeadBuf()
 	distFile := filepath.Join("..", "dists", fn)
-	err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)
-	if err != nil {
-		return err
+	if pkg.Key != "" {
+		key, err := pkg.GetKey()
+		if err != nil {
+			return err
+		}
+		err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,
+			distFile, &head, key)
+		if err != nil {
+			os.RemoveAll(pkgDir)
+			return err
+		}
+	} else {
+		err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)
+		if err != nil {
+			return err
+		}
 	}
 	c, err := hashchain.ReadFile(def.HashchainFile)
 	if err != nil {

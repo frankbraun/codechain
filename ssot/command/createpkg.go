@@ -138,7 +138,7 @@ func createPkg(
 		if err != nil {
 			return err
 		}
-		if err := archive.CreateEncryptedDist(c, distFile, *key); err != nil {
+		if err := archive.CreateEncryptedDist(c, distFile, key); err != nil {
 			return err
 		}
 	} else {

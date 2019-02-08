@@ -76,7 +76,11 @@ func (pkg *Package) Install() error {
 		os.RemoveAll(pkgDir)
 		return err
 	}
-	fn = sh.Head() + ".tar.gz"
+	var encSuffix string
+	if pkg.Key != "" {
+		encSuffix = ".enc"
+	}
+	fn = sh.Head() + ".tar.gz" + encSuffix
 	filename := filepath.Join(distDir, fn)
 	url := URL + "/" + fn
 	fmt.Printf("download %s\n", url)
@@ -100,10 +104,23 @@ func (pkg *Package) Install() error {
 	}
 	head := sh.HeadBuf()
 	distFile := filepath.Join("..", "dists", fn)
-	err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)
-	if err != nil {
-		os.RemoveAll(pkgDir)
-		return err
+	if pkg.Key != "" {
+		key, err := pkg.GetKey()
+		if err != nil {
+			return err
+		}
+		err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,
+			distFile, &head, key)
+		if err != nil {
+			os.RemoveAll(pkgDir)
+			return err
+		}
+	} else {
+		err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)
+		if err != nil {
+			os.RemoveAll(pkgDir)
+			return err
+		}
 	}
 	c, err := hashchain.ReadFile(def.HashchainFile)
 	if err != nil {

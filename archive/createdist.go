@@ -36,7 +36,7 @@ func CreateDist(c *hashchain.HashChain, filename string) error {
 
 // CreateEncryptedDist creates an encrypted distribution file with filename
 // for hash chain c. Filename must not exists.
-func CreateEncryptedDist(c *hashchain.HashChain, filename string, key [32]byte) error {
+func CreateEncryptedDist(c *hashchain.HashChain, filename string, key *[32]byte) error {
 	exists, err := file.Exists(filename)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func CreateEncryptedDist(c *hashchain.HashChain, filename string, key [32]byte) 
 	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
 		return err
 	}
-	enc := secretbox.Seal(nonce[:], b.Bytes(), &nonce, &key)
+	enc := secretbox.Seal(nonce[:], b.Bytes(), &nonce, key)
 	log.Printf("creating encrypted distribution '%s'", filename)
 	return ioutil.WriteFile(filename, enc, 0666)
 }

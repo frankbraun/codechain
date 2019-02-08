@@ -16,6 +16,7 @@ import (
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/log"
+	"golang.org/x/crypto/nacl/secretbox"
 )
 
 var (
@@ -204,4 +205,24 @@ func ApplyFile(hashchainFile, patchDir, filename string, head *[32]byte) error {
 	defer f.Close()
 	log.Printf("applying distribution '%s'", filename)
 	return Apply(hashchainFile, patchDir, f, head)
+}
+
+// ApplyEncryptedFile applies the encrypted archive in filename to the given
+// hashchainFile and patchDir. If the hashchainFile is already present it must
+// be transformable by appending to the hashchain present in r, otherwise an
+// error is returned. If head is not nil the hash chain read from filename
+// must contain the given head.
+func ApplyEncryptedFile(hashchainFile, patchDir, filename string, head, key *[32]byte) error {
+	log.Printf("applying encrypted distribution '%s'", filename)
+	enc, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	var nonce [24]byte
+	copy(nonce[:], enc[:24])
+	msg, verify := secretbox.Open(nil, enc[24:], &nonce, key)
+	if !verify {
+		return ErrCannotDecrypt
+	}
+	return Apply(hashchainFile, patchDir, bytes.NewBuffer(msg), head)
 }

@@ -137,7 +137,7 @@ func signHead(c *hashchain.HashChain) error {
 			if err != nil {
 				return err
 			}
-			if err := archive.CreateEncryptedDist(c, distFile, *key); err != nil {
+			if err := archive.CreateEncryptedDist(c, distFile, key); err != nil {
 				return err
 			}
 

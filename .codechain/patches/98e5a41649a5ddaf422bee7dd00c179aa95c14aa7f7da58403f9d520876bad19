@@ -1,0 +1,184 @@
+codechain patchfile version 2
+treehash 98e5a41649a5ddaf422bee7dd00c179aa95c14aa7f7da58403f9d520876bad19
+- f 5a6d8d6c45a5a926a4d399b5f10c3a7291009f18564f35ce7c7c00fb7d46c0df archive/archive.go
++ f 668380ce15d6071ab8d56c218b48d39853607c81acdce5f521c2caeb8a162006 archive/archive.go
+dmppatch 7
+@@ -384,16 +384,54 @@
+ il/log%22%0A
++%09%22golang.org/x/crypto/nacl/secretbox%22%0A
+ )%0A%0Avar (
+@@ -5151,12 +5151,799 @@
+  f, head)%0A%7D%0A
++%0A// ApplyEncryptedFile applies the encrypted archive in filename to the given%0A// hashchainFile and patchDir. If the hashchainFile is already present it must%0A// be transformable by appending to the hashchain present in r, otherwise an%0A// error is returned. If head is not nil the hash chain read from filename%0A// must contain the given head.%0Afunc ApplyEncryptedFile(hashchainFile, patchDir, filename string, head, key *%5B32%5Dbyte) error %7B%0A%09log.Printf(%22applying encrypted distribution '%25s'%22, filename)%0A%09enc, err := ioutil.ReadFile(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09var nonce %5B24%5Dbyte%0A%09copy(nonce%5B:%5D, enc%5B:24%5D)%0A%09msg, verify := secretbox.Open(nil, enc%5B24:%5D, &nonce, key)%0A%09if !verify %7B%0A%09%09return ErrCannotDecrypt%0A%09%7D%0A%09return Apply(hashchainFile, patchDir, bytes.NewBuffer(msg), head)%0A%7D%0A
+- f a0cfd4c100b279587b02f89fef98300f38410b83a0f1a8b5fa12afdb385c6796 archive/createdist.go
++ f b92b46ee3df98710f160a306a4b266665cec807efce3318b9bf5c135d4900647 archive/createdist.go
+dmppatch 13
+@@ -23,15 +23,58 @@
+ t (%0A
++%09%22bytes%22%0A%09%22crypto/rand%22%0A
+ %09%22fmt%22%0A
++%09%22io%22%0A%09%22io/ioutil%22%0A
+ %09%22os
+@@ -258,16 +258,54 @@
+ il/log%22%0A
++%09%22golang.org/x/crypto/nacl/secretbox%22%0A
+ )%0A%0A// Cr
+@@ -794,8 +794,734 @@
+ hDir)%0A%7D%0A
++%0A// CreateEncryptedDist creates an encrypted distribution file with filename%0A// for hash chain c. Filename must not exists.%0Afunc CreateEncryptedDist(c *hashchain.HashChain, filename string, key *%5B32%5Dbyte) error %7B%0A%09exists, err := file.Exists(filename)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09return fmt.Errorf(%22distribution file '%25s' exists already%22, filename)%0A%09%7D%0A%09var b bytes.Buffer%0A%09if err := Create(&b, c, def.PatchDir); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09var nonce %5B24%5Dbyte%0A%09if _, err := io.ReadFull(rand.Reader, nonce%5B:%5D); err != nil %7B%0A%09%09return err%0A%09%7D%0A%09enc := secretbox.Seal(nonce%5B:%5D, b.Bytes(), &nonce, key)%0A%09log.Printf(%22creating encrypted distribution '%25s'%22, filename)%0A%09return ioutil.WriteFile(filename, enc, 0666)%0A%7D%0A
+- f 8a4239129abbb05c2bcb5690b90316f644f922757db94a79f4e73225ca094550 archive/errors.go
++ f c1de51610929288bb63df9a62d1edf9c2df843d9490b78b7860c8403fdf2ab06 archive/errors.go
+dmppatch 3
+@@ -194,8 +194,147 @@
+ hive?%22)%0A
++%0A// ErrCannotDecrypt is returned if an encrypted archive cannot be decrypted.%0Avar ErrCannotDecrypt = errors.New(%22archive: cannot decrypt%22)%0A
+- f 9d8acf19d0d87910be353f390a811cb8e1b269927881fe8fc702a7c4a516e726 secpkg/errors.go
++ f 4c79a80ca797dd9d47c69892b5c3817b4d0108a1c1a8e88061159f79c1dfb07b secpkg/errors.go
+dmppatch 3
+@@ -212,8 +212,156 @@
+ acter%22)%0A
++%0A// ErrNoKey is returned if a package has no secretbox encryption key.%0Avar ErrNoKey = errors.New(%22secpkg: package has no secretbox encryption key%22)%0A
+- f 1e7aa24953569726ca63003335c14b580d6fb96bf008b24cdd76874d023b35ff secpkg/install.go
++ f c0c58a875702c80ab424607f811761f3234fac15d355c789e555d1d0ef51bbc7 secpkg/install.go
+dmppatch 10
+@@ -2195,36 +2195,114 @@
+ %0A%09%7D%0A
+-%09fn = sh.Head() + %22.tar.gz%22%0A
++%09var encSuffix string%0A%09if pkg.Key != %22%22 %7B%0A%09%09encSuffix = %22.enc%22%0A%09%7D%0A%09fn = sh.Head() + %22.tar.gz%22 + encSuffix%0A
+ %09fil
+@@ -2973,136 +2973,390 @@
+ fn)%0A
+-%09err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)%0A%09if err != nil %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A
++%09if pkg.Key != %22%22 %7B%0A%09%09key, err := pkg.GetKey()%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,%0A%09%09%09distFile, &head, key)%0A%09%09if err != nil %7B%0A%09%09%09os.RemoveAll(pkgDir)%0A%09%09%09return err%0A%09%09%7D%0A%09%7D else %7B%0A%09%09err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)%0A%09%09if err != nil %7B%0A%09%09%09os.RemoveAll(pkgDir)%0A%09%09%09return err%0A%09%09%7D%0A
+ %09%7D%0A%09
+- f 7ee7939d11bbd640e6af1fadbfa9dc5f1dc190043b105abda3b149b87bd6c66e secpkg/secpkg.go
++ f 479cc63b2683274678bc6850d49811aae66ff6d35d28e2309c0b133ed746887a secpkg/secpkg.go
+dmppatch 24
+@@ -18,16 +18,31 @@
+ mport (%0A
++%09%22crypto/rand%22%0A
+ %09%22encodi
+@@ -50,16 +50,22 @@
+ g/json%22%0A
++%09%22io%22%0A
+ %09%22io/iou
+@@ -488,16 +488,86 @@
+  (SSOT)%0A
++%09Key  string %60json:%22,omitempty%22%60 // optional secretbox encryption key%0A
+ %7D%0A%0A// Ne
+@@ -595,70 +595,86 @@
+ ge.%0A
+-func New(name, dns string, head %5B32%5Dbyte) (*Package, error) %7B%0A
++func New(name, dns string, head %5B32%5Dbyte, encrypted bool) (*Package, error) %7B%0A
+ %09// 
+@@ -976,16 +976,170 @@
+ S = dns%0A
++%09if encrypted %7B%0A%09%09var key %5B32%5Dbyte%0A%09%09if _, err := io.ReadFull(rand.Reader, key%5B:%5D); err != nil %7B%0A%09%09%09return nil, err%0A%09%09%7D%0A%09%09pkg.Key = hex.Encode(key%5B:%5D)%0A%09%7D%0A
+ %09return 
+@@ -1645,8 +1645,341 @@
+ (jsn)%0A%7D%0A
++%0A// GetKey returns the secretbox encryption key or an error if the key does not%0A// exist or is not parsable.%0Afunc (pkg *Package) GetKey() (*%5B32%5Dbyte, error) %7B%0A%09if pkg.Key == %22%22 %7B%0A%09%09return nil, ErrNoKey%0A%09%7D%0A%09k, err := hex.Decode(pkg.Key, 32)%0A%09if err != nil %7B%0A%09%09return nil, err%0A%09%7D%0A%09var key %5B32%5Dbyte%0A%09copy(key%5B:%5D, k)%0A%09return &key, nil%0A%7D%0A
+- f 5259c5bca5c13f2fa572ba89c713e900379b9e81e61f26afc6870988354a0d34 secpkg/secpkg_test.go
++ f 50d9ba295ca890dd7fb2e4b01f9586fa23c34932ee4724a49c9ac52864380db5 secpkg/secpkg_test.go
+dmppatch 17
+@@ -50,48 +50,96 @@
+ ng%22%0A
++%0A%09%22github.com/frankbraun/codechain/util/hex%22%0A
+ )%0A%0A
+-func TestLoadMarshal(t *testing.T) %7B%0A
++func TestLoadMarshalNew(t *testing.T) %7B%0A
+ %09cod
+@@ -204,41 +204,43 @@
+ g%22)%0A
+-%09p, err := Load(codechainSecPkg)%0A
++%09pkg, err := Load(codechainSecPkg)%0A
+ %09if 
+@@ -315,23 +315,456 @@
+ %0A%09%7D%0A
+-%09_ = p.Marshal()%0A
++%09if pkg.Key != %22%22 %7B%0A%09%09t.Error(%22pkg.Key not empty%22)%0A%09%7D%0A%09_ = pkg.Marshal()%0A%09h, err := hex.Decode(pkg.Head, 32)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22hex.Decode(%25s, 32) failed: %25v%22, pkg.Head, err)%0A%09%7D%0A%09var head %5B32%5Dbyte%0A%09copy(head%5B:%5D, h)%0A%09encPkg, err := New(pkg.Name, pkg.DNS, head, true)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22New() failed: %25v%22, err)%0A%09%7D%0A%09_, err = hex.Decode(encPkg.Key, 32)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22hex.Decode(%25s, 32) failed: %25v%22, encPkg.Key, err)%0A%09%7D%0A
+ %7D%0A
+- f cb2566bc79cb320a740b095e606adac4a782ac91d6b476fab1089a582bffcdeb secpkg/testdata/codechain.secpkg
++ f 8bc3caf3439e7de7a751a74c410bfa9b9494a7b5e59bfe7e8ee027e879226b15 secpkg/testdata/codechain.secpkg
+dmppatch 5
+@@ -100,82 +100,38 @@
+ c%22,%0A
+-  %22DNS%22: %22codechain.secpkg.net%22,%0A  %22URL%22: %22http://frankbraun.org/codechain%22%0A
++  %22DNS%22: %22codechain.secpkg.net%22%0A
+ %7D%0A
+- f e3f6d4bd5bb78ec9413c566a1cf04ab3756b53eec59d4cf488ecad2dc8926b5b secpkg/update.go
++ f 47cd18b1d28c264c7b304f4b20717d44660b2a4d67a22801b5f5ec789a89def2 secpkg/update.go
+dmppatch 10
+@@ -3013,39 +3013,117 @@
+ s%22)%0A
+-%09fn = shDNS.Head() + %22.tar.gz%22%0A
++%09var encSuffix string%0A%09if pkg.Key != %22%22 %7B%0A%09%09encSuffix = %22.enc%22%0A%09%7D%0A%09fn = shDNS.Head() + %22.tar.gz%22 + encSuffix%0A
+ %09fil
+@@ -3645,113 +3645,342 @@
+ fn)%0A
+-%09err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)%0A%09if err != nil %7B%0A%09%09return err%0A
++%09if pkg.Key != %22%22 %7B%0A%09%09key, err := pkg.GetKey()%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,%0A%09%09%09distFile, &head, key)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D else %7B%0A%09%09err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A
+ %09%7D%0A%09
+- f 8d6e399b424d55b6e225f30791b121c37f8d076f00815bf77c5be41f703a42ab ssot/command/createpkg.go
++ f 54e18363d59dfcae4b645a3e25f746f644d9aa629a92443361bd37b1dd4e0c94 ssot/command/createpkg.go
+dmppatch 24
+@@ -1419,22 +1419,33 @@
+ ng,%0A
+-%09useDyn bool,%0A
++%09useDyn, encrypted bool,%0A
+ %09cus
+@@ -1771,49 +1771,60 @@
+ %0A%09%7D%0A
+-%09pkg, err := secpkg.New(name, dns, head)%0A
++%09pkg, err := secpkg.New(name, dns, head, encrypted)%0A
+ %09if 
+@@ -3341,146 +3341,406 @@
+ %0A%09%7D%0A
+-%09distFile := filepath.Join(distDir, fmt.Sprintf(%22%25x.tar.gz%22, head))%0A%09if err := archive.CreateDist(c, distFile); err != nil %7B%0A%09%09return err%0A
++%09var encSuffix string%0A%09if encrypted %7B%0A%09%09encSuffix = %22.enc%22%0A%09%7D%0A%09distFile := filepath.Join(distDir, fmt.Sprintf(%22%25x.tar.gz%25s%22, head, encSuffix))%0A%09if encrypted %7B%0A%09%09key, err := pkg.GetKey()%0A%09%09if err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if err := archive.CreateEncryptedDist(c, distFile, key); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D else %7B%0A%09%09if err := archive.CreateDist(c, distFile); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A
+ %09%7D%0A%0A
+@@ -5889,16 +5889,90 @@
+ cally%22)%0A
++%09encrypted := fs.Bool(%22encrypted%22, false, %22Encrypt source code archives%22)%0A
+ %09custome
+@@ -7222,107 +7222,119 @@
+ ) %7B%0A
+-%09%09err := createPkg(c, *name, *dns, *url, *secKey, *useDyn, *customerName,%0A%09%09%09*userName, *password)%0A
++%09%09err := createPkg(c, *name, *dns, *url, *secKey, *useDyn, *encrypted,%0A%09%09%09*customerName, *userName, *password)%0A
+ %09%09if
+- f 406d1b198b9489e400980d4367124a35c4a0603fefa9f0284fd5b6bd3874273c ssot/command/refresh.go
++ f 13c6bd1b8f5dd6c560147842916fadeecbdc4c4f56cf67e9326dea95f0e5a269 ssot/command/refresh.go
+dmppatch 5
+@@ -2981,89 +2981,87 @@
+ ad.%0A
+-%09//    If TXT records are to be published automatically, publish the TXT record.%0A
++%09//    If TXT record is to be published automatically, publish the TXT record.%0A
+ %09log
+- f 79ab026a55d697c3f71f2e287258a7996a65cf0bad650cc1d29d378c732fe5e0 ssot/command/signhead.go
++ f 212f0fd8779db5c260af34b8cf66b97050222a85a6fe3437fd32a0ef5f1c6c74 ssot/command/signhead.go
+dmppatch 9
+@@ -3805,16 +3805,86 @@
+ .Head %7B%0A
++%09%09var encSuffix string%0A%09%09if pkg.Key != %22%22 %7B%0A%09%09%09encSuffix = %22.enc%22%0A%09%09%7D%0A
+ %09%09distDi
+@@ -3923,148 +3923,361 @@
+ s%22)%0A
+-%09%09distFile = filepath.Join(distDir, fmt.Sprintf(%22%25x.tar.gz%22, head))%0A%09%09if err := archive.CreateDist(c, distFile); err != nil %7B%0A%09%09%09return err%0A
++%09%09distFile = filepath.Join(distDir, fmt.Sprintf(%22%25x.tar.gz%25s%22, head, encSuffix))%0A%09%09if pkg.Key != %22%22 %7B%0A%09%09%09key, err := pkg.GetKey()%0A%09%09%09if err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%09%09%09if err := archive.CreateEncryptedDist(c, distFile, key); err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A%0A%09%09%7D else %7B%0A%09%09%09if err := archive.CreateDist(c, distFile); err != nil %7B%0A%09%09%09%09return err%0A%09%09%09%7D%0A
+ %09%09%7D%0A
+- f c08225fda929bc78293289d908ab23920e75b3f6a67c05852081640a6afa2f52 ssot/doc.go
++ f ae7a52d09ffbfbb4d0f337a0b11f35f8218d8f728df5a0171684a042173482eb ssot/doc.go
+dmppatch 5
+@@ -5437,88 +5437,86 @@
+ ad.%0A
+-      If TXT records are to be published automatically, publish the TXT record.%0A
++      If TXT record is to be published automatically, publish the TXT record.%0A
+ %0A  A
+- f f250ddce0f9bd37c9f0f472cbe16ec7581ff629aade0e4a507d0f1092f726928 util/file/file.go
++ f 8e75f529c51882f12aff2cfb6fafbcd8512bc69e323ae51a7eafe49d569874d0 util/file/file.go
+dmppatch 4
+@@ -4856,16 +4856,117 @@
+ Close()%0A
++%09if resp.StatusCode != 200 %7B%0A%09%09return fmt.Errorf(%22downloading '%25s' failed: %25s%22, url, resp.Status)%0A%09%7D%0A
+ %09_, err 
+treehash 3b4fdd79cb732d6908c275ece22e3afe5f596b7ba502fc3d1487d4917abf0965

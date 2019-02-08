@@ -128,11 +128,11 @@ func createPkg(
 	if err := os.MkdirAll(distDir, 0755); err != nil {
 		return err
 	}
-	var encPrefix string
+	var encSuffix string
 	if encrypted {
-		encPrefix = ".enc"
+		encSuffix = ".enc"
 	}
-	distFile := filepath.Join(distDir, fmt.Sprintf("%x.tar.gz%s", head, encPrefix))
+	distFile := filepath.Join(distDir, fmt.Sprintf("%x.tar.gz%s", head, encSuffix))
 	if encrypted {
 		key, err := pkg.GetKey()
 		if err != nil {

@@ -126,12 +126,12 @@ func signHead(c *hashchain.HashChain) error {
 	h := hex.Encode(head[:])
 	var distFile string
 	if h != pkg.Head {
-		var encPrefix string
+		var encSuffix string
 		if pkg.Key != "" {
-			encPrefix = ".enc"
+			encSuffix = ".enc"
 		}
 		distDir := filepath.Join(pkgDir, "dists")
-		distFile = filepath.Join(distDir, fmt.Sprintf("%x.tar.gz%s", head, encPrefix))
+		distFile = filepath.Join(distDir, fmt.Sprintf("%x.tar.gz%s", head, encSuffix))
 		if pkg.Key != "" {
 			key, err := pkg.GetKey()
 			if err != nil {

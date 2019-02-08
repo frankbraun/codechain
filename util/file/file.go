@@ -196,6 +196,9 @@ func Download(filepath string, url string) error {
 		return err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("downloading '%s' failed: %s", url, resp.Status)
+	}
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return err

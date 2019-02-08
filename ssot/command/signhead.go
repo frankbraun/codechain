@@ -126,10 +126,25 @@ func signHead(c *hashchain.HashChain) error {
 	h := hex.Encode(head[:])
 	var distFile string
 	if h != pkg.Head {
+		var encPrefix string
+		if pkg.Key != "" {
+			encPrefix = ".enc"
+		}
 		distDir := filepath.Join(pkgDir, "dists")
-		distFile = filepath.Join(distDir, fmt.Sprintf("%x.tar.gz", head))
-		if err := archive.CreateDist(c, distFile); err != nil {
-			return err
+		distFile = filepath.Join(distDir, fmt.Sprintf("%x.tar.gz%s", head, encPrefix))
+		if pkg.Key != "" {
+			key, err := pkg.GetKey()
+			if err != nil {
+				return err
+			}
+			if err := archive.CreateEncryptedDist(c, distFile, *key); err != nil {
+				return err
+			}
+
+		} else {
+			if err := archive.CreateDist(c, distFile); err != nil {
+				return err
+			}
 		}
 	}
 

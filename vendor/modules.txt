@@ -2,23 +2,23 @@
 github.com/fatih/color
 # github.com/frankbraun/go-diff v1.0.0
 github.com/frankbraun/go-diff/diffmatchpatch
-# github.com/mattn/go-colorable v0.0.9
+# github.com/mattn/go-colorable v0.1.1
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.4
+# github.com/mattn/go-isatty v0.0.6
 github.com/mattn/go-isatty
 # github.com/mutecomm/mute v0.0.0-20180427225835-8124193e6371
 github.com/mutecomm/mute/util/fuzzer
-# golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b
+# golang.org/x/crypto v0.0.0-20190225124518-7f87c0fbb88b
+golang.org/x/crypto/nacl/secretbox
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/argon2
-golang.org/x/crypto/nacl/secretbox
 golang.org/x/crypto/ssh/terminal
-golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/blake2b
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/salsa20/salsa
-# golang.org/x/sys v0.0.0-20190124100055-b90733256f2e
+golang.org/x/crypto/ed25519/internal/edwards25519
+golang.org/x/crypto/blake2b
+# golang.org/x/sys v0.0.0-20190225065934-cc5685c2db12
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows

@@ -20,4 +20,5 @@ test:
 update-vendor:
 	rm -rf vendor
 	env GO111MODULE=on go get -u
+	env GO111MODULE=on go mod tidy -v
 	env GO111MODULE=on go mod vendor

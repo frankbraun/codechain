@@ -58,6 +58,7 @@ func listKeys(homeDir string) error {
 		if len(fields) == 3 {
 			fmt.Print(fields[2])
 		}
+		fmt.Println()
 	}
 	return nil
 }

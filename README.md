@@ -33,6 +33,17 @@ Codechain uses files to store the hash chain, not a distributed
 go get -u -v github.com/frankbraun/codechain/...
 ```
 
+### Config directories
+
+`codechain` uses the following config directories:
+
+- POSIX (Linux/BSD): `~/.config/codechain`
+- Mac OS: `$HOME/Library/Application Support/Codechain`
+- Windows: `%LOCALAPPDATA%\Codechain`
+- Plan 9: `$home/Codechain`
+
+`secpkg` and `ssotpub` use accordingly named directories.
+
 ### Features
 
 - [x] Minimal code base, Go only, cross-platform.

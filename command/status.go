@@ -85,7 +85,7 @@ func status(c *hashchain.HashChain) error {
 	return showTreeStatus(c)
 }
 
-// Status implement the 'status' command.
+// Status implements the 'status' command.
 func Status(argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {

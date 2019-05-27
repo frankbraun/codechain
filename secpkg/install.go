@@ -16,8 +16,7 @@ import (
 	"github.com/frankbraun/codechain/util/homedir"
 )
 
-// Install pkg, see specification for details.
-func (pkg *Package) Install() error {
+func (pkg *Package) install(visited map[string]bool) error {
 	// 1. Has already been done by calling Load().
 
 	// 2. Make sure the project has not been installed before.
@@ -149,14 +148,22 @@ func (pkg *Package) Install() error {
 		return err
 	}
 
-	// 11. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+	// 11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+	//     contains any .secpkg files, ensure these secure dependencies are
+	//     installed and up-to-date.
+	if _, err := ensure(visited, pkg.Name); err != nil {
+		os.RemoveAll(pkgDir)
+		return err
+	}
+
+	// 12. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 	buildDir := filepath.Join(pkgDir, "build")
 	if err := file.CopyDir(srcDir, buildDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 12. Call `make prefix=~/.config/secpkg/local` in
+	// 13. Call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	localDir := filepath.Join(homedir.SecPkg(), "local")
 	if err := os.MkdirAll(localDir, 0755); err != nil {
@@ -179,18 +186,25 @@ func (pkg *Package) Install() error {
 		return err
 	}
 
-	// 13. Call `make prefix=~/.config/secpkg/local install` in
+	// 14. Call `make prefix=~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	if err := gnumake.Install(localDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 14. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+	// 15. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 	installedDir := filepath.Join(pkgDir, "installed")
 	if err := os.Rename(buildDir, installedDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 	return nil
+}
+
+// Install pkg, see specification for details.
+func (pkg *Package) Install() error {
+	visited := make(map[string]bool)
+	visited[pkg.Name] = true
+	return pkg.install(visited)
 }

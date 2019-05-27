@@ -17,6 +17,10 @@ Example .secpkg file for Codechain itself:
     "DNS": "codechain.secpkg.net",
   }
 
+If in the root of a package source tree the directory .secdep exists and
+contains any .secpkg files, then these secure dependencies are installed and
+kept up-to-date by the install and update procedures specified below.
+
 Install specification
 
 Installing software described by a .secpkg file works as follows:
@@ -47,9 +51,13 @@ Installing software described by a .secpkg file works as follows:
   10. Make sure HEAD_PKG is contained in
       ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain
 
-  11. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+  11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+      contains any .secpkg files, ensure these secure dependencies are
+      installed and up-to-date.
 
-  12. Call `make prefix=~/.config/secpkg/local` in
+  12. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+
+  13. Call `make prefix=~/.config/secpkg/local` in
       ~/.config/secpkg/pkgs/NAME/build
 
   14. Call `make prefix= ~/.config/secpkg/local install` in
@@ -74,16 +82,20 @@ Updating a software package with NAME works as follows:
 
    1. Make sure the project with NAME has been installed before.
       That is, the directory ~/.config/secpkg/pkgs/NAME exists.
+      Set SKIP_BUILD to false.
 
    2. Load .secpkg file from ~/.config/secpkg/pkgs/NAME/.secpkg
 
    3. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head (as DISK)
 
-   4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, goto 16.
+   4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, set
+      SKIP_BUILD to true.
 
-   5. Query TXT record from _codechain-url.DNS and save it as URL.
+   5. If not SKIP_BUILD, query TXT record from _codechain-url.DNS and save it as
+      URL.
 
-   6. Validate signed head from TXT (also see ssot package) and store HEAD:
+   6. If not SKIP_BUILD, validate signed head from TXT (also see ssot package)
+      and store HEAD:
 
       - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK.
       - The counter from TXT must be larger than the counter from DISK.
@@ -91,38 +103,41 @@ Updating a software package with NAME works as follows:
 
       If the validation fails, abort update procedure and report error.
 
-   7. If signed head from TXT record is the same as the one from DISK:
+   7. If not SKIP_BUILD and if signed head from TXT record is the same as the
+      one from DISK, set SKIP_BUILD to true.
 
-      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
-               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
-      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
-      - Goto 16.
+   8. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
+      save it to ~/.config/secpkg/pkgs/NAME/dists
 
-   8. Download distribution file from URL/HEAD.tar.gz and save it to
-      ~/.config/secpkg/pkgs/NAME/dists
-
-   9. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+   9. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
       to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
       -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
 
-  10. `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+  10. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+      contains any .secpkg files, ensure these secure dependencies are
+      installed and up-to-date. If at least one dependency was updated, set
+      SKIP_BUILD to false.
 
-  11. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+  11. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
 
-  12. Call `make prefix=~/.config/secpkg/local` in
+  12. If not SKIP_BUILD,
+      `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+
+  13. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  13. Call `make prefix= ~/.config/secpkg/local install` in
+  14. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  14. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+  15. If not SKIP_BUILD,
+      `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
-  15. Update signed head:
+  16. Update signed head:
 
       - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
                ~/.config/secpkg/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
 
-  16. The software has been successfully updated.
+  17. The software has been successfully updated.
 */
 package secpkg

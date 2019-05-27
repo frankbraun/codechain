@@ -14,178 +14,229 @@ import (
 	"github.com/frankbraun/codechain/util/homedir"
 )
 
-// Update package with name, see specification for details.
-func Update(name string) error {
+func update(visited map[string]bool, name string) (bool, error) {
 	// 1. Make sure the project with NAME has been installed before.
 	//    That is, the directory ~/.config/secpkg/pkgs/NAME exists.
+	//    Set SKIP_BUILD to false.
 	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs", name)
 	exists, err := file.Exists(pkgDir)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if !exists {
-		return fmt.Errorf("package not installed: '%s' does not exist", pkgDir)
+		return false,
+			fmt.Errorf("package not installed: '%s' does not exist", pkgDir)
 	}
+	skipBuild := false
 
 	// 2. Load .secpkg file from ~/.config/secpkg/pkgs/NAME/.secpkg
 	fn := filepath.Join(pkgDir, File)
 	pkg, err := Load(fn)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if pkg.Name != name {
-		return fmt.Errorf("package to update (%s) differs from package name in %s", name, fn)
+		return false,
+			fmt.Errorf("package to update (%s) differs from package name in %s", name, fn)
 	}
 
 	// 3. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head (as DISK)
 	signedHeadFile := filepath.Join(pkgDir, "signed_head")
 	shDisk, err := ssot.Load(signedHeadFile)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	// 4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, goto 16.
+	// 4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, set
+	//    SKIP_BUILD to true.
 	shDNS, err := ssot.LookupHead(pkg.DNS)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if shDisk.Marshal() == shDNS.Marshal() {
-		fmt.Printf("package '%s' already up-to-date\n", name)
-		return nil
+		skipBuild = true
 	}
 
-	// 5. Query TXT record from _codechain-url.DNS and save it as URL.
-	URL, err := ssot.LookupURL(pkg.DNS)
-	if err != nil {
-		os.RemoveAll(pkgDir)
-		return err
+	// 5. If not SKIP_BUILD, query TXT record from _codechain-url.DNS and save it as
+	//    URL.
+	var URL string
+	if !skipBuild {
+		URL, err = ssot.LookupURL(pkg.DNS)
+		if err != nil {
+			os.RemoveAll(pkgDir)
+			return false, err
+		}
 	}
 
-	// 6. Validate signed head from TXT (also see ssot package) and store HEAD:
+	// 6. If not SKIP_BUILD, validate signed head from TXT (also see ssot package)
+	//    and store HEAD:
 	//
 	//    - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK.
 	//    - The counter from TXT must be larger than the counter from DISK.
 	//    - The signed head must be valid (as defined by validFrom and validTo).
 	//
-	// If the validation fails, abort update procedure and report error.
-	if !(shDNS.PubKey() == shDisk.PubKey() ||
-		shDNS.PubKey() == shDisk.PubKeyRotate()) {
-		return fmt.Errorf("secpkg: public key from TXT record does not match public key (or rotate) from disk")
-	}
-	if shDNS.Counter() <= shDisk.Counter() {
-		return fmt.Errorf("secpkg: counter from TXT record is not increasing")
-	}
-	if err := shDNS.Valid(); err != nil {
-		return err
-	}
-
-	// 7. If signed head from TXT record is the same as the one from DISK:
-	//
-	//    - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
-	//             ~/.config/secpkg/pkgs/NAME/previous_signed_head`
-	//     - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
-	//     - Goto 16.
-
-	if shDNS.Head() == shDisk.Head() {
-		return shDNS.RotateFile(pkgDir)
+	//    If the validation fails, abort update procedure and report error.
+	if !skipBuild {
+		if !(shDNS.PubKey() == shDisk.PubKey() ||
+			shDNS.PubKey() == shDisk.PubKeyRotate()) {
+			return false,
+				fmt.Errorf("secpkg: public key from TXT record does not match public key (or rotate) from disk")
+		}
+		if shDNS.Counter() <= shDisk.Counter() {
+			return false,
+				fmt.Errorf("secpkg: counter from TXT record is not increasing")
+		}
+		if err := shDNS.Valid(); err != nil {
+			return false, err
+		}
 	}
 
-	// 8. Download distribution file from URL/HEAD.tar.gz and save it to
-	//    ~/.config/secpkg/pkgs/NAME/dists
-	distDir := filepath.Join(pkgDir, "dists")
-	var encSuffix string
-	if pkg.Key != "" {
-		encSuffix = ".enc"
-	}
-	fn = shDNS.Head() + ".tar.gz" + encSuffix
-	filename := filepath.Join(distDir, fn)
-	url := URL + "/" + fn
-	fmt.Printf("download %s\n", url)
-	err = file.Download(filename, url)
-	if err != nil {
-		return err
+	// 7. If not SKIP_BUILD and if signed head from TXT record is the same as the
+	//    one from DISK, set SKIP_BUILD to true.
+	if !skipBuild {
+		if shDNS.Head() == shDisk.Head() {
+			skipBuild = true
+		}
 	}
 
-	// 9. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
-	//	  to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
-	//	  -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
+	// 8. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
+	//    save it to ~/.config/secpkg/pkgs/NAME/dists
+	if !skipBuild {
+		distDir := filepath.Join(pkgDir, "dists")
+		var encSuffix string
+		if pkg.Key != "" {
+			encSuffix = ".enc"
+		}
+		fn = shDNS.Head() + ".tar.gz" + encSuffix
+		filename := filepath.Join(distDir, fn)
+		url := URL + "/" + fn
+		fmt.Printf("download %s\n", url)
+		err = file.Download(filename, url)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	// 9. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+	//    to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
+	//    -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
 	srcDir := filepath.Join(pkgDir, "src")
-	if err := os.Chdir(srcDir); err != nil {
-		return err
+	if !skipBuild {
+		if err := os.Chdir(srcDir); err != nil {
+			return false, err
+		}
+		head := shDNS.HeadBuf()
+		distFile := filepath.Join("..", "dists", fn)
+		if pkg.Key != "" {
+			key, err := pkg.GetKey()
+			if err != nil {
+				return false, err
+			}
+			err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,
+				distFile, &head, key)
+			if err != nil {
+				return false, err
+			}
+		} else {
+			err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)
+			if err != nil {
+				return false, err
+			}
+		}
+		c, err := hashchain.ReadFile(def.HashchainFile)
+		if err != nil {
+			return false, err
+		}
+		if err := c.Close(); err != nil {
+			return false, err
+		}
+		if err := c.Apply(&head); err != nil {
+			return false, err
+		}
 	}
-	head := shDNS.HeadBuf()
-	distFile := filepath.Join("..", "dists", fn)
-	if pkg.Key != "" {
-		key, err := pkg.GetKey()
-		if err != nil {
-			return err
-		}
-		err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,
-			distFile, &head, key)
-		if err != nil {
-			return err
-		}
-	} else {
-		err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)
-		if err != nil {
-			return err
-		}
-	}
-	c, err := hashchain.ReadFile(def.HashchainFile)
+
+	// 10. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+	//     contains any .secpkg files, ensure these secure dependencies are
+	//     installed and up-to-date. If at least one dependency was updated, set
+	//     SKIP_BUILD to false.
+	depUpdated, err := ensure(visited, name)
 	if err != nil {
-		return err
+		return false, err
 	}
-	if err := c.Close(); err != nil {
-		return err
-	}
-	if err := c.Apply(&head); err != nil {
-		return err
+	if depUpdated {
+		skipBuild = false
 	}
 
-	// 10. `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+	// 11. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
 	buildDir := filepath.Join(pkgDir, "build")
-	if err := os.RemoveAll(buildDir); err != nil {
-		return err
+	if !skipBuild {
+		if err := os.RemoveAll(buildDir); err != nil {
+			return false, err
+		}
 	}
 
-	// 11. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
-	if err := file.CopyDir(srcDir, buildDir); err != nil {
-		return err
+	// 12. If not SKIP_BUILD,
+	//     `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+	if !skipBuild {
+		if err := file.CopyDir(srcDir, buildDir); err != nil {
+			return false, err
+		}
 	}
 
-	// 12. Call `make prefix=~/.config/secpkg/local` in
+	// 13. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	localDir := filepath.Join(homedir.SecPkg(), "local")
-	if err := os.Chdir(buildDir); err != nil {
-		os.RemoveAll(pkgDir)
-		return err
-	}
-	if err := gnumake.Call(localDir); err != nil {
-		return err
+	if !skipBuild {
+		if err := os.Chdir(buildDir); err != nil {
+			os.RemoveAll(pkgDir)
+			return false, err
+		}
+		if err := gnumake.Call(localDir); err != nil {
+			return false, err
+		}
 	}
 
-	// 13. Call `make prefix= ~/.config/secpkg/local install` in
+	// 14. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
-	if err := gnumake.Install(localDir); err != nil {
-		return err
+	if !skipBuild {
+		if err := gnumake.Install(localDir); err != nil {
+			return false, err
+		}
 	}
 
-	// 14. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
-	installedDir := filepath.Join(pkgDir, "installed")
-	if err := os.RemoveAll(installedDir); err != nil {
-		return err
+	// 15. If not SKIP_BUILD,
+	//     `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+	if !skipBuild {
+		installedDir := filepath.Join(pkgDir, "installed")
+		if err := os.RemoveAll(installedDir); err != nil {
+			return false, err
+		}
+		if err := os.Rename(buildDir, installedDir); err != nil {
+			return false, err
+		}
 	}
 
-	if err := os.Rename(buildDir, installedDir); err != nil {
-		return err
-	}
-
-	// 15. Update signed head:
+	// 16. Update signed head:
 	//
 	//      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
 	//               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
 	//      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
-	return shDNS.RotateFile(pkgDir)
+	if err := shDNS.RotateFile(pkgDir); err != nil {
+		return false, nil
+	}
 
-	// 16. The software has been successfully updated.
+	// 17. The software has been successfully updated.
+	if skipBuild {
+		fmt.Printf("package '%s' already up-to-date\n", name)
+		return false, nil
+	}
+	return true, nil
+}
+
+// Update package with name, see specification for details.
+func Update(name string) error {
+	visited := make(map[string]bool)
+	visited[name] = true
+	_, err := update(visited, name)
+	return err
 }

@@ -141,8 +141,12 @@ func List(root string, excludePaths []string) ([]ListEntry, error) {
 	return entries, nil
 }
 
-// printList prints a list of entries in the canonical tree list format.
-func printList(entries []ListEntry) []byte {
+// PrintList prints a list of (sorted) entries in the canonical tree list
+// format.
+//
+// This is a convience function to bring a list of entries returned by the
+// List functions into the format returned by the ListBytes function.
+func PrintList(entries []ListEntry) []byte {
 	var b bytes.Buffer
 	for _, e := range entries {
 		fmt.Fprintf(&b, "%c %x %s\n", e.Mode, e.Hash[:], e.Filename)
@@ -158,7 +162,7 @@ func ListBytes(root string, excludePaths []string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return printList(entries), nil
+	return PrintList(entries), nil
 }
 
 // HashList returns the SHA256 hash of a list of entries.
@@ -166,7 +170,7 @@ func ListBytes(root string, excludePaths []string) ([]byte, error) {
 // This is a convience function to calculate a tree hash out of entries
 // without having to print them first in the canonical format.
 func HashList(entries []ListEntry) [32]byte {
-	return sha256.Sum256(printList(entries))
+	return sha256.Sum256(PrintList(entries))
 }
 
 // Hash returns a SHA256 hash of all files and directories in the file tree

@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/def"
@@ -19,7 +20,10 @@ import (
 const File = "signed_head"
 
 // MaximumValidity of signed heads.
-const MaximumValidity = 30 * 24 * 60 * 60 // 30d
+const MaximumValidity = 30 * 24 * time.Hour // 30d
+
+// MinimumValidity of signed heads.
+const MinimumValidity = 1 * time.Hour // 1h
 
 // TTL of signed head TXT records
 const TTL = 600 // 10m

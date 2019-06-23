@@ -3,6 +3,7 @@ package ssot
 import (
 	"crypto/rand"
 	"testing"
+	"time"
 
 	"github.com/frankbraun/codechain/util/hex"
 	"golang.org/x/crypto/ed25519"
@@ -23,7 +24,26 @@ func TestSignedHead(t *testing.T) {
 	}
 	var sk [64]byte
 	copy(sk[:], sec)
-	sh := SignHead(head, 0, sk)
+
+	// error cases
+	_, err = SignHead(head, 0, sk, MinimumValidity-time.Second)
+	if err != ErrValidityTooShort {
+		t.Error("SignHead() should fail with ErrValidityTooShort")
+	}
+	_, err = SignHead(head, 0, sk, MaximumValidity+time.Second)
+	if err != ErrValidityTooLong {
+		t.Error("SignHead() should fail with ErrValidityTooLong")
+	}
+
+	// happy cases
+	_, err = SignHead(head, 0, sk, MinimumValidity)
+	if err != nil {
+		t.Fatalf("SignHead() failed: %v", err)
+	}
+	sh, err := SignHead(head, 0, sk, MaximumValidity)
+	if err != nil {
+		t.Fatalf("SignHead() failed: %v", err)
+	}
 	txt := sh.Marshal()
 	_, err = Unmarshal(txt)
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
@@ -17,7 +18,7 @@ import (
 	"github.com/frankbraun/codechain/util/seckey"
 )
 
-func refresh(secpkgFilename string) error {
+func refresh(secpkgFilename string, validity time.Duration) error {
 	// 1. Parse the supplied .secpkg file.
 	log.Println("1. parse .secpkg")
 	pkg, err := secpkg.Load(secpkgFilename)
@@ -87,8 +88,11 @@ func refresh(secpkgFilename string) error {
 	//             ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
 	//    - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 	log.Println("6. create a new signed head")
-	newSignedHead := ssot.SignHead(prevSignedHead.HeadBuf(),
-		prevSignedHead.Counter()+1, *secKey)
+	newSignedHead, err := ssot.SignHead(prevSignedHead.HeadBuf(),
+		prevSignedHead.Counter()+1, *secKey, validity)
+	if err != nil {
+		return err
+	}
 	if err := newSignedHead.RotateFile(pkgDir); err != nil {
 		return err
 	}
@@ -124,6 +128,7 @@ func Refresh(argv0 string, args ...string) error {
 		fs.PrintDefaults()
 	}
 	verbose := fs.Bool("v", false, "Be verbose")
+	validity := fs.Duration("validity", ssot.MaximumValidity, "Validity of signed head")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -136,7 +141,7 @@ func Refresh(argv0 string, args ...string) error {
 	}
 	for _, secpkgFilename := range fs.Args() {
 		fmt.Printf("refreshing %s...\n", secpkgFilename)
-		if err := refresh(secpkgFilename); err != nil {
+		if err := refresh(secpkgFilename, *validity); err != nil {
 			return err
 		}
 	}

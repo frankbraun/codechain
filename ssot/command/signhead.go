@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/frankbraun/codechain/archive"
 	"github.com/frankbraun/codechain/hashchain"
@@ -47,7 +48,7 @@ func writeTXTRecord(
 	return s.ZoneUpdate(zone)
 }
 
-func signHead(c *hashchain.HashChain) error {
+func signHead(c *hashchain.HashChain, validity time.Duration) error {
 	// 1. Parse the .secpkg file in the current working directory.
 	log.Println("1. parse .secpkg")
 	pkg, err := secpkg.Load(secpkg.File)
@@ -115,7 +116,11 @@ func signHead(c *hashchain.HashChain) error {
 	//           ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
 	//    - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 	log.Println("6. create a new signed head")
-	newSignedHead := ssot.SignHead(head, prevSignedHead.Counter()+1, *secKey)
+	newSignedHead, err := ssot.SignHead(head, prevSignedHead.Counter()+1,
+		*secKey, validity)
+	if err != nil {
+		return err
+	}
 	if err := newSignedHead.RotateFile(pkgDir); err != nil {
 		return err
 	}
@@ -209,6 +214,7 @@ func SignHead(argv0 string, args ...string) error {
 		fs.PrintDefaults()
 	}
 	verbose := fs.Bool("v", false, "Be verbose")
+	validity := fs.Duration("validity", ssot.MaximumValidity, "Validity of signed head")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -230,7 +236,7 @@ func SignHead(argv0 string, args ...string) error {
 	})
 	// run signHead
 	go func() {
-		if err := signHead(c); err != nil {
+		if err := signHead(c, *validity); err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

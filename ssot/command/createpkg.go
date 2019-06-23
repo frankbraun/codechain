@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/frankbraun/codechain/archive"
 	"github.com/frankbraun/codechain/hashchain"
@@ -58,6 +59,7 @@ func createPkg(
 	c *hashchain.HashChain, name, dns, URL, secKeyFile string,
 	useDyn, encrypted bool,
 	customerName, userName, password string,
+	validity time.Duration,
 ) error {
 	head := c.Head()
 	fmt.Printf("create package for head %x\n", head)
@@ -119,7 +121,10 @@ func createPkg(
 	fmt.Printf("%s: written\n", secpkg.File)
 
 	// 4. Create the first signed head with counter set to 0.
-	sh := ssot.SignHead(head, 0, *secKey)
+	sh, err := ssot.SignHead(head, 0, *secKey, validity)
+	if err != nil {
+		return err
+	}
 
 	// 5. Create the directory ~/.config/ssotpub/pkgs/NAME/dists
 	//    and save the current distribution to
@@ -207,6 +212,7 @@ func CreatePkg(argv0 string, args ...string) error {
 	customerName := fs.String("customer", "", "Customer name for Dyn Managed DNS API")
 	userName := fs.String("user", "", "User name for Dyn Managed DNS API")
 	password := fs.String("password", "", "Password for Dyn Managed DNS API")
+	validity := fs.Duration("validity", ssot.MaximumValidity, "Validity of signed head")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -250,7 +256,7 @@ func CreatePkg(argv0 string, args ...string) error {
 	// run createPkg
 	go func() {
 		err := createPkg(c, *name, *dns, *url, *secKey, *useDyn, *encrypted,
-			*customerName, *userName, *password)
+			*customerName, *userName, *password, *validity)
 		if err != nil {
 			interrupt.ShutdownChannel <- err
 			return

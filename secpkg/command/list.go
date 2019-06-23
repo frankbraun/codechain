@@ -4,8 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
-	"github.com/frankbraun/codechain/secpkg"
+	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -28,7 +30,8 @@ func List(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	pkgs, err := secpkg.List()
+	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs")
+	pkgs, err := file.List(pkgDir)
 	if err != nil {
 		return err
 	}

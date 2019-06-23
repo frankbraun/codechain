@@ -4,8 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/frankbraun/codechain/secpkg"
+	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -13,7 +16,8 @@ import (
 // is reported on stderr and the next package will be updated.
 // The function returns the first encountered error, if any.
 func updateAll() error {
-	pkgs, err := secpkg.List()
+	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs")
+	pkgs, err := file.List(pkgDir)
 	if err != nil {
 		return err
 	}

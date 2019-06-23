@@ -1,6 +1,7 @@
 package ssot
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/hex"
@@ -63,6 +65,27 @@ func (sh *SignedHead) Marshal() string {
 	copy(m[:120], b[:])
 	copy(m[120:184], sh.signature[:])
 	return base64.Encode(m[:])
+}
+
+// MarshalText marshals signed head as text (for status output).
+func (sh *SignedHead) MarshalText() string {
+	var (
+		b       bytes.Buffer
+		expired string
+	)
+	validFrom := time.Unix(sh.validFrom, 0)
+	validTo := time.Unix(sh.validTo, 0)
+	if err := sh.Valid(); err == ErrSignedHeadExpired {
+		expired = color.RedString(" EXPIRED!")
+	}
+	fmt.Fprintf(&b, "PUBKEY:        %s\n", base64.Encode(sh.pubKey[:]))
+	fmt.Fprintf(&b, "PUBKEY_ROTATE: %s\n", base64.Encode(sh.pubKeyRotate[:]))
+	fmt.Fprintf(&b, "VALID_FROM:    %s\n", validFrom.Format(time.RFC3339))
+	fmt.Fprintf(&b, "VALID_TO:      %s%s\n", validTo.Format(time.RFC3339), expired)
+	fmt.Fprintf(&b, "COUNTER:       %d\n", sh.counter)
+	fmt.Fprintf(&b, "HEAD:          %s\n", hex.Encode(sh.head[:]))
+	fmt.Fprintf(&b, "SIGNATURE:     %s\n", base64.Encode(sh.signature[:]))
+	return b.String()
 }
 
 func unmarshal(m [184]byte) (*SignedHead, error) {

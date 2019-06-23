@@ -16,6 +16,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "       %s createpkg -name name -dns FQDN -url URL -s seckey.bin [-dyn]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s signhead\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s refresh .secpkg [...]\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s status\n", cmd)
 	os.Exit(2)
 }
 
@@ -37,6 +38,8 @@ func main() {
 		err = command.SignHead(argv0, args...)
 	case "refresh":
 		err = command.Refresh(argv0, args...)
+	case "status":
+		err = command.Status(argv0, args...)
 	default:
 		usage()
 	}

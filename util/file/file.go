@@ -205,3 +205,23 @@ func Download(filepath string, url string) error {
 	}
 	return nil
 }
+
+// List all entries in dir return them as string array.
+func List(dir string) ([]string, error) {
+	exists, err := Exists(dir)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("directory '%s' does not exist", dir)
+	}
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	var entries []string
+	for _, fi := range files {
+		entries = append(entries, fi.Name())
+	}
+	return entries, nil
+}

@@ -12,7 +12,7 @@ Let's generate a key pair for Alice:
     $ codechain keygen
     passphrase: 
     confirm passphrase: 
-    comment (e.g., name; can be empty):
+    comment (e.g., John Doe <john@example.com>; can be empty; cannot be changed):
     Alice <alice@example.com>
     secret key file created:
     /home/frank/.config/codechain/secrets/KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70
@@ -63,7 +63,7 @@ Publish first release:
     +       fmt.Println("hello world!")
     +}
     publish patch? [y/n]: y
-    comment describing code change (can be empty):
+    comment describing code change (can be empty; cannot be changed later):
     first release
     92d2fc6687b0d36d045adaf34a1615e513ef0e2dc60384cfe19863e9753567f8 2018-05-19T00:11:44Z source d844cbe6f6c2c29e97742b272096407e4d92e6ac7f167216b321c7aa55629716 KDKOGoY8ErjOnbDQb4k8SZFMvWdAIb-x6FGKKCRby70 r5aZCYGwWCFppaMDV7XSOHoyCl3qbUKGiSuYzjsTl4C0W9n0tCa0MXDy_fOwspV9f4_o0kMcb6XZS706ml3FAQ first release
 

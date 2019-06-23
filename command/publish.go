@@ -117,7 +117,7 @@ func publish(
 	if message != "" {
 		comment = []byte(message)
 	} else {
-		fmt.Println("comment describing code change (can be empty):")
+		fmt.Println("comment describing code change (can be empty; cannot be changed later):")
 		comment, err = terminal.ReadLine(os.Stdin)
 		if err != nil {
 			return err

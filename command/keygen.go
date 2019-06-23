@@ -71,7 +71,7 @@ func KeyGen(homeDir, argv0 string, args ...string) error {
 		pass = []byte(seckey.TestPass)
 	}
 	if testComment == "" {
-		fmt.Println("comment (e.g., name; can be empty):")
+		fmt.Println("comment (e.g., John Doe <john@example.com>; can be empty; cannot be changed):")
 		comment, err = terminal.ReadLine(os.Stdin)
 		if err != nil {
 			return err

@@ -93,5 +93,11 @@ func ReadFile(filename string) (*HashChain, error) {
 		return nil, err
 	}
 
+	// having only one signer is VERY BAD NEWS, emit obnoxious warning here, so
+	// all tools will display it
+	if c.M() == 1 {
+		fmt.Fprintf(os.Stderr, "WARNING: this Codechain can be updated by only 1 signer!\n")
+	}
+
 	return &c, nil
 }

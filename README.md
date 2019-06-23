@@ -33,6 +33,9 @@ Codechain uses files to store the hash chain, not a distributed
 go get -u -v github.com/frankbraun/codechain/...
 ```
 
+(How to [install Go](https://golang.org/doc/install). Add `$GOPATH/bin`
+to your `$PATH`.)
+
 ### Config directories
 
 `codechain` uses the following config directories:

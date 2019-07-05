@@ -26,21 +26,21 @@ func TestSignedHead(t *testing.T) {
 	copy(sk[:], sec)
 
 	// error cases
-	_, err = SignHead(head, 0, sk, MinimumValidity-time.Second)
+	_, err = SignHead(head, 0, sk, nil, MinimumValidity-time.Second)
 	if err != ErrValidityTooShort {
 		t.Error("SignHead() should fail with ErrValidityTooShort")
 	}
-	_, err = SignHead(head, 0, sk, MaximumValidity+time.Second)
+	_, err = SignHead(head, 0, sk, nil, MaximumValidity+time.Second)
 	if err != ErrValidityTooLong {
 		t.Error("SignHead() should fail with ErrValidityTooLong")
 	}
 
 	// happy cases
-	_, err = SignHead(head, 0, sk, MinimumValidity)
+	_, err = SignHead(head, 0, sk, nil, MinimumValidity)
 	if err != nil {
 		t.Fatalf("SignHead() failed: %v", err)
 	}
-	sh, err := SignHead(head, 0, sk, MaximumValidity)
+	sh, err := SignHead(head, 0, sk, nil, MaximumValidity)
 	if err != nil {
 		t.Fatalf("SignHead() failed: %v", err)
 	}

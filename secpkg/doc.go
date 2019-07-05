@@ -91,8 +91,7 @@ Updating a software package with NAME works as follows:
    4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, set
       SKIP_BUILD to true.
 
-   5. If not SKIP_BUILD, query TXT record from _codechain-url.DNS and save it as
-      URL.
+   5. Query TXT record from _codechain-url.DNS and save it as URL.
 
    6. If not SKIP_BUILD, validate signed head from TXT (also see ssot package)
       and store HEAD:
@@ -178,10 +177,10 @@ Checking if a software package with NAME needs an update works as follows:
       ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain.
       If not, set NEEDS_UPDATE to true.
 
-   8. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
-      contains any .secpkg files, ensure these secure dependencies are
-      installed and up-to-date. If at least one dependency needs an update,
-      set NEEDS_UPDATE to true.
+   8. If NEEDS_UPDATE is false, check if the directory
+      ~/.config/secpkg/pkgs/NAME/src/.secdep exists and contains any .secpkg
+      files, ensure these secure dependencies are installed and up-to-date. If
+      at least one dependency needs an update, set NEEDS_UPDATE to true.
 
    9. Update signed head:
 

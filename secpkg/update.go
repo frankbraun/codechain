@@ -57,15 +57,11 @@ func update(visited map[string]bool, name string) (bool, error) {
 		skipBuild = true
 	}
 
-	// 5. If not SKIP_BUILD, query TXT record from _codechain-url.DNS and save it as
-	//    URL.
-	var URL string
-	if !skipBuild {
-		URL, err = ssot.LookupURL(pkg.DNS)
-		if err != nil {
-			os.RemoveAll(pkgDir)
-			return false, err
-		}
+	// 5. Query TXT record from _codechain-url.DNS and save it as URL.
+	URL, err := ssot.LookupURL(pkg.DNS)
+	if err != nil {
+		os.RemoveAll(pkgDir)
+		return false, err
 	}
 
 	// 6. If not SKIP_BUILD, validate signed head from TXT (also see ssot package)

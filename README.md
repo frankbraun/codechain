@@ -1,9 +1,7 @@
-Codechain — code trust through hash chains — β release
-------------------------------------------------------
+Codechain — code trust through hash chains
+------------------------------------------
 
 [![GoDoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/frankbraun/codechain) [![Build Status](https://img.shields.io/travis/frankbraun/codechain.svg?style=flat-square)](https://travis-ci.org/frankbraun/codechain) [![Go Report Card](https://goreportcard.com/badge/github.com/frankbraun/codechain?style=flat-square)](https://goreportcard.com/report/github.com/frankbraun/codechain)
-
-This is a **beta** release of Codechain.
 
 ### In code we trust: Secure multiparty code reviews with signatures and hash chains.
 

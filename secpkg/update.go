@@ -102,7 +102,24 @@ func update(visited map[string]bool, name string) (bool, error) {
 		}
 	}
 
-	// 8. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
+	// 8. If SKIP_BUILD, check if HEAD is contained in
+	//    ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain.
+	//    If not, set SKIP_BUILD to false.
+	//    This can happend if we checked for updates.
+	if skipBuild {
+		c, err := hashchain.ReadFile(def.HashchainFile)
+		if err != nil {
+			return false, err
+		}
+		if err := c.Close(); err != nil {
+			return false, err
+		}
+		if err := c.CheckHead(shDNS.HeadBuf()); err != nil {
+			skipBuild = false
+		}
+	}
+
+	// 9. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
 	//    save it to ~/.config/secpkg/pkgs/NAME/dists
 	if !skipBuild {
 		distDir := filepath.Join(pkgDir, "dists")
@@ -120,9 +137,9 @@ func update(visited map[string]bool, name string) (bool, error) {
 		}
 	}
 
-	// 9. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
-	//    to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
-	//    -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
+	// 10. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+	//     to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
+	//     -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
 	srcDir := filepath.Join(pkgDir, "src")
 	if !skipBuild {
 		if err := os.Chdir(srcDir); err != nil {
@@ -158,7 +175,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 		}
 	}
 
-	// 10. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+	// 11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date. If at least one dependency was updated, set
 	//     SKIP_BUILD to false.
@@ -170,7 +187,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 		skipBuild = false
 	}
 
-	// 11. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+	// 12. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
 	buildDir := filepath.Join(pkgDir, "build")
 	if !skipBuild {
 		if err := os.RemoveAll(buildDir); err != nil {
@@ -178,7 +195,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 		}
 	}
 
-	// 12. If not SKIP_BUILD,
+	// 13. If not SKIP_BUILD,
 	//     `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 	if !skipBuild {
 		if err := file.CopyDir(srcDir, buildDir); err != nil {
@@ -186,7 +203,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 		}
 	}
 
-	// 13. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
+	// 14. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	localDir := filepath.Join(homedir.SecPkg(), "local")
 	if !skipBuild {
@@ -199,7 +216,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 		}
 	}
 
-	// 14. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
+	// 15. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	if !skipBuild {
 		if err := gnumake.Install(localDir); err != nil {
@@ -207,7 +224,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 		}
 	}
 
-	// 15. If not SKIP_BUILD,
+	// 16. If not SKIP_BUILD,
 	//     `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 	if !skipBuild {
 		installedDir := filepath.Join(pkgDir, "installed")
@@ -219,7 +236,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 		}
 	}
 
-	// 16. Update signed head:
+	// 17. Update signed head:
 	//
 	//      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
 	//               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
@@ -228,7 +245,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 		return false, nil
 	}
 
-	// 17. The software has been successfully updated.
+	// 18. The software has been successfully updated.
 	if skipBuild {
 		fmt.Printf("package '%s' already up-to-date\n", name)
 		return false, nil

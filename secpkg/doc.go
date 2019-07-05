@@ -107,38 +107,88 @@ Updating a software package with NAME works as follows:
    7. If not SKIP_BUILD and if signed head from TXT record is the same as the
       one from DISK, set SKIP_BUILD to true.
 
-   8. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
+   8. If SKIP_BUILD, check if HEAD is contained in
+      ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain.
+      If not, set SKIP_BUILD to false.
+      This can happend if we checked for updates.
+
+   9. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
       save it to ~/.config/secpkg/pkgs/NAME/dists
 
-   9. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+  10. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
       to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
       -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
 
-  10. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+  11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
       contains any .secpkg files, ensure these secure dependencies are
       installed and up-to-date. If at least one dependency was updated, set
       SKIP_BUILD to false.
 
-  11. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+  12. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
 
-  12. If not SKIP_BUILD,
+  13. If not SKIP_BUILD,
       `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 
-  13. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
+  14. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  14. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
+  15. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  15. If not SKIP_BUILD,
+  16. If not SKIP_BUILD,
       `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
-  16. Update signed head:
+  17. Update signed head:
 
       - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
                ~/.config/secpkg/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
 
-  17. The software has been successfully updated.
+  18. The software has been successfully updated.
+
+CheckUpdate specification
+
+Checking if a software package with NAME needs an update works as follows:
+
+   1. Make sure the project with NAME has been installed before.
+      That is, the directory ~/.config/secpkg/pkgs/NAME exists.
+      Set SKIP_CHECK and NEEDS_UPDATE to false.
+
+   2. Load .secpkg file from ~/.config/secpkg/pkgs/NAME/.secpkg
+
+   3. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head (as DISK)
+
+   4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, set
+      SKIP_CHECK to true.
+
+   5. If not SKIP_CHECK, validate signed head from TXT (also see ssot package)
+      and store HEAD:
+
+      - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK,
+        if the signed head from DISK is not expired.
+      - The counter from TXT must be larger than the counter from DISK.
+      - The signed head must be valid (as defined by validFrom and validTo).
+
+      If the validation fails, abort check update procedure and report error.
+
+   6. If not SKIP_CHECK and if signed head from TXT record not the same as the
+      one from DISK, set SKIP_CHECK and NEEDS_UPDATE to true.
+
+   7. If not SKIP_CHECK, check if HEAD is contained in
+      ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain.
+      If not, set NEEDS_UPDATE to true.
+
+   8. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+      contains any .secpkg files, ensure these secure dependencies are
+      installed and up-to-date. If at least one dependency needs an update,
+      set NEEDS_UPDATE to true.
+
+   9. Update signed head:
+
+      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
+               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
+      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
+
+  10. Return NEEDS_UPDATE.
 */
 package secpkg

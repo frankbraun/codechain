@@ -26,6 +26,7 @@ func (sh *SignedHead) calculateRotateTime(validity time.Duration) int64 {
 	return now + rotateIn
 }
 
+// WriteRotateTo writes "rotate to" file to given filename.
 func (sh *SignedHead) WriteRotateTo(
 	filename string,
 	secKeyRotate *[64]byte,
@@ -57,6 +58,9 @@ func (sh *SignedHead) WriteRotateTo(
 	return nil
 }
 
+// ReadRotateTo reads "rotate to" file from given filename and returns the
+// public key to rotate to and a bool indicating if the rotation time has been
+// reached.
 func ReadRotateTo(filename string) (string, bool, error) {
 	c, err := ioutil.ReadFile(filename)
 	if err != nil {

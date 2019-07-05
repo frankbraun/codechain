@@ -7,6 +7,6 @@ require (
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mutecomm/mute v0.0.0-20180427225835-8124193e6371
 	github.com/stretchr/testify v1.3.0 // indirect
-	golang.org/x/crypto v0.0.0-20190621222207-cc06ce4a13d4
-	golang.org/x/sys v0.0.0-20190621203818-d432491b9138 // indirect
+	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
 )

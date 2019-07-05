@@ -42,7 +42,7 @@ func Update(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Update installed package with given project_name, if necessary.\n")
 		fs.PrintDefaults()
 	}
-	all := fs.Bool("all", false, "update all installed packages")
+	all := fs.Bool("all", false, "Update all installed packages")
 	verbose := fs.Bool("v", false, "Be verbose")
 	if err := fs.Parse(args); err != nil {
 		return err

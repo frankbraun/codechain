@@ -74,12 +74,7 @@ func Read(filename string, passphrase []byte) (*[64]byte, *[64]byte, []byte, err
 		nonce [24]byte
 		key   [32]byte
 	)
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	defer f.Close()
-	c, err := ioutil.ReadAll(f)
+	c, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, nil, nil, err
 	}

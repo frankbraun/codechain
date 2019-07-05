@@ -106,3 +106,76 @@ func ensure(visited map[string]bool, name string) (bool, error) {
 
 	return depUpdated, nil
 }
+
+// ensureCheckUpdate ensures the secure dependencies for package name are up-to-date.
+func ensureCheckUpdate(visited map[string]bool, name string) (bool, error) {
+	// If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+	// contains any .secpkg files, ensure these secure dependencies are
+	// up-to-date.
+	secdepDir := filepath.Join(homedir.SecPkg(), "pkgs", name, "src", ".secdep")
+	exists, err := file.Exists(secdepDir)
+	if err != nil {
+		return false, err
+	}
+	if !exists {
+		log.Println(".secdep: no dependencies found")
+		return false, nil // no dependencies found
+	}
+	log.Printf(".secdep: scanning dir '%s'\n", secdepDir)
+
+	// process .secdep directory
+	files, err := ioutil.ReadDir(secdepDir)
+	if err != nil {
+		return false, err
+	}
+	needsUpdate := false
+	for _, fi := range files {
+		if !strings.HasSuffix(fi.Name(), ".secpkg") {
+			log.Printf(".secdep: skip '%s'", fi.Name())
+			continue // not a .secpkg file
+		}
+		// load .secpkg file
+		log.Printf(".secdep: load '%s'", fi.Name())
+		pkg, err := Load(filepath.Join(secdepDir, fi.Name()))
+		if err != nil {
+			return false, err
+		}
+		// check for cycles
+		if visited[pkg.Name] {
+			return false, fmt.Errorf("secpkg: dependency cycle detected for package '%s'",
+				pkg.Name)
+		}
+		// check if it is already installed
+		pkgDir := filepath.Join(homedir.SecPkg(), "pkgs", pkg.Name)
+		exists, err := file.Exists(pkgDir)
+		if err != nil {
+			return false, err
+		}
+		visited[pkg.Name] = true
+		if !exists {
+			// not installled
+			log.Printf(".secdep: package '%s' not installed\n", pkg.Name)
+			needsUpdate = true
+		} else {
+			// parse head
+			h, err := hex.Decode(pkg.Head, 32)
+			if err != nil {
+				return false, err
+			}
+			var head [32]byte
+			copy(head[:], h)
+			// update
+			log.Printf(".secdep: check update for package '%s'\n", pkg.Name)
+			update, err := checkUpdate(visited, pkg.Name)
+			if err != nil {
+				return false, err
+			}
+			if update {
+				needsUpdate = true
+			}
+		}
+		delete(visited, pkg.Name)
+	}
+
+	return needsUpdate, nil
+}

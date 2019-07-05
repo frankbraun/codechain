@@ -12,6 +12,7 @@ import (
 func usage() {
 	cmd := os.Args[0]
 	fmt.Fprintf(os.Stderr, "Usage: %s install project.secpkg\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s checkupdate [-all] [package_name]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s update [-all] [package_name]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s uninstall package_name\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s list\n", cmd)
@@ -28,6 +29,8 @@ func main() {
 	switch os.Args[1] {
 	case "install":
 		err = command.Install(argv0, args...)
+	case "checkupdate":
+		err = command.CheckUpdate(argv0, args...)
 	case "update":
 		err = command.Update(argv0, args...)
 	case "uninstall":

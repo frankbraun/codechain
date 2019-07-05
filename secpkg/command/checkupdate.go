@@ -23,18 +23,17 @@ func checkUpdateAll() error {
 	}
 	var firstError error
 	for _, pkg := range pkgs {
-		fmt.Printf("checking package '%s'\n", pkg)
+		fmt.Printf("%s: ", pkg)
 		needsUpdate, err := secpkg.CheckUpdate(pkg)
 		if err != nil {
 			if firstError == nil {
 				firstError = err
 			}
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-		}
-		if needsUpdate {
+		} else if needsUpdate {
 			fmt.Println("needs update!")
 		} else {
-			fmt.Println("is up-to-date")
+			fmt.Println("up-to-date")
 		}
 	}
 	return firstError

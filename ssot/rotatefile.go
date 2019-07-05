@@ -1,12 +1,12 @@
 package ssot
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/log"
 )
 
 // RotateFile rotates the pkgDir/signed_head to pkgDir/previous_signed_head and saves
@@ -34,6 +34,6 @@ func (sh *SignedHead) RotateFile(pkgDir string) error {
 	if err := os.Rename(newSignedHeadFile, signedHeadFile); err != nil {
 		return err
 	}
-	fmt.Printf("%s: written\n", signedHeadFile)
+	log.Printf("ssot: %s: written\n", signedHeadFile)
 	return nil
 }

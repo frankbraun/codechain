@@ -15,6 +15,7 @@ import (
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/hex"
+	"github.com/frankbraun/codechain/util/log"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -139,13 +140,13 @@ func LookupHead(dns string) (*SignedHead, error) {
 		// parse TXT records and look for signed head
 		sh, err = Unmarshal(txt)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "cannot unmarshal: %s\n", txt)
+			fmt.Fprintf(os.Stderr, "ssot: cannot unmarshal: %s\n", txt)
 			sh = nil // reset head (invalid)
 			continue // try next TXT record
 		}
-		fmt.Printf("signed head found: %s\n", sh.Head())
+		log.Printf("ssot: signed head found: %s\n", sh.Head())
 		if err := sh.Valid(); err != nil {
-			fmt.Printf("not valid: %v\n", err)
+			fmt.Printf("ssot: not valid: %v\n", err)
 			sh = nil // reset head (invalid)
 			continue // try next TXT record
 		}

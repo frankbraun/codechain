@@ -71,16 +71,19 @@ func update(visited map[string]bool, name string) (bool, error) {
 	// 6. If not SKIP_BUILD, validate signed head from TXT (also see ssot package)
 	//    and store HEAD:
 	//
-	//    - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK.
+	//    - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK
+	//      if the signed head from DISK is not expired.
 	//    - The counter from TXT must be larger than the counter from DISK.
 	//    - The signed head must be valid (as defined by validFrom and validTo).
 	//
 	//    If the validation fails, abort update procedure and report error.
 	if !skipBuild {
-		if !(shDNS.PubKey() == shDisk.PubKey() ||
-			shDNS.PubKey() == shDisk.PubKeyRotate()) {
-			return false,
-				fmt.Errorf("secpkg: public key from TXT record does not match public key (or rotate) from disk")
+		if err := shDisk.Valid(); err == nil { // not expired
+			if !(shDNS.PubKey() == shDisk.PubKey() ||
+				shDNS.PubKey() == shDisk.PubKeyRotate()) {
+				return false,
+					fmt.Errorf("secpkg: public key from TXT record does not match public key (or rotate) from disk")
+			}
 		}
 		if shDNS.Counter() <= shDisk.Counter() {
 			return false,

@@ -121,7 +121,7 @@ func createPkg(
 	fmt.Printf("%s: written\n", secpkg.File)
 
 	// 4. Create the first signed head with counter set to 0.
-	sh, err := ssot.SignHead(head, 0, *secKey, validity)
+	sh, err := ssot.SignHead(head, 0, *secKey, nil, validity)
 	if err != nil {
 		return err
 	}

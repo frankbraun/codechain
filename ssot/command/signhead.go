@@ -12,6 +12,7 @@ import (
 
 	"github.com/frankbraun/codechain/archive"
 	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
@@ -48,7 +49,13 @@ func writeTXTRecord(
 	return s.ZoneUpdate(zone)
 }
 
-func signHead(c *hashchain.HashChain, validity time.Duration) error {
+func signHead(
+	c *hashchain.HashChain,
+	validity time.Duration,
+	secKeyRotate *[64]byte,
+	sigRotate *[64]byte,
+	commentRotate []byte,
+) error {
 	// 1. Parse the .secpkg file in the current working directory.
 	log.Println("1. parse .secpkg")
 	pkg, err := secpkg.Load(secpkg.File)
@@ -68,17 +75,10 @@ func signHead(c *hashchain.HashChain, validity time.Duration) error {
 		return fmt.Errorf("package not published yet: '%s' does not exist", pkgDir)
 	}
 
-	// 3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
-	//    and make sure the corresponding secret key is available.
+	// 3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head.
 	log.Println("3. validate signed head")
 	signedHeadFile := filepath.Join(pkgDir, "signed_head")
 	prevSignedHead, err := ssot.Load(signedHeadFile)
-	if err != nil {
-		return err
-	}
-
-	secKeyFile := filepath.Join(homedir.SSOTPub(), def.SecretsSubDir, prevSignedHead.PubKey())
-	secKey, _, _, err := seckey.Read(secKeyFile)
 	if err != nil {
 		return err
 	}
@@ -109,25 +109,87 @@ func signHead(c *hashchain.HashChain, validity time.Duration) error {
 		defer dynSession.Close()
 	}
 
-	// 6. Create a new signed head with current HEAD, the counter of the previous
+	// 6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
+	//    If it does, abort. Otherwise write public key to rotate to and rotate time
+	//    to ~/.config/ssotput/pkgs/NAME/rotate_to.
+	rotateToFile := filepath.Join(pkgDir, "rotate_to")
+	log.Printf("6. if -rotate is set, check if '%s' exists", rotateToFile)
+	if secKeyRotate != nil {
+		exists, err := file.Exists(rotateToFile)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return fmt.Errorf("-rotate set with existing file '%s'", rotateToFile)
+		}
+		err = prevSignedHead.WriteRotateTo(rotateToFile, secKeyRotate,
+			sigRotate, commentRotate, validity)
+		if err != nil {
+			return err
+		}
+	}
+
+	// 7. Create a new signed head with current HEAD, the counter of the previous
 	//    signed head plus 1, and update the saved signed head:
 	//
 	//    - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
-	//           ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
+	//             ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
 	//    - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
-	log.Println("6. create a new signed head")
+	//
+	//    If ~/.config/ssotput/pkgs/NAME/rotate_to exists:
+	//
+	//    - If rotate time has been reached use pubkey from file as PUBKEY and
+	//      remove ~/.config/ssotput/pkgs/NAME/rotate_to.
+	//    - Otherwise use old PUBKEY and set pubkey from file as PUBKEY_ROTATE.
+	log.Println("7. create a new signed head")
+	pubKey := prevSignedHead.PubKey()
+	var pubKeyRotate *[32]byte
+	exists, err = file.Exists(rotateToFile)
+	if err != nil {
+		return err
+	}
+	var reached bool
+	if exists {
+		var rotateTo string
+		rotateTo, reached, err = ssot.ReadRotateTo(rotateToFile)
+		if err != nil {
+			return err
+		}
+		if reached {
+			pubKey = rotateTo
+		} else {
+			pk, err := base64.Decode(rotateTo, 32)
+			if err != nil {
+
+			}
+			pubKeyRotate = new([32]byte)
+			copy(pubKeyRotate[:], pk)
+		}
+	}
+
+	secKeyFile := filepath.Join(homedir.SSOTPub(), def.SecretsSubDir, pubKey)
+	secKey, _, _, err := seckey.Read(secKeyFile)
+	if err != nil {
+		return err
+	}
+
 	newSignedHead, err := ssot.SignHead(head, prevSignedHead.Counter()+1,
-		*secKey, validity)
+		*secKey, pubKeyRotate, validity)
 	if err != nil {
 		return err
 	}
 	if err := newSignedHead.RotateFile(pkgDir); err != nil {
 		return err
 	}
+	if reached {
+		if err := os.Remove(rotateToFile); err != nil {
+			return err
+		}
+	}
 
-	// 7. If the HEAD changed, save the current distribution to:
+	// 8. If the HEAD changed, save the current distribution to:
 	//    ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
-	log.Println("7. if the HEAD changed, save the current distribution")
+	log.Println("8. if the HEAD changed, save the current distribution")
 	h := hex.Encode(head[:])
 	var distFile string
 	if h != pkg.Head {
@@ -153,10 +215,10 @@ func signHead(c *hashchain.HashChain, validity time.Duration) error {
 		}
 	}
 
-	// 8. If the HEAD changed, lookup the download URL and print where to upload
+	// 9. If the HEAD changed, lookup the download URL and print where to upload
 	//    the distribution file:
 	//    ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
-	log.Println("8. if the HEAD changed, lookup the download URL")
+	log.Println("9. if the HEAD changed, lookup the download URL")
 	if h != pkg.Head {
 		URL, err := ssot.LookupURL(pkg.DNS)
 		if err != nil {
@@ -168,9 +230,9 @@ func signHead(c *hashchain.HashChain, validity time.Duration) error {
 		fmt.Println("")
 	}
 
-	// 9. Print DNS TXT record as defined by the .secpkg and the signed head.
-	// If TXT records are to be published automatically, publish the TXT record.
-	log.Println("9. print DNS TXT record")
+	// 10. Print DNS TXT record as defined by the .secpkg and the signed head.
+	//     If TXT records are to be published automatically, publish the TXT record.
+	log.Println("10. print DNS TXT record")
 	if dynSession != nil {
 		// Write TXT record
 		log.Printf("DNS=%s", pkg.DNS)
@@ -187,8 +249,8 @@ func signHead(c *hashchain.HashChain, validity time.Duration) error {
 	fmt.Println("")
 	newSignedHead.TXTPrintHead(pkg.DNS)
 
-	// 10. If the HEAD changed, update the .secpkg file accordingly.
-	log.Println("10. if the HEAD changed, update the .secpkg file")
+	// 11. If the HEAD changed, update the .secpkg file accordingly.
+	log.Println("11. if the HEAD changed, update the .secpkg file")
 	if h != pkg.Head {
 		pkg.Head = h
 		newSecPkgFile := secpkg.File + "_new"
@@ -213,6 +275,7 @@ func SignHead(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Sign Codechain head and print it on stdout.\n")
 		fs.PrintDefaults()
 	}
+	rotate := fs.String("rotate", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	validity := fs.Duration("validity", ssot.MaximumValidity, "Validity of signed head")
 	if err := fs.Parse(args); err != nil {
@@ -230,13 +293,25 @@ func SignHead(argv0 string, args ...string) error {
 		return err
 	}
 	defer c.Close()
+	var (
+		secKeyRotate  *[64]byte
+		sigRotate     *[64]byte
+		commentRotate []byte
+	)
+	if *rotate != "" {
+		secKeyRotate, sigRotate, commentRotate, err = seckey.Read(*rotate)
+		if err != nil {
+			return err
+		}
+	}
 	// add interrupt handler
 	interrupt.AddInterruptHandler(func() {
 		c.Close()
 	})
 	// run signHead
 	go func() {
-		if err := signHead(c, *validity); err != nil {
+		err := signHead(c, *validity, secKeyRotate, sigRotate, commentRotate)
+		if err != nil {
 			interrupt.ShutdownChannel <- err
 			return
 		}

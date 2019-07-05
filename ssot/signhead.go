@@ -11,11 +11,14 @@ func SignHead(
 	head [32]byte,
 	counter uint64,
 	secKey [64]byte,
+	pubKeyRotate *[32]byte,
 	validity time.Duration,
 ) (*SignedHead, error) {
 	var sh SignedHead
 	copy(sh.pubKey[:], secKey[32:])
-	// TODO: allow to set pubKeyRotate
+	if pubKeyRotate != nil {
+		copy(sh.pubKeyRotate[:], pubKeyRotate[:])
+	}
 	now := time.Now().UTC().Unix()
 	sh.validFrom = now
 	if validity > MaximumValidity {
@@ -24,7 +27,7 @@ func SignHead(
 	if validity < MinimumValidity {
 		return nil, ErrValidityTooShort
 	}
-	sh.validTo = now + int64(validity)
+	sh.validTo = now + int64(validity/time.Second)
 	sh.counter = counter
 	copy(sh.head[:], head[:])
 	msg := sh.marshal()

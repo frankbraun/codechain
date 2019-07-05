@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
@@ -18,7 +19,13 @@ import (
 	"github.com/frankbraun/codechain/util/seckey"
 )
 
-func refresh(secpkgFilename string, validity time.Duration) error {
+func refresh(
+	secpkgFilename string,
+	validity time.Duration,
+	secKeyRotate *[64]byte,
+	sigRotate *[64]byte,
+	commentRotate []byte,
+) error {
 	// 1. Parse the supplied .secpkg file.
 	log.Println("1. parse .secpkg")
 	pkg, err := secpkg.Load(secpkgFilename)
@@ -38,17 +45,10 @@ func refresh(secpkgFilename string, validity time.Duration) error {
 		return fmt.Errorf("package not published yet: '%s' does not exist", pkgDir)
 	}
 
-	// 3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
-	//    and make sure the corresponding secret key is available.
+	// 3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head.
 	log.Println("3. validate signed head")
 	signedHeadFile := filepath.Join(pkgDir, "signed_head")
 	prevSignedHead, err := ssot.Load(signedHeadFile)
-	if err != nil {
-		return err
-	}
-
-	secKeyFile := filepath.Join(homedir.SSOTPub(), def.SecretsSubDir, prevSignedHead.PubKey())
-	secKey, _, _, err := seckey.Read(secKeyFile)
 	if err != nil {
 		return err
 	}
@@ -81,25 +81,87 @@ func refresh(secpkgFilename string, validity time.Duration) error {
 		defer dynSession.Close()
 	}
 
-	// 6. Create a new signed head with the same HEAD, the counter of the previous
+	// 6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
+	//    If it does, abort. Otherwise write public key to rotate to and rotate time
+	//    to ~/.config/ssotput/pkgs/NAME/rotate_to.
+	rotateToFile := filepath.Join(pkgDir, "rotate_to")
+	log.Printf("6. if -rotate is set, check if '%s' exists", rotateToFile)
+	if secKeyRotate != nil {
+		exists, err := file.Exists(rotateToFile)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return fmt.Errorf("-rotate set with existing file '%s'", rotateToFile)
+		}
+		err = prevSignedHead.WriteRotateTo(rotateToFile, secKeyRotate,
+			sigRotate, commentRotate, validity)
+		if err != nil {
+			return err
+		}
+	}
+
+	// 7. Create a new signed head with current HEAD, the counter of the previous
 	//    signed head plus 1, and update the saved signed head:
 	//
 	//    - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
 	//             ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
 	//    - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
-	log.Println("6. create a new signed head")
-	newSignedHead, err := ssot.SignHead(prevSignedHead.HeadBuf(),
-		prevSignedHead.Counter()+1, *secKey, validity)
+	//
+	//    If ~/.config/ssotput/pkgs/NAME/rotate_to exists:
+	//
+	//    - If rotate time has been reached use pubkey from file as PUBKEY and
+	//      remove ~/.config/ssotput/pkgs/NAME/rotate_to.
+	//    - Otherwise use old PUBKEY and set pubkey from file as PUBKEY_ROTATE.
+	log.Println("7. create a new signed head")
+	pubKey := prevSignedHead.PubKey()
+	var pubKeyRotate *[32]byte
+	exists, err = file.Exists(rotateToFile)
+	if err != nil {
+		return err
+	}
+	var reached bool
+	if exists {
+		var rotateTo string
+		rotateTo, reached, err = ssot.ReadRotateTo(rotateToFile)
+		if err != nil {
+			return err
+		}
+		if reached {
+			pubKey = rotateTo
+		} else {
+			pk, err := base64.Decode(rotateTo, 32)
+			if err != nil {
+
+			}
+			pubKeyRotate = new([32]byte)
+			copy(pubKeyRotate[:], pk)
+		}
+	}
+
+	secKeyFile := filepath.Join(homedir.SSOTPub(), def.SecretsSubDir, pubKey)
+	secKey, _, _, err := seckey.Read(secKeyFile)
+	if err != nil {
+		return err
+	}
+
+	newSignedHead, err := ssot.SignHead(prevSignedHead.HeadBuf(), prevSignedHead.Counter()+1,
+		*secKey, pubKeyRotate, validity)
 	if err != nil {
 		return err
 	}
 	if err := newSignedHead.RotateFile(pkgDir); err != nil {
 		return err
 	}
+	if reached {
+		if err := os.Remove(rotateToFile); err != nil {
+			return err
+		}
+	}
 
-	// 7. Print DNS TXT record as defined by the .secpkg file and the signed head.
+	// 8. Print DNS TXT record as defined by the .secpkg file and the signed head.
 	//    If TXT record is to be published automatically, publish the TXT record.
-	log.Println("7. print DNS TXT record")
+	log.Println("8. print DNS TXT record")
 	if dynSession != nil {
 		// Write TXT record
 		log.Printf("DNS=%s", pkg.DNS)
@@ -127,6 +189,7 @@ func Refresh(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Refresh head from .secpkg file(s).\n")
 		fs.PrintDefaults()
 	}
+	rotate := fs.String("rotate", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	validity := fs.Duration("validity", ssot.MaximumValidity, "Validity of signed head")
 	if err := fs.Parse(args); err != nil {
@@ -139,9 +202,23 @@ func Refresh(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
+	var (
+		secKeyRotate  *[64]byte
+		sigRotate     *[64]byte
+		commentRotate []byte
+	)
+	if *rotate != "" {
+		var err error
+		secKeyRotate, sigRotate, commentRotate, err = seckey.Read(*rotate)
+		if err != nil {
+			return err
+		}
+	}
 	for _, secpkgFilename := range fs.Args() {
 		fmt.Printf("refreshing %s...\n", secpkgFilename)
-		if err := refresh(secpkgFilename, *validity); err != nil {
+		err := refresh(secpkgFilename, *validity, secKeyRotate, sigRotate,
+			commentRotate)
+		if err != nil {
 			return err
 		}
 	}

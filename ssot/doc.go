@@ -75,32 +75,41 @@ To publish an update of a secure package with SSOT do the following:
    2. Make sure the project with NAME has been published before.
       That is, the directory ~/.config/ssotpub/pkgs/NAME exists.
 
-   3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
-      and make sure the corresponding secret key is available.
+   3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head.
 
    4. Get the HEAD from .codechain/hashchain in the current working directory.
 
    5. If ~/.config/ssotpub/pkgs/NAME/dyn.json exits, check the contained Dyn
       credentials and switch on automatic publishing of TXT records.
 
-   6. Create a new signed head with current HEAD, the counter of the previous
+   6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
+      If it does, abort. Otherwise write public key to rotate to and rotate time
+      (see below) to ~/.config/ssotput/pkgs/NAME/rotate_to.
+
+   7. Create a new signed head with current HEAD, the counter of the previous
       signed head plus 1, and update the saved signed head:
 
       - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
                ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 
-   7. If the HEAD changed, save the current distribution to:
+      If ~/.config/ssotput/pkgs/NAME/rotate_to exists:
+
+      - If rotate time has been reached use pubkey from file as PUBKEY and
+        remove ~/.config/ssotput/pkgs/NAME/rotate_to.
+      - Otherwise use old PUBKEY and set pubkey from file as PUBKEY_ROTATE.
+
+   8. If the HEAD changed, save the current distribution to:
       ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
 
-   8. If the HEAD changed, lookup the download URL and print where to upload
+   9. If the HEAD changed, lookup the download URL and print where to upload
       the distribution file:
       ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
 
-   9. Print DNS TXT record as defined by the .secpkg file and the signed head.
+  10. Print DNS TXT record as defined by the .secpkg file and the signed head.
       If TXT records are to be published automatically, publish the TXT record.
 
-  10. If the HEAD changed, update the .secpkg file accordingly.
+  11. If the HEAD changed, update the .secpkg file accordingly.
 
   Afterwards the administrator manually uploads the distribution HEAD.tar.gz
   to the download URL and publishes the new DNS TXT record in the defined
@@ -115,8 +124,7 @@ To refresh the published head of a secure package with SSOT do the following:
    2. Make sure the project with NAME has been published before.
       That is, the directory ~/.config/ssotpub/pkgs/NAME exists.
 
-   3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
-      and make sure the corresponding secret key is available.
+   3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head.
 
    4. Make sure the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
       matches the HEAD in the .secpkg file.
@@ -124,23 +132,36 @@ To refresh the published head of a secure package with SSOT do the following:
    5. If ~/.config/ssotpub/pkgs/NAME/dyn.json exits, check the contained Dyn
       credentials and switch on automatic publishing of TXT records.
 
-   6. Create a new signed head with the same HEAD, the counter of the previous
+   6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
+      If it does, abort. Otherwise write public key to rotate to and rotate time
+      (see below) to ~/.config/ssotput/pkgs/NAME/rotate_to.
+
+   7. Create a new signed head with the same HEAD, the counter of the previous
       signed head plus 1, and update the saved signed head:
 
       - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
                ~/.config/ssotpub/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/ssotpub/pkgs/NAME/signed_head (atomic).
 
-   7. Print DNS TXT record as defined by the .secpkg file and the signed head.
+      If ~/.config/ssotput/pkgs/NAME/rotate_to exists:
+
+      - If rotate time has been reached use pubkey from file as PUBKEY and
+        remove ~/.config/ssotput/pkgs/NAME/rotate_to.
+      - Otherwise use old PUBKEY and set pubkey from file as PUBKEY_ROTATE.
+
+   8. Print DNS TXT record as defined by the .secpkg file and the signed head.
       If TXT record is to be published automatically, publish the TXT record.
 
   Afterwards the administrator publishes the new DNS TXT record in the defined
   zone (if not published automatically). DNSSEC should be enabled.
 
-TODO
+Rotate time calculation
 
-The following should be specified:
-
-  - Key rotation.
+The earliest time a PUBKEY_ROTATE can be used as PUBKEY is when the previous
+signed head (without PUBKEY_ROTATE) has expired. This gives clients time to
+learn about PUBKEY_ROTATE. To give some extra time we take the time span a
+signed head with PUBKEY_ROTATE is valid after the signed head without
+PUBKEY_ROTATE has expired and divide it by three. The rotate time is set to the
+end of the first third.
 */
 package ssot

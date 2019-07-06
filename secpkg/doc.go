@@ -173,7 +173,7 @@ Checking if a software package with NAME needs an update works as follows:
    6. If not SKIP_CHECK and if signed head from TXT record not the same as the
       one from DISK, set SKIP_CHECK and NEEDS_UPDATE to true.
 
-   7. If not SKIP_CHECK, check if HEAD is contained in
+   7. If not NEEDS_UPDATE, check if HEAD is contained in
       ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain.
       If not, set NEEDS_UPDATE to true.
 

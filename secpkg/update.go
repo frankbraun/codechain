@@ -102,8 +102,9 @@ func update(visited map[string]bool, name string) (bool, error) {
 	//    ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain.
 	//    If not, set SKIP_BUILD to false.
 	//    This can happend if we checked for updates.
+	srcDir := filepath.Join(pkgDir, "src")
 	if skipBuild {
-		c, err := hashchain.ReadFile(def.HashchainFile)
+		c, err := hashchain.ReadFile(filepath.Join(srcDir, def.HashchainFile))
 		if err != nil {
 			return false, err
 		}
@@ -136,7 +137,6 @@ func update(visited map[string]bool, name string) (bool, error) {
 	// 10. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
 	//     to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
 	//     -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
-	srcDir := filepath.Join(pkgDir, "src")
 	if !skipBuild {
 		if err := os.Chdir(srcDir); err != nil {
 			return false, err

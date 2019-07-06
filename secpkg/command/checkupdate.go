@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/fatih/color"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/homedir"
@@ -23,7 +24,7 @@ func checkUpdateAll() error {
 	}
 	var firstError error
 	for _, pkg := range pkgs {
-		fmt.Printf("%s: ", pkg)
+		fmt.Printf("%s: checking\n", pkg)
 		needsUpdate, err := secpkg.CheckUpdate(pkg)
 		if err != nil {
 			if firstError == nil {
@@ -31,7 +32,7 @@ func checkUpdateAll() error {
 			}
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		} else if needsUpdate {
-			fmt.Println("needs update!")
+			fmt.Println(color.RedString("needs update!"))
 		} else {
 			fmt.Println("up-to-date")
 		}
@@ -67,9 +68,9 @@ func CheckUpdate(argv0 string, args ...string) error {
 		return err
 	}
 	if needsUpdate {
-		fmt.Println("needs update!")
+		fmt.Println(color.RedString("needs update!"))
 	} else {
-		fmt.Println("is up-to-date")
+		fmt.Println("up-to-date")
 	}
 	return nil
 }

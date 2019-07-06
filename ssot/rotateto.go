@@ -78,7 +78,7 @@ func ReadRotateTo(filename string) (string, bool, error) {
 		return "", false, err
 	}
 	var reached bool
-	if rotateTime >= utime.Now() {
+	if rotateTime <= utime.Now() {
 		reached = true
 	}
 	return rotateTo, reached, nil

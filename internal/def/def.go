@@ -44,6 +44,7 @@ const CodechainURLName = "_codechain-url."
 const CodechainTestName = "_codechain-test."
 
 // ExcludePaths is the default list of paths not considered by Codechain.
+// Do not ever change this list! It will break existing Codechains.
 var ExcludePaths = []string{
 	DefaultCodechainDir,
 	".git",

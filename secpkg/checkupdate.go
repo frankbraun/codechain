@@ -24,8 +24,7 @@ func checkUpdate(visited map[string]bool, name string) (bool, error) {
 		return false, err
 	}
 	if !exists {
-		return false,
-			fmt.Errorf("package not installed: '%s' does not exist", pkgDir)
+		return false, ErrNotInstalled
 	}
 	skipCheck := false
 	needsUpdate := false

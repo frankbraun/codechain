@@ -87,6 +87,7 @@ func refresh(
 	rotateToFile := filepath.Join(pkgDir, "rotate_to")
 	log.Printf("6. if -rotate is set, check if '%s' exists", rotateToFile)
 	if secKeyRotate != nil {
+		log.Println("ROTATE set")
 		exists, err := file.Exists(rotateToFile)
 		if err != nil {
 			return err
@@ -99,6 +100,8 @@ func refresh(
 		if err != nil {
 			return err
 		}
+	} else {
+		log.Println("ROTATE not set")
 	}
 
 	// 7. Create a new signed head with current HEAD, the counter of the previous
@@ -122,14 +125,17 @@ func refresh(
 	}
 	var reached bool
 	if exists {
+		log.Println("rotate_to file exists")
 		var rotateTo string
 		rotateTo, reached, err = ssot.ReadRotateTo(rotateToFile)
 		if err != nil {
 			return err
 		}
 		if reached {
+			log.Println("reached")
 			pubKey = rotateTo
 		} else {
+			log.Println("set PUBKEY_ROTATE")
 			pk, err := base64.Decode(rotateTo, 32)
 			if err != nil {
 

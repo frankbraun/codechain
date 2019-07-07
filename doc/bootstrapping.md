@@ -30,6 +30,12 @@ From https://frankbraun.org/codechain-bootstrap.tar.gz and execute:
 The tree hash computed by `cctreehash.go` must match the published one.
 This makes sure you have the correct Codechain bootstrap source.
 
+TODO: sources of the `codechain-bootrap` tree hash:
+
+- opentimestamps
+- PGP signed statements by developers
+- websites from projects that use Codechain
+
 ### Use the bootstrapped Codechain to install the most current Codechain version
 
     $ go run cmd/secpkg/secpkg.go install .secpkg

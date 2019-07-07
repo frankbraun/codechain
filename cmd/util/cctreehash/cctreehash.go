@@ -1,7 +1,8 @@
 /*
 cctreehash calculates and prints the tree hash of the current directory in hex.
 
-This stand alone tool helps bootstrapping Codechain.
+This stand alone tool helps bootstrapping Codechain,
+see https://github.com/frankbraun/codechain/blob/master/doc/bootstrapping.md.
 
 To calculate the hash of a directory tree (a tree hash) a list of all files in
 the directory root (a tree list) is created as follows.

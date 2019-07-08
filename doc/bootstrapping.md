@@ -1,7 +1,8 @@
 Bootstrapping Codechain
 -----------------------
 
-THIS DOCUMENT IS NOT FINISHED YET!
+THIS DOCUMENT IS NOT FINISHED: The file codechain-bootstrap.tar.gz has
+not been published and the tree hash has not been signed yet.
 
 ### Install Go
 
@@ -12,7 +13,7 @@ See https://golang.org/doc/install.
 From https://frankbraun.org/cctreehash.go and verify its SHA-256:
 
     $ sha256sum cctreehash.go
-    fef870afcb3b0f903e71b153c29df7c20f63a10d838dff08e55d8b2c6bf9a2e9 cctreehash.go
+    6a911b51cc047eea7d7b10c75cf1f50a98dea2a39e12ef3414d2f00f31a263f9 cctreehash.go
 
 ### Review the code of `cctreehash.go`
 
@@ -32,9 +33,9 @@ This makes sure you have the correct Codechain bootstrap source.
 
 TODO: sources of the `codechain-bootrap` tree hash:
 
-- opentimestamps
-- PGP signed statements by developers
-- websites from projects that use Codechain
+-   opentimestamps
+-   PGP signed statements by developers
+-   websites from projects that use Codechain
 
 ### Use the bootstrapped Codechain to install the most current Codechain version
 

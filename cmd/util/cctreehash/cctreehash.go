@@ -1,6 +1,8 @@
 /*
 cctreehash calculates and prints the tree hash of the current directory in hex.
 
+This file is frozen, do not change it.
+
 This stand alone tool helps bootstrapping Codechain,
 see https://github.com/frankbraun/codechain/blob/master/doc/bootstrapping.md.
 

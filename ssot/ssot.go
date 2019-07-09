@@ -2,6 +2,7 @@ package ssot
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -130,8 +131,8 @@ func Load(filename string) (*SignedHead, error) {
 }
 
 // LookupHead and verify base64 encoded signed head from dns.
-func LookupHead(dns string) (*SignedHead, error) {
-	txts, err := net.LookupTXT(def.CodechainHeadName + dns)
+func LookupHead(ctx context.Context, dns string) (*SignedHead, error) {
+	txts, err := net.DefaultResolver.LookupTXT(ctx, def.CodechainHeadName+dns)
 	if err != nil {
 		return nil, err
 	}
@@ -159,8 +160,8 @@ func LookupHead(dns string) (*SignedHead, error) {
 }
 
 // LookupURL looks up URL from dns and returns it.
-func LookupURL(dns string) (string, error) {
-	txts, err := net.LookupTXT(def.CodechainURLName + dns)
+func LookupURL(ctx context.Context, dns string) (string, error) {
+	txts, err := net.DefaultResolver.LookupTXT(ctx, def.CodechainURLName+dns)
 	if err != nil {
 		return "", err
 	}

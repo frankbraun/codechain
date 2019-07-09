@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -33,5 +34,5 @@ func Install(argv0 string, args ...string) error {
 	if err != nil {
 		return err
 	}
-	return pkg.Install()
+	return pkg.Install(context.Background())
 }

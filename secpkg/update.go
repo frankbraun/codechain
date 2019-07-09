@@ -1,6 +1,7 @@
 package secpkg
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,7 +15,7 @@ import (
 	"github.com/frankbraun/codechain/util/homedir"
 )
 
-func update(visited map[string]bool, name string) (bool, error) {
+func update(ctx context.Context, visited map[string]bool, name string) (bool, error) {
 	// 1. Make sure the project with NAME has been installed before.
 	//    That is, the directory ~/.config/secpkg/pkgs/NAME exists.
 	//    Set SKIP_BUILD to false.
@@ -48,7 +49,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 
 	// 4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, set
 	//    SKIP_BUILD to true.
-	shDNS, err := ssot.LookupHead(pkg.DNS)
+	shDNS, err := ssot.LookupHead(ctx, pkg.DNS)
 	if err != nil {
 		return false, err
 	}
@@ -57,7 +58,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 	}
 
 	// 5. Query TXT record from _codechain-url.DNS and save it as URL.
-	URL, err := ssot.LookupURL(pkg.DNS)
+	URL, err := ssot.LookupURL(ctx, pkg.DNS)
 	if err != nil {
 		os.RemoveAll(pkgDir)
 		return false, err
@@ -174,7 +175,7 @@ func update(visited map[string]bool, name string) (bool, error) {
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date. If at least one dependency was updated, set
 	//     SKIP_BUILD to false.
-	depUpdated, err := ensure(visited, name)
+	depUpdated, err := ensure(ctx, visited, name)
 	if err != nil {
 		return false, err
 	}
@@ -249,9 +250,9 @@ func update(visited map[string]bool, name string) (bool, error) {
 }
 
 // Update package with name, see specification for details.
-func Update(name string) error {
+func Update(ctx context.Context, name string) error {
 	visited := make(map[string]bool)
 	visited[name] = true
-	_, err := update(visited, name)
+	_, err := update(ctx, visited, name)
 	return err
 }

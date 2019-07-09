@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -15,7 +16,7 @@ import (
 // updateAll updates all packages. If an update for a single fails the error
 // is reported on stderr and the next package will be updated.
 // The function returns the first encountered error, if any.
-func updateAll() error {
+func updateAll(ctx context.Context) error {
 	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs")
 	pkgs, err := file.List(pkgDir)
 	if err != nil {
@@ -24,7 +25,7 @@ func updateAll() error {
 	var firstError error
 	for _, pkg := range pkgs {
 		fmt.Printf("updating package '%s'\n", pkg)
-		if err := secpkg.Update(pkg); err != nil {
+		if err := secpkg.Update(ctx, pkg); err != nil {
 			if firstError == nil {
 				firstError = err
 			}
@@ -55,7 +56,7 @@ func Update(argv0 string, args ...string) error {
 		return flag.ErrHelp
 	}
 	if *all {
-		return updateAll()
+		return updateAll(context.Background())
 	}
-	return secpkg.Update(fs.Arg(0))
+	return secpkg.Update(context.Background(), fs.Arg(0))
 }

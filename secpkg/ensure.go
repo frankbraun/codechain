@@ -1,6 +1,7 @@
 package secpkg
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -15,7 +16,11 @@ import (
 )
 
 // ensure the secure dependencies for package name are installed and up-to-date.
-func ensure(visited map[string]bool, name string) (bool, error) {
+func ensure(
+	ctx context.Context,
+	visited map[string]bool,
+	name string,
+) (bool, error) {
 	// If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	// contains any .secpkg files, ensure these secure dependencies are
 	// installed and up-to-date.
@@ -62,7 +67,7 @@ func ensure(visited map[string]bool, name string) (bool, error) {
 		if !exists {
 			// install
 			log.Printf(".secdep: install package '%s'\n", pkg.Name)
-			if err := pkg.install(visited); err != nil {
+			if err := pkg.install(ctx, visited); err != nil {
 				return false, err
 			}
 			depUpdated = true
@@ -76,7 +81,7 @@ func ensure(visited map[string]bool, name string) (bool, error) {
 			copy(head[:], h)
 			// update
 			log.Printf(".secdep: update package '%s'\n", pkg.Name)
-			updated, err := update(visited, pkg.Name)
+			updated, err := update(ctx, visited, pkg.Name)
 			if err != nil {
 				return false, err
 			}
@@ -108,7 +113,11 @@ func ensure(visited map[string]bool, name string) (bool, error) {
 }
 
 // ensureCheckUpdate ensures the secure dependencies for package name are up-to-date.
-func ensureCheckUpdate(visited map[string]bool, name string) (bool, error) {
+func ensureCheckUpdate(
+	ctx context.Context,
+	visited map[string]bool,
+	name string,
+) (bool, error) {
 	// If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	// contains any .secpkg files, ensure these secure dependencies are
 	// up-to-date.
@@ -166,7 +175,7 @@ func ensureCheckUpdate(visited map[string]bool, name string) (bool, error) {
 			copy(head[:], h)
 			// update
 			log.Printf(".secdep: check update for package '%s'\n", pkg.Name)
-			update, err := checkUpdate(visited, pkg.Name)
+			update, err := checkUpdate(ctx, visited, pkg.Name)
 			if err != nil {
 				return false, err
 			}

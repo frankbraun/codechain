@@ -1,6 +1,7 @@
 package secpkg
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,7 +17,7 @@ import (
 	"github.com/frankbraun/codechain/util/homedir"
 )
 
-func (pkg *Package) install(visited map[string]bool) error {
+func (pkg *Package) install(ctx context.Context, visited map[string]bool) error {
 	// 1. Has already been done by calling Load().
 
 	// 2. Make sure the project has not been installed before.
@@ -46,14 +47,14 @@ func (pkg *Package) install(visited map[string]bool) error {
 
 	// 5. Query TXT record from _codechain-head.DNS and validate the signed head
 	//    contained in it (see ssot package).
-	sh, err := ssot.LookupHead(pkg.DNS)
+	sh, err := ssot.LookupHead(ctx, pkg.DNS)
 	if err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
 	// 6. Query TXT record from _codechain-url.DNS and save it as URL.
-	URL, err := ssot.LookupURL(pkg.DNS)
+	URL, err := ssot.LookupURL(ctx, pkg.DNS)
 	if err != nil {
 		os.RemoveAll(pkgDir)
 		return err
@@ -151,7 +152,7 @@ func (pkg *Package) install(visited map[string]bool) error {
 	// 11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date.
-	if _, err := ensure(visited, pkg.Name); err != nil {
+	if _, err := ensure(ctx, visited, pkg.Name); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
@@ -203,8 +204,8 @@ func (pkg *Package) install(visited map[string]bool) error {
 }
 
 // Install pkg, see specification for details.
-func (pkg *Package) Install() error {
+func (pkg *Package) Install(ctx context.Context) error {
 	visited := make(map[string]bool)
 	visited[pkg.Name] = true
-	return pkg.install(visited)
+	return pkg.install(ctx, visited)
 }

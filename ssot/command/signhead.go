@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -50,6 +51,7 @@ func writeTXTRecord(
 }
 
 func signHead(
+	ctx context.Context,
 	c *hashchain.HashChain,
 	validity time.Duration,
 	secKeyRotate *[64]byte,
@@ -220,7 +222,7 @@ func signHead(
 	//    ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
 	log.Println("9. if the HEAD changed, lookup the download URL")
 	if h != pkg.Head {
-		URL, err := ssot.LookupURL(pkg.DNS)
+		URL, err := ssot.LookupURL(ctx, pkg.DNS)
 		if err != nil {
 			return err
 		}
@@ -310,7 +312,8 @@ func SignHead(argv0 string, args ...string) error {
 	})
 	// run signHead
 	go func() {
-		err := signHead(c, *validity, secKeyRotate, sigRotate, commentRotate)
+		err := signHead(context.Background(), c, *validity, secKeyRotate,
+			sigRotate, commentRotate)
 		if err != nil {
 			interrupt.ShutdownChannel <- err
 			return

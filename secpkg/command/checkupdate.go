@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -16,7 +17,7 @@ import (
 // checkUpdateAll checks all packages for updates. If an update check for a
 // single fails the error is reported on stderr and the next package will be
 // updated. The function returns the first encountered error, if any.
-func checkUpdateAll() error {
+func checkUpdateAll(ctx context.Context) error {
 	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs")
 	pkgs, err := file.List(pkgDir)
 	if err != nil {
@@ -25,7 +26,7 @@ func checkUpdateAll() error {
 	var firstError error
 	for _, pkg := range pkgs {
 		fmt.Printf("%s: checking\n", pkg)
-		needsUpdate, err := secpkg.CheckUpdate(pkg)
+		needsUpdate, err := secpkg.CheckUpdate(ctx, pkg)
 		if err != nil {
 			if firstError == nil {
 				firstError = err
@@ -61,9 +62,9 @@ func CheckUpdate(argv0 string, args ...string) error {
 		return flag.ErrHelp
 	}
 	if *all {
-		return checkUpdateAll()
+		return checkUpdateAll(context.Background())
 	}
-	needsUpdate, err := secpkg.CheckUpdate(fs.Arg(0))
+	needsUpdate, err := secpkg.CheckUpdate(context.Background(), fs.Arg(0))
 	if err != nil {
 		return err
 	}

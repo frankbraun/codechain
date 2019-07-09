@@ -3,6 +3,7 @@ package hashchain
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -39,8 +40,14 @@ func TestFuzzer(t *testing.T) {
 	}
 
 	// Fuzz entire hash chain.
-	var currentBit int
-	var failedBits int
+	divider := 100
+	var (
+		currentBit int
+		failedBits int
+		counter    int
+		part       int
+	)
+	parts := len(buf) * 8 / divider
 	fzzr := &fuzzer.SequentialFuzzer{
 		Data: buf,
 		// Let's not consider the last newline and the character before,
@@ -50,6 +57,11 @@ func TestFuzzer(t *testing.T) {
 			defer func() {
 				currentBit++
 			}()
+			if counter%divider == 0 {
+				part++
+				fmt.Printf("hashchain fuzzing part %d/%d\n", part, parts)
+			}
+			counter++
 			if ignoreStart <= currentBit && currentBit <= ignoreEnd {
 				return errors.New("ignore bit")
 			}

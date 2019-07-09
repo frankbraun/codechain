@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/homedir"
@@ -49,6 +50,9 @@ func Status(argv0 string, args ...string) error {
 	if fs.NArg() > 0 {
 		fs.Usage()
 		return flag.ErrHelp
+	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
 	}
 	if err := status(); err != nil {
 		return err

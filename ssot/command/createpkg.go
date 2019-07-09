@@ -244,6 +244,9 @@ func CreatePkg(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
+	}
 	c, err := hashchain.ReadFile(def.HashchainFile)
 	if err != nil {
 		return err

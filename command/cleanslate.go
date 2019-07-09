@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/terminal"
@@ -61,6 +62,9 @@ func CleanSlate(argv0 string, args ...string) error {
 	if fs.NArg() != 0 {
 		fs.Usage()
 		return flag.ErrHelp
+	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
 	}
 	return cleanSlate()
 }

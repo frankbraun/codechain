@@ -154,7 +154,8 @@ func checkUpdate(ctx context.Context, visited map[string]bool, name string) (boo
 	return needsUpdate, nil
 }
 
-// CheckUpdate package with name, see specification for details.
+// CheckUpdate checks installed package with name for updates, see
+// specification for details.
 func CheckUpdate(ctx context.Context, name string) (bool, error) {
 	visited := make(map[string]bool)
 	visited[name] = true

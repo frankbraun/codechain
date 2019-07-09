@@ -9,6 +9,7 @@ import (
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/util/git"
 	"github.com/frankbraun/codechain/util/homedir"
@@ -239,6 +240,9 @@ func Review(argv0 string, args ...string) error {
 			fs.Usage()
 			return flag.ErrHelp
 		}
+	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
 	}
 	if err := os.MkdirAll(treeDirA, 0755); err != nil {
 		return err

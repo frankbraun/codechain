@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/tree"
 )
 
@@ -24,6 +25,9 @@ func TreeHash(argv0 string, args ...string) error {
 	if fs.NArg() != 0 {
 		fs.Usage()
 		return flag.ErrHelp
+	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
 	}
 	if *list {
 		l, err := tree.ListBytes(".", def.ExcludePaths)

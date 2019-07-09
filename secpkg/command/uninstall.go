@@ -28,5 +28,10 @@ func Uninstall(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
+	if fs.Arg(0) != "codechain" {
+		if err := secpkg.UpToDate("codechain"); err != nil {
+			return err
+		}
+	}
 	return secpkg.Uninstall(fs.Arg(0))
 }

@@ -208,6 +208,9 @@ func Refresh(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
+	}
 	var (
 		secKeyRotate  *[64]byte
 		sigRotate     *[64]byte

@@ -7,6 +7,7 @@ import (
 
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -35,6 +36,9 @@ func SigCtl(argv0 string, args ...string) error {
 	if fs.NArg() != 0 {
 		fs.Usage()
 		return flag.ErrHelp
+	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
 	}
 	c, err := hashchain.ReadFile(def.HashchainFile)
 	if err != nil {

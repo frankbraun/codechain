@@ -10,6 +10,7 @@ import (
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/patchfile"
+	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util/file"
@@ -191,6 +192,9 @@ func Publish(argv0 string, args ...string) error {
 	if fs.NArg() != 0 {
 		fs.Usage()
 		return flag.ErrHelp
+	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
 	}
 	if err := os.MkdirAll(treeDirA, 0755); err != nil {
 		return err

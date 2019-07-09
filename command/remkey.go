@@ -8,6 +8,7 @@ import (
 	"github.com/frankbraun/codechain/hashchain"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -29,6 +30,9 @@ func RemKey(argv0 string, args ...string) error {
 	if fs.NArg() != 1 {
 		fs.Usage()
 		return flag.ErrHelp
+	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
 	}
 	pubkey := fs.Arg(0)
 	pub, err := base64.Decode(pubkey, 32)

@@ -61,6 +61,9 @@ func CheckUpdate(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
+	}
 	if *all {
 		return checkUpdateAll(context.Background())
 	}

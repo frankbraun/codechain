@@ -29,6 +29,9 @@ func ignoreWindow(buf []byte) (int, int, error) {
 }
 
 func TestFuzzer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skip fuzzer test in short mode")
+	}
 	buf, err := ioutil.ReadFile(filepath.Join("..", def.HashchainFile))
 	if err != nil {
 		t.Fatalf("ioutil.ReadFile() failed: %v", err)

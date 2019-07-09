@@ -1,0 +1,505 @@
+codechain patchfile version 2
+treehash 14326c436346375ece488dfb1b64ef0d22572117be1d9574eadc2b9c2d5956be
+- f 0da26a2c79d63f2c9a518c3e602ca0084b44abc6b25859f4985cf59797b8f8ac command/addkey.go
++ f cade04d0d5a51f8a86b5cae73b1e35b568898f4734efa3a0d38ca94fa391a795 command/addkey.go
+dmppatch 8
+@@ -185,16 +185,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -955,16 +955,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09pubk
+- f 2eb843c720aa24f8dfe8fa670eb7b935dc369c1d2855982884098457ae7cb1d1 command/apply.go
++ f 3f95683c45737e8ba6477f0855d6f245d7a3b877721db9ea5c82b5c07fdc4454 command/apply.go
+dmppatch 8
+@@ -177,16 +177,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -979,16 +979,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09var 
+- f 566b883c6a14d3acc48003937f58460ec769c85f3c012cf4834f75b50e7c62cb command/cleanslate.go
++ f ecc2c683cadd6bddd5305ee58bd4c529b16022c81b8e6244eb899cafe78d6b74 command/cleanslate.go
+dmppatch 8
+@@ -119,16 +119,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -1445,16 +1445,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09retu
+- f 413559bc485681dab7436ee0be2e4004ac898ae52e91384b820395dfc2136e0b command/createdist.go
++ f cd4928a82cb00055f1f852556fbf83be0f32fc38356683d9dd79853287589e62 command/createdist.go
+dmppatch 8
+@@ -177,16 +177,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -878,16 +878,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09c, e
+- f f749bec7fa5581e5bf4545949eafa2b99fd32aa3e64b77faf723e1dde60a8e21 command/keyfile.go
++ f 6d630b6e4e3bb74ca5cf8c4098466370e24072d1fabd53c03255fd309fc0dab8 command/keyfile.go
+dmppatch 8
+@@ -244,16 +244,58 @@
+ eyfile%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -2510,16 +2510,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09if *
+- f c70d12665daf174ff2bcaf6c88fc0831f592d1b72a5cf64db166cc8eb42aa449 command/keygen.go
++ f 4e20342199bfebd5846d3e11d36524a0b35597e4ed95df88f96a8204ca664ddc command/keygen.go
+dmppatch 8
+@@ -222,24 +222,66 @@
+ in/keyfile%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github.com
+@@ -1277,16 +1277,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09if *
+- f 69a179856648c8e875f7a057e1b479d1b540efb055dda29b252eb46995259c6d command/publish.go
++ f ff2f89c99c4f0153e0ab1b876508e6ec5993bc7aa172d45b6f989c2d69ca2ec7 command/publish.go
+dmppatch 8
+@@ -201,24 +201,66 @@
+ /patchfile%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github.com
+@@ -5116,16 +5116,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09if e
+- f 6b9f6ed76f6d779631b8a421acbb6b5b3a7b0936ff30b2589d8988b4ee68b914 command/remkey.go
++ f efe4d12b4d414a1eabe2b04abdcb75c6e9bb71e33915e819871b4b60df056994 command/remkey.go
+dmppatch 8
+@@ -185,16 +185,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -797,16 +797,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09pubk
+- f 39a374058f8dba9d91cf61450f0f5b6fb1949eebcdeb46e1c2ee91d92cf34aca command/review.go
++ f a9127878e925176c4525e545dfa52254323969974ee7424203bafc23b51b266b command/review.go
+dmppatch 8
+@@ -195,16 +195,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -6212,16 +6212,86 @@
+ elp%0A%09%09%7D%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09if e
+- f 1b0298bcb535209f6379c23134fde7a7a0811d9d1993096ec9f89ae9c66cb33f command/sigctl.go
++ f b6276f4a321335f196b38f19571c46f04cb183e8e5978120046ef780f3a6c933 command/sigctl.go
+dmppatch 8
+@@ -134,16 +134,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -930,16 +930,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09c, e
+- f c146c1fcdfc094eb0c391759869df4aaacf0d4ee08e7573ccba2b9a848cd5343 command/start.go
++ f e4fbaf23a38788931448454bd1897bf4edf168fae64507d425e7f818abbfa3e0 command/start.go
+dmppatch 8
+@@ -134,16 +134,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -991,16 +991,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09if e
+- f 68120ddb70cce8740c63e3922b77a044a40028b43a579b52313518f120c149d3 command/status.go
++ f 7f8f2745ddd1b26ba241dbec357adc400a65d9379e1aea7403118b0352a7ca94 command/status.go
+dmppatch 8
+@@ -142,16 +142,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -2590,16 +2590,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09c, e
+- f 5206d9a9156f1ef98926e530b2f5956b809023d51f647717441eaaf360d3152e command/treehash.go
++ f 922ce9a7bf8ae842cec2afc341c7b93e2668fbcac2bfaaa38f0c81343aaf3411 command/treehash.go
+dmppatch 8
+@@ -89,16 +89,58 @@
+ al/def%22%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -673,16 +673,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09if *
+- f c40e00a906340ba858ccee97749a3334b92d31d9e0d717308cb276205694f605 hashchain/fuzzer_test.go
++ f c124192c959c99053c5ef04d61ee3b872204af03cf592fea3bbea349866b7502 hashchain/fuzzer_test.go
+dmppatch 17
+@@ -40,16 +40,23 @@
+ errors%22%0A
++%09%22fmt%22%0A
+ %09%22io/iou
+@@ -678,16 +678,84 @@
+ ng.T) %7B%0A
++%09if testing.Short() %7B%0A%09%09t.Skip(%22skip fuzzer test in short mode%22)%0A%09%7D%0A
+ %09buf, er
+@@ -1032,48 +1032,135 @@
+ in.%0A
+-%09var currentBit int%0A%09var failedBits int%0A
++%09divider := 100%0A%09var (%0A%09%09currentBit int%0A%09%09failedBits int%0A%09%09counter    int%0A%09%09part       int%0A%09)%0A%09parts := len(buf) * 8 / divider%0A
+ %09fzz
+@@ -1449,16 +1449,136 @@
+ %0A%09%09%09%7D()%0A
++%09%09%09if counter%25divider == 0 %7B%0A%09%09%09%09part++%0A%09%09%09%09fmt.Printf(%22hashchain fuzzing part %25d/%25d%5Cn%22, part, parts)%0A%09%09%09%7D%0A%09%09%09counter++%0A
+ %09%09%09if ig
+- f ab6132e6b96bdb93bdf593f0e18411dc1ca98745b590168fbb4739f1fa34ae6f secpkg/checkupdate.go
++ f 113eae1265cf0f5939348f481d6fd36598fa8931fcc793fab7dd41b5aca3806f secpkg/checkupdate.go
+dmppatch 29
+@@ -18,16 +18,27 @@
+ mport (%0A
++%09%22context%22%0A
+ %09%22fmt%22%0A%09
+@@ -342,79 +342,100 @@
+ %0A)%0A%0A
+-func checkUpdate(visited map%5Bstring%5Dbool, name string) (bool, error) %7B%0A
++func checkUpdate(ctx context.Context, visited map%5Bstring%5Dbool, name string) (bool, error) %7B%0A
+ %09// 
+@@ -1619,48 +1619,53 @@
+ d%22)%0A
+-%09shDNS, err := ssot.LookupHead(pkg.DNS)%0A
++%09shDNS, err := ssot.LookupHead(ctx, pkg.DNS)%0A
+ %09if 
+@@ -4202,62 +4202,67 @@
+ e %7B%0A
+-%09%09needsUpdate, err = ensureCheckUpdate(visited, name)%0A
++%09%09needsUpdate, err = ensureCheckUpdate(ctx, visited, name)%0A
+ %09%09if
+@@ -4822,119 +4822,172 @@
+ %0A%7D%0A%0A
+-// CheckUpdate package with name, see specification for details.%0Afunc CheckUpdate(name string) (bool, error) %7B%0A
++// CheckUpdate checks installed package with name for updates, see%0A// specification for details.%0Afunc CheckUpdate(ctx context.Context, name string) (bool, error) %7B%0A
+ %09vis
+@@ -5042,41 +5042,46 @@
+ rue%0A
+-%09return checkUpdate(visited, name)%0A
++%09return checkUpdate(ctx, visited, name)%0A
+ %7D%0A
+- f 49d96fabea1c997f5565508645ea55ba4f912f40ac031fa181b5293c876ddeb6 secpkg/command/checkupdate.go
++ f 7d14dd885004bddcd899e3c8b8d0d1d6291f20aa936d186e9cae76aea88aba65 secpkg/command/checkupdate.go
+dmppatch 26
+@@ -19,16 +19,27 @@
+ mport (%0A
++%09%22context%22%0A
+ %09%22flag%22%0A
+@@ -504,38 +504,57 @@
+ ny.%0A
+-func checkUpdateAll() error %7B%0A
++func checkUpdateAll(ctx context.Context) error %7B%0A
+ %09pkg
+@@ -755,54 +755,59 @@
+ kg)%0A
+-%09%09needsUpdate, err := secpkg.CheckUpdate(pkg)%0A
++%09%09needsUpdate, err := secpkg.CheckUpdate(ctx, pkg)%0A
+ %09%09if
+@@ -1746,24 +1746,94 @@
+ .ErrHelp%0A%09%7D%0A
++%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A%09%7D%0A
+ %09if *all %7B%0A%09
+@@ -1835,88 +1835,130 @@
+ l %7B%0A
+-%09%09return checkUpdateAll()%0A
++%09%09return checkUpdateAll(context.Background())%0A
+ %09%7D%0A
+-%09needsUpdate, err := secpkg.CheckUpdate(fs.Arg(0))%0A
++%09needsUpdate, err := secpkg.CheckUpdate(context.Background(), fs.Arg(0))%0A
+ %09if 
+- f 58b4f48a8e958ab66ab097c57539975e1c9da536619053ef4ec9e2e04ac82abd secpkg/command/install.go
++ f 00ff739e0108f357803f30dcc53ac4c39a84bd67cf52fb495138a8e0f5e123e1 secpkg/command/install.go
+dmppatch 13
+@@ -19,16 +19,27 @@
+ mport (%0A
++%09%22context%22%0A
+ %09%22flag%22%0A
+@@ -711,16 +711,86 @@
+ Help%0A%09%7D%0A
++%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A%09%7D%0A
+ %09// 1. P
+@@ -897,28 +897,48 @@
+ %0A%09%7D%0A
+-%09return pkg.Install()%0A
++%09return pkg.Install(context.Background())%0A
+ %7D%0A
+- f 02a7c50bd6722c3209acfd3ea95d3e5b27017d73e8b7a0b6a653b026d9f3abcd secpkg/command/list.go
++ f 33633c10fbeb2286d67db10247656d4d549985e182c74b230494d093278ad636 secpkg/command/list.go
+dmppatch 8
+@@ -58,16 +58,58 @@
+ epath%22%0A%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -743,16 +743,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09pkgD
+- f 0bb20b366e1d6a1c448f7b52739f992a2a591384deb5f2b0e507c1e03ddbbc72 secpkg/command/uninstall.go
++ f 20fb644bb28ca7af40d05bb7ac048bb9ab085fbd0b09b0b9ef7b37393a90eeb1 secpkg/command/uninstall.go
+dmppatch 4
+@@ -682,16 +682,123 @@
+ Help%0A%09%7D%0A
++%09if fs.Arg(0) != %22codechain%22 %7B%0A%09%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A
+ %09return 
+- f 410b7da43fd1cb34bdaf87eec9b7234f45156fd6724953c5c460ffd3973b5a0b secpkg/command/update.go
++ f 0ace42e29b92cdce11d1ea0af9e66c440a3421fd65659a8083684a722410708e secpkg/command/update.go
+dmppatch 26
+@@ -19,16 +19,27 @@
+ mport (%0A
++%09%22context%22%0A
+ %09%22flag%22%0A
+@@ -456,33 +456,52 @@
+ ny.%0A
+-func updateAll() error %7B%0A
++func updateAll(ctx context.Context) error %7B%0A
+ %09pkg
+@@ -711,53 +711,58 @@
+ kg)%0A
+-%09%09if err := secpkg.Update(pkg); err != nil %7B%0A
++%09%09if err := secpkg.Update(ctx, pkg); err != nil %7B%0A
+ %09%09%09i
+@@ -1551,24 +1551,94 @@
+ .ErrHelp%0A%09%7D%0A
++%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A%09%7D%0A
+ %09if *all %7B%0A%09
+@@ -1640,63 +1640,105 @@
+ l %7B%0A
+-%09%09return updateAll()%0A
++%09%09return updateAll(context.Background())%0A
+ %09%7D%0A
+-%09return secpkg.Update(fs.Arg(0))%0A
++%09return secpkg.Update(context.Background(), fs.Arg(0))%0A
+ %7D%0A
+- f d138a9ea5ddd2c2b9ea66f27da97f18b13e15e601f1f49d123b368f3978c2577 secpkg/ensure.go
++ f aa84a62f41ed331b1fe6407b9f2d60845037eec1fe74b3c6dff386b4cd4c2964 secpkg/ensure.go
+dmppatch 29
+@@ -18,16 +18,27 @@
+ mport (%0A
++%09%22context%22%0A
+ %09%22fmt%22%0A%09
+@@ -440,74 +440,101 @@
+ te.%0A
+-func ensure(visited map%5Bstring%5Dbool, name string) (bool, error) %7B%0A
++func ensure(%0A%09ctx context.Context,%0A%09visited map%5Bstring%5Dbool,%0A%09name string,%0A) (bool, error) %7B%0A
+ %09// 
+@@ -1929,56 +1929,61 @@
+ me)%0A
+-%09%09%09if err := pkg.install(visited); err != nil %7B%0A
++%09%09%09if err := pkg.install(ctx, visited); err != nil %7B%0A
+ %09%09%09%09
+@@ -2254,53 +2254,58 @@
+ me)%0A
+-%09%09%09updated, err := update(visited, pkg.Name)%0A
++%09%09%09updated, err := update(ctx, visited, pkg.Name)%0A
+ %09%09%09i
+@@ -3163,85 +3163,112 @@
+ te.%0A
+-func ensureCheckUpdate(visited map%5Bstring%5Dbool, name string) (bool, error) %7B%0A
++func ensureCheckUpdate(%0A%09ctx context.Context,%0A%09visited map%5Bstring%5Dbool,%0A%09name string,%0A) (bool, error) %7B%0A
+ %09// 
+@@ -4919,57 +4919,62 @@
+ me)%0A
+-%09%09%09update, err := checkUpdate(visited, pkg.Name)%0A
++%09%09%09update, err := checkUpdate(ctx, visited, pkg.Name)%0A
+ %09%09%09i
+- f f439c5a59aad7e54509a802273076c0fb9a0f210e1e270fbe6c460adc5111a60 secpkg/install.go
++ f 306384d40357e6a1dbb8ced5561cdc036e39a4e7226c675b553918127244ce3b secpkg/install.go
+dmppatch 34
+@@ -18,16 +18,27 @@
+ mport (%0A
++%09%22context%22%0A
+ %09%22fmt%22%0A%09
+@@ -441,69 +441,90 @@
+ %0A)%0A%0A
+-func (pkg *Package) install(visited map%5Bstring%5Dbool) error %7B%0A
++func (pkg *Package) install(ctx context.Context, visited map%5Bstring%5Dbool) error %7B%0A
+ %09// 
+@@ -1412,45 +1412,50 @@
+ e).%0A
+-%09sh, err := ssot.LookupHead(pkg.DNS)%0A
++%09sh, err := ssot.LookupHead(ctx, pkg.DNS)%0A
+ %09if 
+@@ -1579,45 +1579,50 @@
+ RL.%0A
+-%09URL, err := ssot.LookupURL(pkg.DNS)%0A
++%09URL, err := ssot.LookupURL(ctx, pkg.DNS)%0A
+ %09if 
+@@ -4112,62 +4112,67 @@
+ te.%0A
+-%09if _, err := ensure(visited, pkg.Name); err != nil %7B%0A
++%09if _, err := ensure(ctx, visited, pkg.Name); err != nil %7B%0A
+ %09%09os
+@@ -5483,46 +5483,65 @@
+ ls.%0A
+-func (pkg *Package) Install() error %7B%0A
++func (pkg *Package) Install(ctx context.Context) error %7B%0A
+ %09vis
+@@ -5600,35 +5600,40 @@
+ rue%0A
+-%09return pkg.install(visited)%0A
++%09return pkg.install(ctx, visited)%0A
+ %7D%0A
+- f 08d3fc52a13c2d6bb7c419b30ed2ab523399f53df5388982e0560c9f1fffa8b1 secpkg/update.go
++ f 53b356484d8959085191c1dab06aafc27097356c9799236028e58acdf45e362e secpkg/update.go
+dmppatch 34
+@@ -18,16 +18,27 @@
+ mport (%0A
++%09%22context%22%0A
+ %09%22fmt%22%0A%09
+@@ -384,74 +384,95 @@
+ %0A)%0A%0A
+-func update(visited map%5Bstring%5Dbool, name string) (bool, error) %7B%0A
++func update(ctx context.Context, visited map%5Bstring%5Dbool, name string) (bool, error) %7B%0A
+ %09// 
+@@ -1449,48 +1449,53 @@
+ ue.%0A
+-%09shDNS, err := ssot.LookupHead(pkg.DNS)%0A
++%09shDNS, err := ssot.LookupHead(ctx, pkg.DNS)%0A
+ %09if 
+@@ -1667,45 +1667,50 @@
+ RL.%0A
+-%09URL, err := ssot.LookupURL(pkg.DNS)%0A
++%09URL, err := ssot.LookupURL(ctx, pkg.DNS)%0A
+ %09if 
+@@ -5171,50 +5171,55 @@
+ se.%0A
+-%09depUpdated, err := ensure(visited, name)%0A
++%09depUpdated, err := ensure(ctx, visited, name)%0A
+ %09if 
+@@ -7182,41 +7182,62 @@
+ ls.%0A
+-func Update(name string) error %7B%0A
++func Update(ctx context.Context, name string) error %7B%0A
+ %09vis
+@@ -7292,41 +7292,46 @@
+ rue%0A
+-%09_, err := update(visited, name)%0A
++%09_, err := update(ctx, visited, name)%0A
+ %09ret
++ f 2b76b2ea2b97d79c2acc939edd31a299a483291c6e422fba60275b883faa3b2a secpkg/uptodate.go
+utf8file 40
+package secpkg
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"time"
+)
+
+// UpToDateIfInstalled ensures that the package with name is up-to-date, if it is
+// installed as a secure package. If the package is not installed as a secure
+// package a corresponding message is shown on stderr.
+func UpToDateIfInstalled(ctx context.Context, name string) error {
+	needsUpdate, err := CheckUpdate(ctx, name)
+	if err != nil {
+		if err == ErrNotInstalled {
+			fmt.Fprintf(os.Stderr, "WARNING: package '%s' not installed via `secpkg install`\n", name)
+		} else {
+			return err
+		}
+	} else if needsUpdate {
+		fmt.Errorf("tool needs update (`secpkg update %s`)", name)
+	}
+	return nil
+}
+
+// UpToDate ensures that the package with name is up-to-date, if it is
+// installed as a secure package. If the package is not installed as a secure
+// package a corresponding message is shown on stderr.
+//
+// UpToDate times out after a while if DNS cannot be queried and return nil.
+func UpToDate(name string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err := UpToDateIfInstalled(ctx, name); err != nil {
+		return err
+	}
+	return nil
+}
+
+- f bdd60da303429f513e14e65e06fb30a4602051229d6fdcb662e8dd239339d48b ssot/command/createpkg.go
++ f afa802627c6b080c654cdb098f4e843544376a4c8026883a5fc56a2684c822fb ssot/command/createpkg.go
+dmppatch 4
+@@ -7178,16 +7178,86 @@
+ Help%0A%09%7D%0A
++%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A%09%7D%0A
+ %09c, err 
+- f d1f7c2d3b04dbb0c3d5d3f5eddbb1b6d76fac84cb159273e633d3eb27dc2a23c ssot/command/refresh.go
++ f d6113e476dc8eb3b1565bdd9a025a6b1ec8bfcad9afe4f683c4d20ce8e80a4fc ssot/command/refresh.go
+dmppatch 4
+@@ -6071,24 +6071,94 @@
+ .ErrHelp%0A%09%7D%0A
++%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A%09%7D%0A
+ %09var (%0A%09%09sec
+- f 957e885e19bf54bf33384f11a9898e0baae1d8a9e7526b7c21a3e5f5f8a07ff2 ssot/command/signhead.go
++ f 79f5955565cf5fb64e3c0993d7cbcbb837497d9d1dc7a65d72e2e379ee7a3446 ssot/command/signhead.go
+dmppatch 22
+@@ -19,16 +19,27 @@
+ mport (%0A
++%09%22context%22%0A
+ %09%22encodi
+@@ -1249,16 +1249,38 @@
+ gnHead(%0A
++%09ctx context.Context,%0A
+ %09c *hash
+@@ -6207,46 +6207,51 @@
+ d %7B%0A
+-%09%09URL, err := ssot.LookupURL(pkg.DNS)%0A
++%09%09URL, err := ssot.LookupURL(ctx, pkg.DNS)%0A
+ %09%09if
+@@ -8234,16 +8234,86 @@
+ Help%0A%09%7D%0A
++%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A%09%7D%0A
+ %09c, err 
+@@ -8732,80 +8732,105 @@
+ ) %7B%0A
+-%09%09err := signHead(c, *validity, secKeyRotate, sigRotate, commentRotate)%0A
++%09%09err := signHead(context.Background(), c, *validity, secKeyRotate,%0A%09%09%09sigRotate, commentRotate)%0A
+ %09%09if
+- f 0b4b2a826f1f34fcfe382a656b5fe4dd854293df8a7200525c674dfbb927878c ssot/command/status.go
++ f 8828b78f85f6cbb9b62c82af847505813d89323977f48f9f6e250accfe4bb89d ssot/command/status.go
+dmppatch 8
+@@ -58,16 +58,58 @@
+ epath%22%0A%0A
++%09%22github.com/frankbraun/codechain/secpkg%22%0A
+ %09%22github
+@@ -1168,16 +1168,86 @@
+ ErrHelp%0A
++%09%7D%0A%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
+ %09%7D%0A%09if e
+- f 2f8aa0dd4c00de76db2760133f904e139c26b0eed0da9a59f087e8e2b492bda2 ssot/ssot.go
++ f b654ceba931512c9e853378276ea983c712d19f04253ef768bdaca24792632af ssot/ssot.go
+dmppatch 14
+@@ -25,16 +25,27 @@
+ %22bytes%22%0A
++%09%22context%22%0A
+ %09%22encodi
+@@ -3867,116 +3867,156 @@
+ ns.%0A
+-func LookupHead(dns string) (*SignedHead, error) %7B%0A%09txts, err := net.LookupTXT(def.CodechainHeadName + dns)%0A
++func LookupHead(ctx context.Context, dns string) (*SignedHead, error) %7B%0A%09txts, err := net.DefaultResolver.LookupTXT(ctx, def.CodechainHeadName+dns)%0A
+ %09if 
+@@ -4740,109 +4740,149 @@
+ it.%0A
+-func LookupURL(dns string) (string, error) %7B%0A%09txts, err := net.LookupTXT(def.CodechainURLName + dns)%0A
++func LookupURL(ctx context.Context, dns string) (string, error) %7B%0A%09txts, err := net.DefaultResolver.LookupTXT(ctx, def.CodechainURLName+dns)%0A
+ %09if 
+treehash f36959c060c1a47cae6c93708ec972dac160ac44f1552d2da1afbb6032887152

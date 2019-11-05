@@ -1,12 +1,12 @@
 package ssot
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"testing"
 	"time"
 
 	"github.com/frankbraun/codechain/util/hex"
-	"golang.org/x/crypto/ed25519"
 )
 
 const headStr = "73fe1313fd924854f149021e969546bce6052eca0c22b2b91245cb448410493c"

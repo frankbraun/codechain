@@ -2,6 +2,7 @@ package hashchain
 
 import (
 	"bytes"
+	"crypto/ed25519"
 	"crypto/sha256"
 	"errors"
 	"fmt"
@@ -12,7 +13,6 @@ import (
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/log"
-	"golang.org/x/crypto/ed25519"
 )
 
 // hash-of-previous current-time cstart pubkey nonce signature [comment]

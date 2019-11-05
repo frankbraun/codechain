@@ -1,13 +1,13 @@
 package hashchain
 
 import (
+	"crypto/ed25519"
 	"fmt"
 	"strconv"
 
 	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/util/time"
-	"golang.org/x/crypto/ed25519"
 )
 
 // AddKey adds pubkey with signature and optional comment to hash chain.

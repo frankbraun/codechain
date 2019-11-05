@@ -3,7 +3,7 @@ package ssot
 import (
 	"time"
 
-	"golang.org/x/crypto/ed25519"
+	"crypto/ed25519"
 )
 
 // SignHead signs the given Codechain head.

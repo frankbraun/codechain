@@ -1,13 +1,13 @@
 package hashchain
 
 import (
+	"crypto/ed25519"
 	"fmt"
 
 	"github.com/frankbraun/codechain/hashchain/linktype"
 	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/time"
-	"golang.org/x/crypto/ed25519"
 )
 
 func (c *HashChain) signatureCheckArgs(linkHash, pubKey [32]byte) error {

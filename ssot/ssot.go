@@ -3,6 +3,7 @@ package ssot
 import (
 	"bytes"
 	"context"
+	"crypto/ed25519"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -17,7 +18,6 @@ import (
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/log"
-	"golang.org/x/crypto/ed25519"
 )
 
 // File defines the default file name for a signed head.

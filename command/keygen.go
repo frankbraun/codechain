@@ -1,6 +1,7 @@
 package command
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"flag"
 	"fmt"
@@ -17,7 +18,6 @@ import (
 	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/seckey"
 	"github.com/frankbraun/codechain/util/terminal"
-	"golang.org/x/crypto/ed25519"
 )
 
 var testComment string

@@ -1,6 +1,7 @@
 package hashchain
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -11,7 +12,6 @@ import (
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/lockfile"
 	"github.com/frankbraun/codechain/util/time"
-	"golang.org/x/crypto/ed25519"
 )
 
 // Start returns a new hash chain with signature control list m.

@@ -1,6 +1,7 @@
 package hashchain
 
 import (
+	"crypto/ed25519"
 	"fmt"
 
 	"github.com/frankbraun/codechain/hashchain/linktype"
@@ -8,7 +9,6 @@ import (
 	"github.com/frankbraun/codechain/util"
 	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/time"
-	"golang.org/x/crypto/ed25519"
 )
 
 // Source adds a source entry for treeHash and optional comment signed by

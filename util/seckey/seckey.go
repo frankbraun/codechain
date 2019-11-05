@@ -2,6 +2,7 @@
 package seckey
 
 import (
+	"crypto/ed25519"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -13,7 +14,6 @@ import (
 	"github.com/frankbraun/codechain/util/bzero"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/terminal"
-	"golang.org/x/crypto/ed25519"
 )
 
 // TestPass is a passphrase used for testing purposes.

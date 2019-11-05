@@ -1,6 +1,7 @@
 package hashchain
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"fmt"
 	"io/ioutil"
@@ -10,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/frankbraun/codechain/util/hex"
-	"golang.org/x/crypto/ed25519"
 )
 
 const helloHashHex = "5998c63aca42e471297c0fa353538a93d4d4cfafe9a672df6989e694188b4a92"

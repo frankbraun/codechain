@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"golang.org/x/crypto/ed25519"
+	"crypto/ed25519"
 )
 
 func TestCreateRead(t *testing.T) {

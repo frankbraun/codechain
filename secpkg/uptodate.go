@@ -19,7 +19,7 @@ func UpToDateIfInstalled(ctx context.Context, name string) error {
 			return err
 		}
 	} else if needsUpdate {
-		fmt.Errorf("tool needs update (`secpkg update %s`)", name)
+		return fmt.Errorf("tool needs update (`secpkg update %s`)", name)
 	}
 	return nil
 }

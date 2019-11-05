@@ -14,8 +14,9 @@ uninstall:
 	rm -f $(bindir)/codechain $(bindir)/secpkg $(bindir)/ssotpub
 
 test:
-	go get github.com/frankbraun/gocheck
-	gocheck -g -c -v
+	# go get github.com/frankbraun/gocheck
+	# gocheck -g -c -v
+	gocheck -c -v
 
 update-vendor:
 	rm -rf vendor

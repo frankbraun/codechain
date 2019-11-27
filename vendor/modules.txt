@@ -8,7 +8,7 @@ github.com/mattn/go-colorable
 github.com/mattn/go-isatty
 # github.com/mutecomm/mute v0.0.0-20180427225835-8124193e6371
 github.com/mutecomm/mute/util/fuzzer
-# golang.org/x/crypto v0.0.0-20191105034135-c7e5f84aec59
+# golang.org/x/crypto v0.0.0-20191122220453-ac88ee75c92c
 golang.org/x/crypto/argon2
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/internal/subtle
@@ -16,7 +16,7 @@ golang.org/x/crypto/nacl/secretbox
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/sys v0.0.0-20191105142833-ac3223d80179
+# golang.org/x/sys v0.0.0-20191127021746-63cb32ae39b2
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows

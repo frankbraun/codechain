@@ -8,8 +8,8 @@ require (
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/mutecomm/mute v0.0.0-20180427225835-8124193e6371
 	github.com/stretchr/testify v1.3.0 // indirect
-	golang.org/x/crypto v0.0.0-20191105034135-c7e5f84aec59
-	golang.org/x/sys v0.0.0-20191105142833-ac3223d80179 // indirect
+	golang.org/x/crypto v0.0.0-20191122220453-ac88ee75c92c
+	golang.org/x/sys v0.0.0-20191127021746-63cb32ae39b2 // indirect
 )
 
 go 1.13

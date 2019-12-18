@@ -79,8 +79,8 @@ To publish an update of a secure package with SSOT do the following:
 
    4. Get the HEAD from .codechain/hashchain in the current working directory.
 
-   5. If ~/.config/ssotpub/pkgs/NAME/dyn.json exits, check the contained Dyn
-      credentials and switch on automatic publishing of TXT records.
+   5. If ~/.config/ssotpub/pkgs/NAME/cloudflare.json exits, check the contained
+      Cloudflare credentials and switch on automatic publishing of TXT records.
 
    6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
       If it does, abort. Otherwise write public key to rotate to and rotate time
@@ -129,8 +129,8 @@ To refresh the published head of a secure package with SSOT do the following:
    4. Make sure the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
       matches the HEAD in the .secpkg file.
 
-   5. If ~/.config/ssotpub/pkgs/NAME/dyn.json exits, check the contained Dyn
-      credentials and switch on automatic publishing of TXT records.
+   5. If ~/.config/ssotpub/pkgs/NAME/cloudflare.json exits, check the contained
+      Cloudflare credentials and switch on automatic publishing of TXT records.
 
    6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
       If it does, abort. Otherwise write public key to rotate to and rotate time

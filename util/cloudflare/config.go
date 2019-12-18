@@ -1,4 +1,4 @@
-package dyn
+package cloudflare
 
 import (
 	"encoding/json"
@@ -8,15 +8,13 @@ import (
 	"github.com/frankbraun/codechain/util/file"
 )
 
-// ConfigFilename defines the default filename for Dyn Managed DNS API Config
-// files.
-const ConfigFilename = "dyn.json"
+// ConfigFilename defines the default filename for Cloudflare API Config files.
+const ConfigFilename = "cloudflare.json"
 
-// A Config for the Dyn Managed DNS API.
+// A Config for the Cloudflare API.
 type Config struct {
-	CustomerName string // customer_name
-	UserName     string // user_name
-	Password     string // password
+	APIKey string // API key generated on the "My Account" page
+	Email  string // Email address associated with Cloudflare account
 }
 
 // ReadConfig from filename.

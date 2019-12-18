@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -17,7 +16,7 @@ import (
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
-	"github.com/frankbraun/codechain/util/dyn"
+	"github.com/frankbraun/codechain/util/cloudflare"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/homedir"
@@ -27,27 +26,14 @@ import (
 )
 
 func writeTXTRecord(
-	s *dyn.Session,
+	s *cloudflare.Session,
 	zone string,
 	DNS string,
 	sh *ssot.SignedHead,
 ) error {
 	// Update TXT record to publish the signed head.
 	log.Println("update TXT record to publish the signed head")
-	err := s.TXTUpdate(zone, def.CodechainHeadName+DNS, sh.Marshal(), ssot.TTL)
-	if err != nil {
-		return err
-	}
-	ret, err := s.ZoneChangeset(zone)
-	if err != nil {
-		return err
-	}
-	jsn, err := json.MarshalIndent(ret, "", "  ")
-	if err != nil {
-		return err
-	}
-	log.Println(string(jsn))
-	return s.ZoneUpdate(zone)
+	return s.TXTUpdate(zone, def.CodechainHeadName+DNS, sh.Marshal(), ssot.TTL)
 }
 
 func signHead(
@@ -90,25 +76,24 @@ func signHead(
 	head := c.Head()
 	fmt.Printf("signing head %x\n", head)
 
-	// 5. If ~/.config/ssotpub/pkgs/NAME/dyn.json exits, check the contained Dyn
-	//    credentials and switch on automatic publishing of TXT records.
-	dynFile := filepath.Join(pkgDir, dyn.ConfigFilename)
-	exists, err = file.Exists(dynFile)
+	// 5. If ~/.config/ssotpub/pkgs/NAME/cloudflare.json exits, check the contained
+	//    Cloudflare credentials and switch on automatic publishing of TXT records.
+	cloudflareFile := filepath.Join(pkgDir, cloudflare.ConfigFilename)
+	exists, err = file.Exists(cloudflareFile)
 	if err != nil {
 		return err
 	}
-	var dynSession *dyn.Session
+	var cloudflareSession *cloudflare.Session
 	if exists {
-		log.Printf("%s exists", dynFile)
-		dynConfig, err := dyn.ReadConfig(dynFile)
+		log.Printf("%s exists", cloudflareFile)
+		cloudflareConfig, err := cloudflare.ReadConfig(cloudflareFile)
 		if err != nil {
 			return err
 		}
-		dynSession, err = dyn.NewWithConfig(dynConfig)
+		cloudflareSession, err = cloudflare.NewWithConfig(cloudflareConfig)
 		if err != nil {
 			return err
 		}
-		defer dynSession.Close()
 	}
 
 	// 6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
@@ -235,12 +220,12 @@ func signHead(
 	// 10. Print DNS TXT record as defined by the .secpkg and the signed head.
 	//     If TXT records are to be published automatically, publish the TXT record.
 	log.Println("10. print DNS TXT record")
-	if dynSession != nil {
+	if cloudflareSession != nil {
 		// Write TXT record
 		log.Printf("DNS=%s", pkg.DNS)
 		parts := strings.Split(pkg.DNS, ".")
 		zone := parts[len(parts)-2] + "." + parts[len(parts)-1]
-		err := writeTXTRecord(dynSession, zone, pkg.DNS, newSignedHead)
+		err := writeTXTRecord(cloudflareSession, zone, pkg.DNS, newSignedHead)
 		if err != nil {
 			return nil
 		}

@@ -12,7 +12,7 @@ import (
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
-	"github.com/frankbraun/codechain/util/dyn"
+	"github.com/frankbraun/codechain/util/cloudflare"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/log"
@@ -60,25 +60,24 @@ func refresh(
 			signedHeadFile, secpkgFilename)
 	}
 
-	// 5. If ~/.config/ssotpub/pkgs/NAME/dyn.json exits, check the contained Dyn
-	//    credentials and switch on automatic publishing of TXT records.
-	dynFile := filepath.Join(pkgDir, dyn.ConfigFilename)
-	exists, err = file.Exists(dynFile)
+	// 5. If ~/.config/ssotpub/pkgs/NAME/cloudflare.json exits, check the contained
+	//    Cloudflare credentials and switch on automatic publishing of TXT records.
+	cloudflareFile := filepath.Join(pkgDir, cloudflare.ConfigFilename)
+	exists, err = file.Exists(cloudflareFile)
 	if err != nil {
 		return err
 	}
-	var dynSession *dyn.Session
+	var cloudflareSession *cloudflare.Session
 	if exists {
-		log.Printf("%s exists", dynFile)
-		dynConfig, err := dyn.ReadConfig(dynFile)
+		log.Printf("%s exists", cloudflareFile)
+		cloudflareConfig, err := cloudflare.ReadConfig(cloudflareFile)
 		if err != nil {
 			return err
 		}
-		dynSession, err = dyn.NewWithConfig(dynConfig)
+		cloudflareSession, err = cloudflare.NewWithConfig(cloudflareConfig)
 		if err != nil {
 			return err
 		}
-		defer dynSession.Close()
 	}
 
 	// 6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
@@ -168,12 +167,12 @@ func refresh(
 	// 8. Print DNS TXT record as defined by the .secpkg file and the signed head.
 	//    If TXT record is to be published automatically, publish the TXT record.
 	log.Println("8. print DNS TXT record")
-	if dynSession != nil {
+	if cloudflareSession != nil {
 		// Write TXT record
 		log.Printf("DNS=%s", pkg.DNS)
 		parts := strings.Split(pkg.DNS, ".")
 		zone := parts[len(parts)-2] + "." + parts[len(parts)-1]
-		err := writeTXTRecord(dynSession, zone, pkg.DNS, newSignedHead)
+		err := writeTXTRecord(cloudflareSession, zone, pkg.DNS, newSignedHead)
 		if err != nil {
 			return nil
 		}

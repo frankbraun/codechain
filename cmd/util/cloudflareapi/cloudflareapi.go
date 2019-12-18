@@ -1,8 +1,7 @@
-// dynapi calls the Dyn Managed DNS API (https://help.dyn.com/dns-api-knowledge-base/).
+// cloudflareapi calls the Cloudflare API (https://api.cloudflare.com/).
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -10,56 +9,49 @@ import (
 
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util"
-	"github.com/frankbraun/codechain/util/dyn"
+	"github.com/frankbraun/codechain/util/cloudflare"
 	"github.com/frankbraun/codechain/util/log"
 )
 
-func callDynAPI(
-	customerName, userName, password, zone, fqdn, data string,
+func callCloudflareAPI(
+	apiKey, email, zone, fqdn, data string,
 	ttl int,
 	update, del bool,
 ) error {
-	s, err := dyn.New(customerName, userName, password)
+	s, err := cloudflare.New(apiKey, email)
 	if err != nil {
 		return err
 	}
-	defer s.Close()
 	if update {
-		if err := s.TXTUpdate(zone, fqdn, data, ttl); err != nil {
+		err := s.TXTUpdate(zone, fqdn, data, ttl)
+		if err != nil {
 			return err
 		}
 	} else if del {
-		if err := s.TXTDelete(zone, fqdn); err != nil {
+		err = s.TXTDelete(zone, fqdn)
+		if err != nil {
 			return err
 		}
 	} else {
-		if err := s.TXTCreate(zone, fqdn, data, ttl); err != nil {
+		jsn, err := s.TXTCreate(zone, fqdn, data, ttl)
+		if err != nil {
 			return err
 		}
+		fmt.Println(jsn)
 	}
-	ret, err := s.ZoneChangeset(zone)
-	if err != nil {
-		return err
-	}
-	jsn, err := json.MarshalIndent(ret, "", "  ")
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(jsn))
-	return s.ZoneUpdate(zone)
+	return nil
 }
 
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s\n", os.Args[0])
-	fmt.Fprintf(os.Stderr, "Call Dyn Managed DNS API.\n")
+	fmt.Fprintf(os.Stderr, "Call Cloudflare API.\n")
 	flag.PrintDefaults()
 	os.Exit(2)
 }
 
 func main() {
-	customerName := flag.String("c", "", "Customer name")
-	userName := flag.String("u", "", "User name")
-	password := flag.String("p", "", "Password")
+	apiKey := flag.String("a", "", "API key")
+	email := flag.String("e", "", "Email")
 	zone := flag.String("zone", "", "Zone")
 	fqdn := flag.String("fqdn", "", "FQDN")
 	data := flag.String("data", "", "TXT data")
@@ -69,14 +61,11 @@ func main() {
 	verbose := flag.Bool("v", false, "Be verbose")
 	flag.Usage = usage
 	flag.Parse()
-	if *customerName == "" {
-		util.Fatal(errors.New("customer name (-c) is mandatory"))
+	if *apiKey == "" {
+		util.Fatal(errors.New("api key (-a) is mandatory"))
 	}
-	if *userName == "" {
-		util.Fatal(errors.New("user name (-u) is mandatory"))
-	}
-	if *password == "" {
-		util.Fatal(errors.New("password (-p) is mandatory"))
+	if *email == "" {
+		util.Fatal(errors.New("email (-e) is mandatory"))
 	}
 	if *zone == "" {
 		util.Fatal(errors.New("zone (-zone) is mandatory"))
@@ -96,7 +85,7 @@ func main() {
 	if flag.NArg() != 0 {
 		usage()
 	}
-	err := callDynAPI(*customerName, *userName, *password, *zone, *fqdn, *data,
+	err := callCloudflareAPI(*apiKey, *email, *zone, *fqdn, *data,
 		*ttl, *update, *del)
 	if err != nil {
 		util.Fatal(err)

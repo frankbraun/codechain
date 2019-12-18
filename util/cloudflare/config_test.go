@@ -1,4 +1,4 @@
-package dyn
+package cloudflare
 
 import (
 	"io/ioutil"
@@ -15,7 +15,7 @@ func TestConfig(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpdir)
 
-	c := &Config{"foo", "bar", "baz"}
+	c := &Config{"foo", "bar"}
 
 	// Write()
 	filename := filepath.Join(tmpdir, ConfigFilename)

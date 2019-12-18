@@ -1,7 +1,6 @@
 package command
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -16,7 +15,7 @@ import (
 	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
-	"github.com/frankbraun/codechain/util/dyn"
+	"github.com/frankbraun/codechain/util/cloudflare"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/interrupt"
@@ -25,7 +24,7 @@ import (
 )
 
 func writeTXTRecords(
-	s *dyn.Session,
+	s *cloudflare.Session,
 	zone string,
 	DNS string,
 	sh *ssot.SignedHead,
@@ -33,32 +32,24 @@ func writeTXTRecords(
 ) error {
 	// Create TXT record to publish the signed head.
 	log.Println("create TXT record to publish the signed head")
-	err := s.TXTCreate(zone, def.CodechainHeadName+DNS, sh.Marshal(), ssot.TTL)
+	_, err := s.TXTCreate(zone, def.CodechainHeadName+DNS, sh.Marshal(), ssot.TTL)
 	if err != nil {
 		return err
 	}
 	// Create TXT record to publish the url.
 	log.Println("create TXT record to publish the url")
-	err = s.TXTCreate(zone, def.CodechainURLName+DNS, URL, ssot.TTL)
+	jsn, err := s.TXTCreate(zone, def.CodechainURLName+DNS, URL, ssot.TTL)
 	if err != nil {
 		return err
 	}
-	ret, err := s.ZoneChangeset(zone)
-	if err != nil {
-		return err
-	}
-	jsn, err := json.MarshalIndent(ret, "", "  ")
-	if err != nil {
-		return err
-	}
-	log.Println(string(jsn))
-	return s.ZoneUpdate(zone)
+	log.Println(jsn)
+	return nil
 }
 
 func createPkg(
 	c *hashchain.HashChain, name, dns, URL, secKeyFile string,
-	useDyn, encrypted bool,
-	customerName, userName, password string,
+	encrypted, useCloudflare bool,
+	apiKey, email string,
 	validity time.Duration,
 ) error {
 	head := c.Head()
@@ -88,22 +79,20 @@ func createPkg(
 
 	// 2. If TXT records are to be published automatically, check credentials.
 	var (
-		dynConfig  *dyn.Config
-		dynSession *dyn.Session
+		cloudflareConfig  *cloudflare.Config
+		cloudflareSession *cloudflare.Session
 	)
-	if useDyn {
-		dynConfig = &dyn.Config{
-			CustomerName: customerName,
-			UserName:     userName,
-			Password:     password,
+	if useCloudflare {
+		cloudflareConfig = &cloudflare.Config{
+			APIKey: apiKey,
+			Email:  email,
 		}
-		dynSession, err = dyn.NewWithConfig(dynConfig)
+		cloudflareSession, err = cloudflare.NewWithConfig(cloudflareConfig)
 		if err != nil {
 			return err
 		}
-		defer dynSession.Close()
 	} else {
-		fmt.Println("Publishing TXT records manually, restart with -dyn to switch to automatic")
+		fmt.Println("Publishing TXT records manually, restart with -cloudflare to switch to automatic")
 	}
 
 	// Create .secpkg file
@@ -169,17 +158,17 @@ func createPkg(
 	// 8. Print DNS TXT records as defined by the .secpkg, the first signed head,
 	//    and the download URL. If TXT records are to be published automatically,
 	//    save credentials and publish the TXT record.
-	if useDyn {
-		// Save the credentials to ~/.config/ssotpub/pkgs/NAME/dyn.json
-		dynFile := filepath.Join(pkgDir, dyn.ConfigFilename)
-		if err := dynConfig.Write(dynFile); err != nil {
+	if useCloudflare {
+		// Save the credentials to ~/.config/ssotpub/pkgs/NAME/cloudflare.json
+		cloudflareFile := filepath.Join(pkgDir, cloudflare.ConfigFilename)
+		if err := cloudflareConfig.Write(cloudflareFile); err != nil {
 			return err
 		}
 		// Write TXT records
 		log.Printf("DNS=%s", pkg.DNS)
 		parts := strings.Split(pkg.DNS, ".")
 		zone := parts[len(parts)-2] + "." + parts[len(parts)-1]
-		err := writeTXTRecords(dynSession, zone, pkg.DNS, sh, URL)
+		err := writeTXTRecords(cloudflareSession, zone, pkg.DNS, sh, URL)
 		if err != nil {
 			return nil
 		}
@@ -207,11 +196,10 @@ func CreatePkg(argv0 string, args ...string) error {
 	url := fs.String("url", "", "URL to download project files from (URL/head.tar.gz)")
 	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
-	useDyn := fs.Bool("dyn", false, "Use Dyn Managed DNS API to publish TXT records automatically")
 	encrypted := fs.Bool("encrypted", false, "Encrypt source code archives")
-	customerName := fs.String("customer", "", "Customer name for Dyn Managed DNS API")
-	userName := fs.String("user", "", "User name for Dyn Managed DNS API")
-	password := fs.String("password", "", "Password for Dyn Managed DNS API")
+	useCloudflare := fs.Bool("cloudflare", false, "Use Cloudflare API to publish TXT records automatically")
+	apiKey := fs.String("api-key", "", "Cloudflare API key")
+	email := fs.String("email", "", "Email address associated with Cloudflare account")
 	validity := fs.Duration("validity", ssot.MaximumValidity, "Validity of signed head")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -225,14 +213,11 @@ func CreatePkg(argv0 string, args ...string) error {
 	if *url == "" {
 		return fmt.Errorf("%s: option -url is mandatory", argv0)
 	}
-	if *useDyn && *customerName == "" {
-		return fmt.Errorf("%s: option -dyn requires option -customer", argv0)
+	if *useCloudflare && *apiKey == "" {
+		return fmt.Errorf("%s: option -cloudflrae requires option -api-key", argv0)
 	}
-	if *useDyn && *userName == "" {
-		return fmt.Errorf("%s: option -dyn requires option -user", argv0)
-	}
-	if *useDyn && *password == "" {
-		return fmt.Errorf("%s: option -dyn requires option -password", argv0)
+	if *useCloudflare && *email == "" {
+		return fmt.Errorf("%s: option -cloudflrae requires option -email", argv0)
 	}
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)
@@ -258,8 +243,8 @@ func CreatePkg(argv0 string, args ...string) error {
 	})
 	// run createPkg
 	go func() {
-		err := createPkg(c, *name, *dns, *url, *secKey, *useDyn, *encrypted,
-			*customerName, *userName, *password, *validity)
+		err := createPkg(c, *name, *dns, *url, *secKey, *encrypted,
+			*useCloudflare, *apiKey, *email, *validity)
 		if err != nil {
 			interrupt.ShutdownChannel <- err
 			return

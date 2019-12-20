@@ -214,10 +214,10 @@ func CreatePkg(argv0 string, args ...string) error {
 		return fmt.Errorf("%s: option -url is mandatory", argv0)
 	}
 	if *useCloudflare && *apiKey == "" {
-		return fmt.Errorf("%s: option -cloudflrae requires option -api-key", argv0)
+		return fmt.Errorf("%s: option -cloudflare requires option -api-key", argv0)
 	}
 	if *useCloudflare && *email == "" {
-		return fmt.Errorf("%s: option -cloudflrae requires option -email", argv0)
+		return fmt.Errorf("%s: option -cloudflare requires option -email", argv0)
 	}
 	if *verbose {
 		log.Std = log.NewStd(os.Stdout)

@@ -1,0 +1,53 @@
+codechain patchfile version 2
+treehash ea6e123889b8db05d3f92f9179934952130dfebbfcd516b5ce076cf23bd42229
++ f 4e368effe72439d8efe4512fdc952aca69ac5719b8a3695f39c0e122744d4fbf packages/scrit-testnet.secpkg
+utf8file 6
+{
+  "Name": "scrit-testnet",
+  "Head": "c65ddb1c66dea95a5ed04b3ec0c7dc3542145e9aefaf6d76c353b76dd7bf964b",
+  "DNS": "scrit-testnet.secpkg.net"
+}
+
++ f 2709eb7b83939a52c5a7c7a5d92fc6b83be0d34a690ceef42890a4b0c01d6971 packages/scrit.secpkg
+utf8file 6
+{
+  "Name": "scrit",
+  "Head": "5b13602a88fd3723122e4b9f00b89b9cc491286a9373877f5e718c63f320ce00",
+  "DNS": "scrit.secpkg.net"
+}
+
+- f 9c34e65737b460fff42e98e1b322d07009fe92146cc8707a33d0b0d0df59a544 secpkg/uptodate.go
++ f 706fd43490aad084e8cb1f9e9fbd755cf612573d7c549ca529564fb8a2fd19fd secpkg/uptodate.go
+dmppatch 18
+@@ -46,16 +46,44 @@
+ os%22%0A
++%09%22path/filepath%22%0A%09%22strings%22%0A
+ %09%22time%22%0A
+ )%0A%0A/
+@@ -78,16 +78,65 @@
+ %09%22time%22%0A
++%0A%09%22github.com/frankbraun/codechain/util/homedir%22%0A
+ )%0A%0A// Up
+@@ -597,16 +597,30 @@
+ , name)%0A
++%09%09%09return nil%0A
+ %09%09%7D else
+@@ -644,33 +644,487 @@
+ %09%09%7D%0A
+-%09%7D else if needsUpdate %7B%0A
++%09%7D%0A%09// determine path of currently running executable%0A%09path, err := os.Executable()%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09localDir := filepath.Join(homedir.SecPkg(), %22local%22)%0A%09// issue warning if we don't actually run the installed executable%0A%09if !strings.HasPrefix(path, localDir) %7B%0A%09%09fmt.Fprintf(os.Stderr, %22WARNING: package '%25s' installed via %60secpkg install%60, but running different executable: %25s%5Cn%22,%0A%09%09%09name, path)%0A%09%7D%0A%09// now report update needs, if necessary%0A%09if needsUpdate %7B%0A
+ %09%09re
+- f ed1c6250011f89c8096b3c9de38c541c7df42ef41440423d2521648bd84ffba3 ssot/command/createpkg.go
++ f b2712c6242e0d9727899c2056b4d599b974404cfad78a97219426e8b42e8e795 ssot/command/createpkg.go
+dmppatch 10
+@@ -6498,86 +6498,86 @@
+ %22 %7B%0A
+-%09%09return fmt.Errorf(%22%25s: option -cloudflrae requires option -api-key%22, argv0)%0A
++%09%09return fmt.Errorf(%22%25s: option -cloudflare requires option -api-key%22, argv0)%0A
+ %09%7D%0A%09
+@@ -6616,84 +6616,84 @@
+ %22 %7B%0A
+-%09%09return fmt.Errorf(%22%25s: option -cloudflrae requires option -email%22, argv0)%0A
++%09%09return fmt.Errorf(%22%25s: option -cloudflare requires option -email%22, argv0)%0A
+ %09%7D%0A%09
+treehash 8c8db0f67ec986d61454ad0bb04e5e807fa1ab768cd8cc43aad91e2605b86b16

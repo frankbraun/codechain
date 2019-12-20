@@ -1,0 +1,41 @@
+codechain patchfile version 2
+treehash 8c8db0f67ec986d61454ad0bb04e5e807fa1ab768cd8cc43aad91e2605b86b16
+- f 00ff739e0108f357803f30dcc53ac4c39a84bd67cf52fb495138a8e0f5e123e1 secpkg/command/install.go
++ f 91b7688e6afc2ab56e270a009951bea8162ee08de2a9a609ea5b3bc8cab36fb7 secpkg/command/install.go
+dmppatch 26
+@@ -51,16 +51,33 @@
+ %22%0A%09%22os%22%0A
++%09%22path/filepath%22%0A
+ %0A%09%22githu
+@@ -111,16 +111,64 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/homedir%22%0A
+ %09%22github
+@@ -206,16 +206,679 @@
+ log%22%0A)%0A%0A
++func install(pkgFlag bool, name string) error %7B%0A%09ctx := context.Background()%0A%09if pkgFlag %7B%0A%09%09// make sure codechain is actually installed%0A%09%09if _, err := secpkg.CheckUpdate(ctx, %22codechain%22); err != nil %7B%0A%09%09%09if err == secpkg.ErrNotInstalled %7B%0A%09%09%09%09fmt.Fprintf(os.Stderr, %22you must install codechain via %60secpkg install%60 in order to use option -p%5Cn%22)%0A%09%09%09%7D%0A%09%09%09return err%0A%09%09%7D%0A%09%09securePackageDir := filepath.Join(homedir.SecPkg(), %22pkgs%22, %22codechain%22,%0A%09%09%09%22src%22, %22packages%22)%0A%09%09name = filepath.Join(securePackageDir, name+%22.secpkg%22)%0A%09%7D%0A%09// 1. Parse .secpkg file and validate it.%0A%09pkg, err := secpkg.Load(name)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09return pkg.Install(ctx)%0A%7D%0A%0A
+ // Insta
+@@ -1049,70 +1049,75 @@
+ ) %7B%0A
+-%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s project.secpkg%5Cn%22, argv0)%0A
++%09%09fmt.Fprintf(os.Stderr, %22Usage: %25s %5B-p%5D project.secpkg%5Cn%22, argv0)%0A
+ %09%09fm
+@@ -1231,16 +1231,118 @@
+ ts()%0A%09%7D%0A
++%09pkgFlag := fs.Bool(%22p%22, false, %22Install secure package file of given name distributed by Codechain%22)%0A
+ %09verbose
+@@ -1620,160 +1620,43 @@
+ %0A%09%7D%0A
+-%09// 1. Parse .secpkg file and validate it.%0A%09pkg, err := secpkg.Load(fs.Arg(0))%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09return pkg.Install(context.Background())%0A
++%09return install(*pkgFlag, fs.Arg(0))%0A
+ %7D%0A
+- f 706fd43490aad084e8cb1f9e9fbd755cf612573d7c549ca529564fb8a2fd19fd secpkg/uptodate.go
++ f c2c034731dedd02e7ef08d3b97d43fdfccc7aae5c45a018fb871f9804064bf39 secpkg/uptodate.go
+dmppatch 6
+@@ -615,37 +615,25 @@
+ nil%0A
+-%09%09%7D else %7B%0A%09%09%09return err%0A
+ %09%09%7D%0A
++%09%09return err%0A
+ %09%7D%0A%09
+treehash 7552080c78c26b8a2699c0ac4398028b907b673958f8ba26e01da2ac499b1acb

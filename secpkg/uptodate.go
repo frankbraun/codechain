@@ -4,7 +4,11 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
+
+	"github.com/frankbraun/codechain/util/homedir"
 )
 
 // UpToDateIfInstalled ensures that the package with name is up-to-date, if it is
@@ -15,10 +19,24 @@ func UpToDateIfInstalled(ctx context.Context, name string) error {
 	if err != nil {
 		if err == ErrNotInstalled {
 			fmt.Fprintf(os.Stderr, "WARNING: package '%s' not installed via `secpkg install`\n", name)
+			return nil
 		} else {
 			return err
 		}
-	} else if needsUpdate {
+	}
+	// determine path of currently running executable
+	path, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	localDir := filepath.Join(homedir.SecPkg(), "local")
+	// issue warning if we don't actually run the installed executable
+	if !strings.HasPrefix(path, localDir) {
+		fmt.Fprintf(os.Stderr, "WARNING: package '%s' installed via `secpkg install`, but running different executable: %s\n",
+			name, path)
+	}
+	// now report update needs, if necessary
+	if needsUpdate {
 		return fmt.Errorf("tool needs update (`secpkg update %s`)", name)
 	}
 	return nil

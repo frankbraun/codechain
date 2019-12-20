@@ -20,9 +20,8 @@ func UpToDateIfInstalled(ctx context.Context, name string) error {
 		if err == ErrNotInstalled {
 			fmt.Fprintf(os.Stderr, "WARNING: package '%s' not installed via `secpkg install`\n", name)
 			return nil
-		} else {
-			return err
 		}
+		return err
 	}
 	// determine path of currently running executable
 	path, err := os.Executable()

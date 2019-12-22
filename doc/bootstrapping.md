@@ -28,10 +28,10 @@ From https://frankbraun.org/codechain-bootstrap.tar.gz and execute:
 The tree hash computed by `cctreehash.go` must match the published one.
 This makes sure you have the correct Codechain bootstrap source.
 
-sources of the `codechain-bootrap` tree hash:
+Sources of the `codechain-bootrap` tree hash:
 
 -   PGP signed statements by developers:
-    -   https://frankbraun.org
+    -   On https://frankbraun.org
 
 ### Use the bootstrapped Codechain to install the most current Codechain version
 

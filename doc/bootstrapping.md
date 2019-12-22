@@ -31,7 +31,8 @@ This makes sure you have the correct Codechain bootstrap source.
 Sources of the `codechain-bootrap` tree hash:
 
 -   PGP signed statements by developers:
-    -   On https://frankbraun.org
+    -   Frank Braun: https://frankbraun.org
+    -   Jonathan 'smuggler' Logan: https://opaque.link/post/ccbootstrap/
 
 ### Use the bootstrapped Codechain to install the most current Codechain version
 

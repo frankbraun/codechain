@@ -12,6 +12,12 @@ From https://frankbraun.org/cctreehash.go and verify its SHA-256:
     $ sha256sum cctreehash.go
     6a911b51cc047eea7d7b10c75cf1f50a98dea2a39e12ef3414d2f00f31a263f9 cctreehash.go
 
+Sources of the `cctreehash.go` SHA-256 hash:
+
+-   PGP signed statements by developers:
+    -   Frank Braun: https://frankbraun.org/#codechain-bootstrap-statement
+    -   Jonathan 'smuggler' Logan: https://opaque.link/post/ccbootstrap/
+
 ### Review the code of `cctreehash.go`
 
 If you can, this is optional.

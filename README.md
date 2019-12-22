@@ -27,6 +27,15 @@ Codechain uses files to store the hash chain, not a distributed
 
 ### Installation
 
+#### Bootstrapping
+
+To install a trusted Codechain version that can be updated in a trusted
+way you have to [boostrap it](doc/bootstrapping.md).
+
+#### Developer version
+
+To install the latest developer version (not recommended):
+
 ```
 go get -u -v github.com/frankbraun/codechain/...
 ```

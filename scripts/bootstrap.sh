@@ -4,7 +4,7 @@
 echo "------------------------------------------------------------------------"
 echo "CHECK THESE HASHES MANUALLY!"
 CCTREEHASH_SHA256="6a911b51cc047eea7d7b10c75cf1f50a98dea2a39e12ef3414d2f00f31a263f9"
-CODECHAIN_BOOTSTRAP_TREE_HASH="b54a4a8d17940fc31f8cc5dec84cf513cb62cb312f09bf8bc3ecc2dccc83af77"
+CODECHAIN_BOOTSTRAP_TREE_HASH="7552080c78c26b8a2699c0ac4398028b907b673958f8ba26e01da2ac499b1acb"
 echo "cctreehash.go $CCTREEHASH_SHA256"
 echo "codechain-bootstrap $CODECHAIN_BOOTSTRAP_TREE_HASH"
 echo "------------------------------------------------------------------------"

@@ -123,27 +123,30 @@ Updating a software package with NAME works as follows:
       installed and up-to-date. If at least one dependency was updated, set
       SKIP_BUILD to false.
 
-  12. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+  12. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local uninstall` in
+      ~/.config/secpkg/pkgs/NAME/installed
 
-  13. If not SKIP_BUILD,
+  13. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+
+  14. If not SKIP_BUILD,
       `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 
-  14. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
+  15. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  15. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
+  16. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  16. If not SKIP_BUILD,
+  17. If not SKIP_BUILD,
       `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
-  17. Update signed head:
+  18. Update signed head:
 
       - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
                ~/.config/secpkg/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
 
-  18. The software has been successfully updated.
+  19. The software has been successfully updated.
 
 CheckUpdate specification
 

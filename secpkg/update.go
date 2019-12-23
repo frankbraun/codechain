@@ -183,7 +183,20 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		skipBuild = false
 	}
 
-	// 12. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+	// 12. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local uninstall` in
+	//     ~/.config/secpkg/pkgs/NAME/installed
+	installedDir := filepath.Join(pkgDir, "installed")
+	localDir := filepath.Join(homedir.SecPkg(), "local")
+	if !skipBuild {
+		if err := os.Chdir(installedDir); err != nil {
+			return false, err
+		}
+		if err := gnumake.Uninstall(localDir); err != nil {
+			return false, err
+		}
+	}
+
+	// 13. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
 	buildDir := filepath.Join(pkgDir, "build")
 	if !skipBuild {
 		if err := os.RemoveAll(buildDir); err != nil {
@@ -191,7 +204,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 13. If not SKIP_BUILD,
+	// 14. If not SKIP_BUILD,
 	//     `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 	if !skipBuild {
 		if err := file.CopyDir(srcDir, buildDir); err != nil {
@@ -199,9 +212,8 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 14. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
+	// 16. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
-	localDir := filepath.Join(homedir.SecPkg(), "local")
 	if !skipBuild {
 		if err := os.Chdir(buildDir); err != nil {
 			os.RemoveAll(pkgDir)
@@ -212,7 +224,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 15. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
+	// 16. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	if !skipBuild {
 		if err := gnumake.Install(localDir); err != nil {
@@ -220,10 +232,9 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 16. If not SKIP_BUILD,
+	// 17. If not SKIP_BUILD,
 	//     `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 	if !skipBuild {
-		installedDir := filepath.Join(pkgDir, "installed")
 		if err := os.RemoveAll(installedDir); err != nil {
 			return false, err
 		}
@@ -232,7 +243,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 17. Update signed head:
+	// 18. Update signed head:
 	//
 	//      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
 	//               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
@@ -241,7 +252,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		return false, nil
 	}
 
-	// 18. The software has been successfully updated.
+	// 19. The software has been successfully updated.
 	if skipBuild {
 		fmt.Printf("package '%s' already up-to-date\n", name)
 		return false, nil

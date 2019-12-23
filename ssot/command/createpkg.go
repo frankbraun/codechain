@@ -58,7 +58,7 @@ func createPkg(
 	if err != nil {
 		return err
 	}
-	// 3. Create package (before 1., because this checks the arguments)
+	// 4. Create package (before 1., because this checks the arguments)
 	if _, err := url.Parse(URL); err != nil {
 		return err
 	}
@@ -95,6 +95,11 @@ func createPkg(
 		fmt.Println("Publishing TXT records manually, restart with -cloudflare to switch to automatic")
 	}
 
+	// 3. Test build (see TestBuild specification).
+	if err := testBuild(); err != nil {
+		return err
+	}
+
 	// Create .secpkg file
 	exists, err = file.Exists(secpkg.File)
 	if err != nil {
@@ -109,13 +114,13 @@ func createPkg(
 	}
 	fmt.Printf("%s: written\n", secpkg.File)
 
-	// 4. Create the first signed head with counter set to 0.
+	// 5. Create the first signed head with counter set to 0.
 	sh, err := ssot.SignHead(head, 0, *secKey, nil, validity)
 	if err != nil {
 		return err
 	}
 
-	// 5. Create the directory ~/.config/ssotpub/pkgs/NAME/dists
+	// 6. Create the directory ~/.config/ssotpub/pkgs/NAME/dists
 	//    and save the current distribution to
 	//    ~/.config/ssotpub/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`)
 	distDir := filepath.Join(pkgDir, "dists")
@@ -141,7 +146,7 @@ func createPkg(
 		}
 	}
 
-	// 6. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head
+	// 7. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head
 	signedHead := filepath.Join(pkgDir, ssot.File)
 	err = ioutil.WriteFile(signedHead, []byte(sh.Marshal()+"\n"), 0644)
 	if err != nil {
@@ -149,13 +154,13 @@ func createPkg(
 	}
 	fmt.Printf("%s: written\n", signedHead)
 
-	// 7. Print the distribution name
+	// 8. Print the distribution name
 	fmt.Println("")
 	fmt.Printf("Please upload the following distribution file to: %s\n", URL)
 	fmt.Println(distFile)
 	fmt.Println("")
 
-	// 8. Print DNS TXT records as defined by the .secpkg, the first signed head,
+	// 9. Print DNS TXT records as defined by the .secpkg, the first signed head,
 	//    and the download URL. If TXT records are to be published automatically,
 	//    save credentials and publish the TXT record.
 	if useCloudflare {

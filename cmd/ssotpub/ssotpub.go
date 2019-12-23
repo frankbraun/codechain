@@ -17,6 +17,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "       %s signhead\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s refresh .secpkg [...]\n", cmd)
 	fmt.Fprintf(os.Stderr, "       %s status\n", cmd)
+	fmt.Fprintf(os.Stderr, "       %s testbuild\n", cmd)
 	os.Exit(2)
 }
 
@@ -40,6 +41,8 @@ func main() {
 		err = command.Refresh(argv0, args...)
 	case "status":
 		err = command.Status(argv0, args...)
+	case "testbuild":
+		err = command.TestBuild(argv0, args...)
 	default:
 		usage()
 	}

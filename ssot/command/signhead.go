@@ -78,6 +78,7 @@ func signHead(
 
 	// 5. If ~/.config/ssotpub/pkgs/NAME/cloudflare.json exits, check the contained
 	//    Cloudflare credentials and switch on automatic publishing of TXT records.
+	log.Println("5. check Cloudflare credentials, if necessary")
 	cloudflareFile := filepath.Join(pkgDir, cloudflare.ConfigFilename)
 	exists, err = file.Exists(cloudflareFile)
 	if err != nil {
@@ -96,11 +97,17 @@ func signHead(
 		}
 	}
 
-	// 6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
+	// 6. Test build (see TestBuild specification).
+	log.Println("6. test build")
+	if err := testBuild(); err != nil {
+		return err
+	}
+
+	// 7. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.
 	//    If it does, abort. Otherwise write public key to rotate to and rotate time
 	//    to ~/.config/ssotput/pkgs/NAME/rotate_to.
 	rotateToFile := filepath.Join(pkgDir, "rotate_to")
-	log.Printf("6. if -rotate is set, check if '%s' exists", rotateToFile)
+	log.Printf("7. if -rotate is set, check if '%s' exists", rotateToFile)
 	if secKeyRotate != nil {
 		exists, err := file.Exists(rotateToFile)
 		if err != nil {
@@ -116,7 +123,7 @@ func signHead(
 		}
 	}
 
-	// 7. Create a new signed head with current HEAD, the counter of the previous
+	// 8. Create a new signed head with current HEAD, the counter of the previous
 	//    signed head plus 1, and update the saved signed head:
 	//
 	//    - `cp -f ~/.config/ssotpub/pkgs/NAME/signed_head
@@ -128,7 +135,7 @@ func signHead(
 	//    - If rotate time has been reached use pubkey from file as PUBKEY and
 	//      remove ~/.config/ssotput/pkgs/NAME/rotate_to.
 	//    - Otherwise use old PUBKEY and set pubkey from file as PUBKEY_ROTATE.
-	log.Println("7. create a new signed head")
+	log.Println("8. create a new signed head")
 	pubKey := prevSignedHead.PubKey()
 	var pubKeyRotate *[32]byte
 	exists, err = file.Exists(rotateToFile)
@@ -174,9 +181,9 @@ func signHead(
 		}
 	}
 
-	// 8. If the HEAD changed, save the current distribution to:
+	// 9. If the HEAD changed, save the current distribution to:
 	//    ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
-	log.Println("8. if the HEAD changed, save the current distribution")
+	log.Println("9. if the HEAD changed, save the current distribution")
 	h := hex.Encode(head[:])
 	var distFile string
 	if h != pkg.Head {
@@ -202,10 +209,10 @@ func signHead(
 		}
 	}
 
-	// 9. If the HEAD changed, lookup the download URL and print where to upload
-	//    the distribution file:
-	//    ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
-	log.Println("9. if the HEAD changed, lookup the download URL")
+	// 10. If the HEAD changed, lookup the download URL and print where to upload
+	//     the distribution file:
+	//     ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
+	log.Println("10. if the HEAD changed, lookup the download URL")
 	if h != pkg.Head {
 		URL, err := ssot.LookupURL(ctx, pkg.DNS)
 		if err != nil {
@@ -217,9 +224,9 @@ func signHead(
 		fmt.Println("")
 	}
 
-	// 10. Print DNS TXT record as defined by the .secpkg and the signed head.
+	// 11. Print DNS TXT record as defined by the .secpkg and the signed head.
 	//     If TXT records are to be published automatically, publish the TXT record.
-	log.Println("10. print DNS TXT record")
+	log.Println("11. print DNS TXT record")
 	if cloudflareSession != nil {
 		// Write TXT record
 		log.Printf("DNS=%s", pkg.DNS)
@@ -236,8 +243,8 @@ func signHead(
 	fmt.Println("")
 	newSignedHead.TXTPrintHead(pkg.DNS)
 
-	// 11. If the HEAD changed, update the .secpkg file accordingly.
-	log.Println("11. if the HEAD changed, update the .secpkg file")
+	// 12. If the HEAD changed, update the .secpkg file accordingly.
+	log.Println("12. if the HEAD changed, update the .secpkg file")
 	if h != pkg.Head {
 		pkg.Head = h
 		newSecPkgFile := secpkg.File + "_new"

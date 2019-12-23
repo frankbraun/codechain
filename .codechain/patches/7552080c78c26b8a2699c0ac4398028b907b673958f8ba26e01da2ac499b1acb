@@ -1,0 +1,468 @@
+codechain patchfile version 2
+treehash 7552080c78c26b8a2699c0ac4398028b907b673958f8ba26e01da2ac499b1acb
+- f 65983a8670f81828a165007b25ee74993918e1647c10a9c52c78a4098a83e493 .secpkg
++ f 8b960dcbac7b566dc998669fec509b3113698b13f61318b99a4fd433ce719f64 .secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %22c614987c547f7ba125b30d52c59d0ef711812e992838c3454111c6f44d2c82b1%22,%0A
++  %22Head%22: %227ad4a5c570699e84579142ae772e9ed60ad8ca0716c641f7f9cfa335f2b90b35%22,%0A
+   %22D
+- f 3666abde5683e076a76952b37cdd3a30e82042585c2adbca677ccc50074b20f4 README.md
++ f f0eff2ba7c433f7d1836f97627562b15de3bcbb4bab0e0598a9b339bdedd723c README.md
+dmppatch 4
+@@ -1482,16 +1482,246 @@
+ lation%0A%0A
++#### Bootstrapping%0A%0ATo install a trusted Codechain version that can be updated in a trusted%0Away you have to %5Bboostrap it%5D(doc/bootstrapping.md).%0A%0A#### Developer version%0A%0ATo install the latest developer version (not recommended):%0A%0A
+ %60%60%60%0Ago g
+- f 9faf186a3d45070ea706532781a61e0a3b4abb0acd1f44267e049a59a2877a03 cmd/ssotpub/ssotpub.go
++ f 915cd12518e0eec5a63adb8d983583df1a8eeceb865c6ef4ca10e6651a7d7ad6 cmd/ssotpub/ssotpub.go
+dmppatch 8
+@@ -611,16 +611,70 @@
+ %22, cmd)%0A
++%09fmt.Fprintf(os.Stderr, %22       %25s testbuild%5Cn%22, cmd)%0A
+ %09os.Exit
+@@ -1171,16 +1171,77 @@
+ rgs...)%0A
++%09case %22testbuild%22:%0A%09%09err = command.TestBuild(argv0, args...)%0A
+ %09default
+- f 9f4507f7e0fbdd1e98c28fdfed75b9108ac965a5da1555c6a34e3010732b82b1 doc/bootstrapping.md
++ f f8a725b843676d601108675117e328937109787a96a82249716136204d665c8e doc/bootstrapping.md
+dmppatch 21
+@@ -46,142 +46,8 @@
+ --%0A%0A
+-THIS DOCUMENT IS NOT FINISHED: The file codechain-bootstrap.tar.gz has%0Anot been published and the tree hash has not been signed yet.%0A%0A
+ ### 
+@@ -306,16 +306,252 @@
+ ash.go%0A%0A
++Sources of the %60cctreehash.go%60 SHA-256 hash:%0A%0A-   PGP signed statements by developers:%0A    -   Frank Braun: https://frankbraun.org/#codechain-bootstrap-statement%0A    -   Jonathan 'smuggler' Logan: https://opaque.link/post/ccbootstrap/%0A%0A
+ ### Revi
+@@ -821,77 +821,77 @@
+ .go%0A
+-    d1e69edf8f1c09e82fd16b008d70ec0783982418a4f113f19f661a7b47919641%0A
++    7552080c78c26b8a2699c0ac4398028b907b673958f8ba26e01da2ac499b1acb%0A
+ %0AThe
+@@ -1029,166 +1029,244 @@
+ e.%0A%0A
+-TODO: sources of the %60codechain-bootrap%60 tree hash:%0A
++Sources of the %60codechain-bootrap%60 tree hash:%0A
+ %0A
+--   opentimestamps%0A-   PGP signed statements by developers%0A-   websites from projects that use Codechain%0A
++-   PGP signed statements by developers:%0A    -   Frank Braun: https://frankbraun.org/#codechain-bootstrap-statement%0A    -   Jonathan 'smuggler' Logan: https://opaque.link/post/ccbootstrap/%0A
+ %0A###
+- f 65983a8670f81828a165007b25ee74993918e1647c10a9c52c78a4098a83e493 packages/codechain.secpkg
++ f 8b960dcbac7b566dc998669fec509b3113698b13f61318b99a4fd433ce719f64 packages/codechain.secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %22c614987c547f7ba125b30d52c59d0ef711812e992838c3454111c6f44d2c82b1%22,%0A
++  %22Head%22: %227ad4a5c570699e84579142ae772e9ed60ad8ca0716c641f7f9cfa335f2b90b35%22,%0A
+   %22D
+- x 2fee081d385e478e335cdb8217d78c5379401cc777f12f67383040edcbf93cbe scripts/bootstrap.sh
++ x 00f86fff752ff1641da4496ce052c1dd1b59ef6b3cf1d2733f278413f0a232bf scripts/bootstrap.sh
+dmppatch 5
+@@ -249,105 +249,105 @@
+ f9%22%0A
+-CODECHAIN_BOOTSTRAP_TREE_HASH=%22b54a4a8d17940fc31f8cc5dec84cf513cb62cb312f09bf8bc3ecc2dccc83af77%22%0A
++CODECHAIN_BOOTSTRAP_TREE_HASH=%227552080c78c26b8a2699c0ac4398028b907b673958f8ba26e01da2ac499b1acb%22%0A
+ echo
+- f b6e7a1aaf2ba0538e81e0d6fd25ea8fbbb02c017709e7f9c28b7ca51d72fd300 secpkg/doc.go
++ f 8951ac10abd9cc06a9cfadde82d1d25b84e973f071edc6ceeabcea008b0b6de7 secpkg/doc.go
+dmppatch 33
+@@ -4864,101 +4864,225 @@
+ e.%0A%0A
+-  12. If not SKIP_BUILD, %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A
++  12. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local uninstall%60 in%0A      ~/.config/secpkg/pkgs/NAME/installed%0A%0A  13. If not SKIP_BUILD, %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A
+ %0A
+-  13. If not SKIP_BUILD,%0A
++  14. If not SKIP_BUILD,%0A
+     
+@@ -5160,78 +5160,78 @@
+ d%60%0A%0A
+-  14. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local%60 in%0A
++  15. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local%60 in%0A
+     
+@@ -5270,87 +5270,87 @@
+ ld%0A%0A
+-  15. If not SKIP_BUILD, call %60make prefix= ~/.config/secpkg/local install%60 in%0A
++  16. If not SKIP_BUILD, call %60make prefix= ~/.config/secpkg/local install%60 in%0A
+     
+@@ -5389,33 +5389,33 @@
+ ld%0A%0A
+-  16. If not SKIP_BUILD,%0A
++  17. If not SKIP_BUILD,%0A
+     
+@@ -5496,34 +5496,34 @@
+ d%60%0A%0A
+-  17. Update signed head:%0A
++  18. Update signed head:%0A
+ %0A   
+@@ -5723,58 +5723,58 @@
+ ).%0A%0A
+-  18. The software has been successfully updated.%0A
++  19. The software has been successfully updated.%0A
+ %0AChe
+- f 53b356484d8959085191c1dab06aafc27097356c9799236028e58acdf45e362e secpkg/update.go
++ f cce954445736dacc8b1f25f4519b36f7246213e8b5dd169cbc2184ade4b1b25d secpkg/update.go
+dmppatch 43
+@@ -5299,77 +5299,484 @@
+ %09%7D%0A%0A
+-%09// 12. If not SKIP_BUILD, %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A
++%09// 12. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local uninstall%60 in%0A%09//     ~/.config/secpkg/pkgs/NAME/installed%0A%09installedDir := filepath.Join(pkgDir, %22installed%22)%0A%09localDir := filepath.Join(homedir.SecPkg(), %22local%22)%0A%09if !skipBuild %7B%0A%09%09if err := os.Chdir(installedDir); err != nil %7B%0A%09%09%09return false, err%0A%09%09%7D%0A%09%09if err := gnumake.Uninstall(localDir); err != nil %7B%0A%09%09%09return false, err%0A%09%09%7D%0A%09%7D%0A%0A%09// 13. If not SKIP_BUILD, %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A
+ %09bui
+@@ -5914,35 +5914,35 @@
+ %09%7D%0A%0A
+-%09// 13. If not SKIP_BUILD,%0A
++%09// 14. If not SKIP_BUILD,%0A
+ %09// 
+@@ -6124,80 +6124,80 @@
+ %09%7D%0A%0A
+-%09// 14. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local%60 in%0A
++%09// 16. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local%60 in%0A
+ %09// 
+@@ -6237,62 +6237,8 @@
+ ild%0A
+-%09localDir := filepath.Join(homedir.SecPkg(), %22local%22)%0A
+ %09if 
+@@ -6426,89 +6426,89 @@
+ %09%7D%0A%0A
+-%09// 15. If not SKIP_BUILD, call %60make prefix= ~/.config/secpkg/local install%60 in%0A
++%09// 16. If not SKIP_BUILD, call %60make prefix= ~/.config/secpkg/local install%60 in%0A
+ %09// 
+@@ -6646,35 +6646,35 @@
+ %09%7D%0A%0A
+-%09// 16. If not SKIP_BUILD,%0A
++%09// 17. If not SKIP_BUILD,%0A
+ %09// 
+@@ -6773,61 +6773,8 @@
+ d %7B%0A
+-%09%09installedDir := filepath.Join(pkgDir, %22installed%22)%0A
+ %09%09if
+@@ -6940,36 +6940,36 @@
+ %09%7D%0A%0A
+-%09// 17. Update signed head:%0A
++%09// 18. Update signed head:%0A
+ %09//%0A
+@@ -7254,60 +7254,60 @@
+ %09%7D%0A%0A
+-%09// 18. The software has been successfully updated.%0A
++%09// 19. The software has been successfully updated.%0A
+ %09if 
+- f b2712c6242e0d9727899c2056b4d599b974404cfad78a97219426e8b42e8e795 ssot/command/createpkg.go
++ f b84b865e8e9b65e8105108b5899c746a82ae6b1371c2f773e8ef62ab3cde370f ssot/command/createpkg.go
+dmppatch 34
+@@ -1499,77 +1499,77 @@
+ %0A%09%7D%0A
+-%09// 3. Create package (before 1., because this checks the arguments)%0A
++%09// 4. Create package (before 1., because this checks the arguments)%0A
+ %09if 
+@@ -2467,24 +2467,127 @@
+ matic%22)%0A%09%7D%0A%0A
++%09// 3. Test build (see TestBuild specification).%0A%09if err := testBuild(); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A
+ %09// Create .
+@@ -2908,67 +2908,67 @@
+ e)%0A%0A
+-%09// 4. Create the first signed head with counter set to 0.%0A
++%09// 5. Create the first signed head with counter set to 0.%0A
+ %09sh,
+@@ -3060,70 +3060,70 @@
+ %09%7D%0A%0A
+-%09// 5. Create the directory ~/.config/ssotpub/pkgs/NAME/dists%0A
++%09// 6. Create the directory ~/.config/ssotpub/pkgs/NAME/dists%0A
+ %09// 
+@@ -3757,79 +3757,79 @@
+ %09%7D%0A%0A
+-%09// 6. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head%0A
++%09// 7. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head%0A
+ %09sig
+@@ -4020,43 +4020,43 @@
+ d)%0A%0A
+-%09// 7. Print the distribution name%0A
++%09// 8. Print the distribution name%0A
+ %09fmt
+@@ -4188,87 +4188,87 @@
+ %22)%0A%0A
+-%09// 8. Print DNS TXT records as defined by the .secpkg, the first signed head,%0A
++%09// 9. Print DNS TXT records as defined by the .secpkg, the first signed head,%0A
+ %09// 
+- f b27375ff34d756ddea77717cb5721a3ec974dab91ac4ba9538cef8e444321218 ssot/command/signhead.go
++ f 279ca6a4eb0d923b21682f0872a0473463531b8d2b1344cd6af39308cb53f990 ssot/command/signhead.go
+dmppatch 54
+@@ -2324,16 +2324,78 @@
+ ecords.%0A
++%09log.Println(%225. check Cloudflare credentials, if necessary%22)%0A
+ %09cloudfl
+@@ -2843,88 +2843,221 @@
+ %09%7D%0A%0A
+-%09// 6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.%0A
++%09// 6. Test build (see TestBuild specification).%0A%09log.Println(%226. test build%22)%0A%09if err := testBuild(); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// 7. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.%0A
+ %09// 
+@@ -3239,80 +3239,80 @@
+ o%22)%0A
+-%09log.Printf(%226. if -rotate is set, check if '%25s' exists%22, rotateToFile)%0A
++%09log.Printf(%227. if -rotate is set, check if '%25s' exists%22, rotateToFile)%0A
+ %09if 
+@@ -3652,87 +3652,87 @@
+ %09%7D%0A%0A
+-%09// 7. Create a new signed head with current HEAD, the counter of the previous%0A
++%09// 8. Create a new signed head with current HEAD, the counter of the previous%0A
+ %09// 
+@@ -4273,52 +4273,52 @@
+ TE.%0A
+-%09log.Println(%227. create a new signed head%22)%0A
++%09log.Println(%228. create a new signed head%22)%0A
+ %09pub
+@@ -5239,70 +5239,70 @@
+ %09%7D%0A%0A
+-%09// 8. If the HEAD changed, save the current distribution to:%0A
++%09// 9. If the HEAD changed, save the current distribution to:%0A
+ %09// 
+@@ -5379,78 +5379,78 @@
+ %60).%0A
+-%09log.Println(%228. if the HEAD changed, save the current distribution%22)%0A
++%09log.Println(%229. if the HEAD changed, save the current distribution%22)%0A
+ %09h :
+@@ -5991,233 +5991,237 @@
+ %09%7D%0A%0A
+-%09// 9. If the HEAD changed, lookup the download URL and print where to upload%0A%09//    the distribution file:%0A%09//    ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz%0A%09log.Println(%229. if the HEAD changed, lookup the download URL%22)%0A
++%09// 10. If the HEAD changed, lookup the download URL and print where to upload%0A%09//     the distribution file:%0A%09//     ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz%0A%09log.Println(%2210. if the HEAD changed, lookup the download URL%22)%0A
+ %09if 
+@@ -6459,84 +6459,84 @@
+ %09%7D%0A%0A
+-%09// 10. Print DNS TXT record as defined by the .secpkg and the signed head.%0A
++%09// 11. Print DNS TXT record as defined by the .secpkg and the signed head.%0A
+ %09// 
+@@ -6617,49 +6617,49 @@
+ rd.%0A
+-%09log.Println(%2210. print DNS TXT record%22)%0A
++%09log.Println(%2211. print DNS TXT record%22)%0A
+ %09if 
+@@ -7145,139 +7145,139 @@
+ S)%0A%0A
+-%09// 11. If the HEAD changed, update the .secpkg file accordingly.%0A%09log.Println(%2211. if the HEAD changed, update the .secpkg file%22)%0A
++%09// 12. If the HEAD changed, update the .secpkg file accordingly.%0A%09log.Println(%2212. if the HEAD changed, update the .secpkg file%22)%0A
+ %09if 
++ f 86de3ac3080c022c3b7dde40451fb211021d2445f91f87bbcfd1eed62b573098 ssot/command/testbuild.go
+utf8file 158
+package command
+
+import (
+	"errors"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+
+	"github.com/frankbraun/codechain/hashchain"
+	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/secpkg"
+	"github.com/frankbraun/codechain/util/file"
+	"github.com/frankbraun/codechain/util/gnumake"
+	"github.com/frankbraun/codechain/util/log"
+)
+
+func containsFile(dir string) (bool, error) {
+	var containsFile bool
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if containsFile {
+			return filepath.SkipDir
+		}
+		if !info.IsDir() {
+			containsFile = true
+			return filepath.SkipDir
+		}
+		return nil
+	})
+	if err != nil {
+		return false, err
+	}
+	return containsFile, nil
+}
+
+func testBuild() error {
+	// 1. Create temporary directory TMPDIR with `build` and `local` subdirectories.
+	dir, err := ioutil.TempDir("", "testbuild")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(dir)
+	buildDir := filepath.Join(dir, "build")
+	if os.Mkdir(buildDir, 0755); err != nil {
+		return err
+	}
+	localDir := filepath.Join(dir, "local")
+	if os.Mkdir(localDir, 0755); err != nil {
+		return err
+	}
+
+	// 2. `mkdir TMPDIR/build/.codechain`
+	codechainDir := filepath.Join(buildDir, def.DefaultCodechainDir)
+	if err := os.Mkdir(codechainDir, 0755); err != nil {
+		return err
+	}
+
+	// 3. `cp .codechain/hashchain TMPDIR/build/.codechain`
+	err = file.Copy(def.HashchainFile, filepath.Join(codechainDir, "hashchain"))
+	if err != nil {
+		return err
+	}
+
+	// 4. `cp -r .codechain/patches TMPDIR/build/.codechain`
+	err = file.CopyDir(def.PatchDir, filepath.Join(codechainDir, "patches"))
+	if err != nil {
+		return err
+	}
+
+	// 5. `cd TMPDIR/build`
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	if err := os.Chdir(buildDir); err != nil {
+		return err
+	}
+	defer os.Chdir(cwd)
+
+	// 6. `codechain apply`
+	c, err := hashchain.ReadFile(def.HashchainFile)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	if err := c.Apply(nil); err != nil {
+		return err
+	}
+
+	// 7. `make prefix=TMPDIR/local`
+	if err := gnumake.Call(localDir); err != nil {
+		return err
+	}
+
+	// 8. `make prefix=TMPDIR/local install`
+	if err := gnumake.Install(localDir); err != nil {
+		return err
+	}
+
+	// 9. Make sure TMPDIR/local contains at least one file.
+	contains, err := containsFile(localDir)
+	if err != nil {
+		return err
+	}
+	if !contains {
+		return errors.New("'make install' doesn't install any files")
+	}
+
+	// 10. `make prefix=TMPDIR/local uninstall`
+	if err := gnumake.Uninstall(localDir); err != nil {
+		return err
+	}
+
+	// 11. Make sure TMPDIR/local contains no files (but empty directories are OK).
+	contains, err = containsFile(localDir)
+	if err != nil {
+		return err
+	}
+	if contains {
+		return errors.New("'make uninstall' leaves files")
+	}
+
+	// 12. Delete temporary directory TMPDIR.
+	return nil
+}
+
+// TestBuild implements the ssotpub 'testbuild' command.
+func TestBuild(argv0 string, args ...string) error {
+	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
+	fs.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s\n", argv0)
+		fmt.Fprintf(os.Stderr, "Test package build.\n")
+		fs.PrintDefaults()
+	}
+	verbose := fs.Bool("v", false, "Be verbose")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *verbose {
+		log.Std = log.NewStd(os.Stdout)
+	}
+	if fs.NArg() > 0 {
+		fs.Usage()
+		return flag.ErrHelp
+	}
+	if err := secpkg.UpToDate("codechain"); err != nil {
+		return err
+	}
+	if err := testBuild(); err != nil {
+		return err
+	}
+	return nil
+}
+
+- f 9472cd5bbc3605a18fab51b95d6b40dae2041ba0b3291895b77bb2e1bf34ba72 ssot/doc.go
++ f 5184def0aaab6139d1f2b966cc0f48019510692cac8c017d5aebe9bb990b9d4d ssot/doc.go
+dmppatch 60
+@@ -1334,70 +1334,118 @@
+ s.%0A%0A
+-  3. Create a new .secpkg file which specifies the following:%0A
++  3. Test build (see TestBuild specification).%0A%0A  4. Create a new .secpkg file which specifies the following:%0A
+ %0A   
+@@ -1757,83 +1757,83 @@
+ y.%0A%0A
+-  4. Create the first signed head (see SignHead) for the current project's%0A
++  5. Create the first signed head (see SignHead) for the current project's%0A
+     
+@@ -1892,68 +1892,68 @@
+ 0.%0A%0A
+-  5. Create the directory ~/.config/ssotpub/pkgs/NAME/dists%0A
++  6. Create the directory ~/.config/ssotpub/pkgs/NAME/dists%0A
+     
+@@ -2073,235 +2073,235 @@
+ ).%0A%0A
+-  6. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head%0A
++  7. Save the signed head to ~/.config/ssotpub/pkgs/NAME/signed_head%0A
+ %0A
+-  7. Print the distribution name: ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz%0A
++  8. Print the distribution name: ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz%0A
+ %0A
+-  8. Print DNS TXT records as defined by the .secpkg, the first signed head,%0A
++  9. Print DNS TXT records as defined by the .secpkg, the first signed head,%0A
+     
+@@ -3253,87 +3253,136 @@
+ s.%0A%0A
+-   6. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.%0A
++   6. Test build (see TestBuild specification).%0A%0A   7. If ROTATE is set, check if ~/.config/ssotput/pkgs/NAME/rotate_to exists.%0A
+     
+@@ -3523,86 +3523,86 @@
+ o.%0A%0A
+-   7. Create a new signed head with current HEAD, the counter of the previous%0A
++   8. Create a new signed head with current HEAD, the counter of the previous%0A
+     
+@@ -4127,69 +4127,69 @@
+ E.%0A%0A
+-   8. If the HEAD changed, save the current distribution to:%0A
++   9. If the HEAD changed, save the current distribution to:%0A
+     
+@@ -4266,85 +4266,85 @@
+ ).%0A%0A
+-   9. If the HEAD changed, lookup the download URL and print where to upload%0A
++  10. If the HEAD changed, lookup the download URL and print where to upload%0A
+     
+@@ -4425,87 +4425,87 @@
+ gz%0A%0A
+-  10. Print DNS TXT record as defined by the .secpkg file and the signed head.%0A
++  12. Print DNS TXT record as defined by the .secpkg file and the signed head.%0A
+     
+@@ -4585,72 +4585,72 @@
+ d.%0A%0A
+-  11. If the HEAD changed, update the .secpkg file accordingly.%0A
++  13. If the HEAD changed, update the .secpkg file accordingly.%0A
+ %0A  A
+@@ -6625,16 +6625,684 @@
+ nabled.%0A
++%0ATestBuild specification%0A%0ATo test the build of a secure package do the following:%0A%0A   1. Create temporary directory TMPDIR with %60build%60 and %60local%60 subdirectories.%0A%0A   2. %60mkdir TMPDIR/build/.codechain%60%0A%0A   3. %60cp .codechain/hashchain TMPDIR/build/.codechain%60%0A%0A   4. %60cp -r .codechain/patches TMPDIR/build/.codechain%60%0A%0A   5. %60cd TMPDIR/build%60%0A%0A   6. %60codechain apply%60%0A%0A   7. %60make prefix=TMPDIR/local%60%0A%0A   8. %60make prefix=TMPDIR/local install%60%0A%0A   9. Make sure TMPDIR/local contains at least one file.%0A%0A  10. %60make prefix=TMPDIR/local uninstall%60%0A%0A  11. Make sure TMPDIR/local contains no files (but empty directories are OK).%0A%0A  12. Delete temporary directory TMPDIR.%0A
+ %0ARotate 
+treehash 75337bf13c749c28ed4dce5fb699f518d37d3279d2f731d66888544b431c938e

@@ -1,0 +1,637 @@
+codechain patchfile version 2
+treehash 75337bf13c749c28ed4dce5fb699f518d37d3279d2f731d66888544b431c938e
+- f 8b960dcbac7b566dc998669fec509b3113698b13f61318b99a4fd433ce719f64 .secpkg
++ f 6f69c080fc1349a84036584e6385cf3ac797764b26c8d938a473816977691d3b .secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %227ad4a5c570699e84579142ae772e9ed60ad8ca0716c641f7f9cfa335f2b90b35%22,%0A
++  %22Head%22: %22e8d50eec1a2777108c56b244f48e4f28e6a4f3adf614ff3ff1f13ef174117833%22,%0A
+   %22D
+- f 471b16891f7219913c05b1c4cb917e8500fa354507f38169730a78f2b98416d2 go.mod
++ f f859fadaf554787536ffe3873447a9e3983136c7cb0d49bdcda1149ab6ef0080 go.mod
+dmppatch 5
+@@ -320,129 +320,129 @@
+ 371%0A
+-%09golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413%0A%09golang.org/x/sys v0.0.0-20191218084908-4a24b4065292 // indirect%0A
++%09golang.org/x/crypto v0.0.0-20191219195013-becbf705a915%0A%09golang.org/x/sys v0.0.0-20191224085550-c709ea063b76 // indirect%0A
+ )%0A%0Ag
+- f 4a7c31a828ea9be5ef643a4531a0b3c3280acbff0201add22e16f5111e0eb138 go.sum
++ f 2d7438834108a345af2c9cf990fd12acb18d7f50bd7ff75ba3b471e215a077c1 go.sum
+dmppatch 10
+@@ -3104,221 +3104,221 @@
+ +w=%0A
+-golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413 h1:ULYEB3JvPRE/IfO+9uO7vKV/xzVTO7XPAwm8xbf4w2g=%0Agolang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=%0A
++golang.org/x/crypto v0.0.0-20191219195013-becbf705a915 h1:aJ0ex187qoXrJHPo8ZasVTASQB7llQP6YeNzgDALPRk=%0Agolang.org/x/crypto v0.0.0-20191219195013-becbf705a915/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=%0A
+ gola
+@@ -4059,215 +4059,215 @@
+ Es=%0A
+-golang.org/x/sys v0.0.0-20191218084908-4a24b4065292 h1:Y8q0zsdcgAd+JU8VUA8p8Qv2YhuY9zevDG2ORt5qBUI=%0Agolang.org/x/sys v0.0.0-20191218084908-4a24b4065292/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=%0A
++golang.org/x/sys v0.0.0-20191224085550-c709ea063b76 h1:Dho5nD6R3PcW2SH1or8vS0dszDaXRxIw55lBX7XiE5g=%0Agolang.org/x/sys v0.0.0-20191224085550-c709ea063b76/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=%0A
+ gola
+- f 8b960dcbac7b566dc998669fec509b3113698b13f61318b99a4fd433ce719f64 packages/codechain.secpkg
++ f 6f69c080fc1349a84036584e6385cf3ac797764b26c8d938a473816977691d3b packages/codechain.secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %227ad4a5c570699e84579142ae772e9ed60ad8ca0716c641f7f9cfa335f2b90b35%22,%0A
++  %22Head%22: %22e8d50eec1a2777108c56b244f48e4f28e6a4f3adf614ff3ff1f13ef174117833%22,%0A
+   %22D
+- f 0ace42e29b92cdce11d1ea0af9e66c440a3421fd65659a8083684a722410708e secpkg/command/update.go
++ f 02b814c71271ef0b30c27f1ebeb196744c67c5a9855b57839e149def23324511 secpkg/command/update.go
+dmppatch 5
+@@ -1559,75 +1559,182 @@
+ %0A%09%7D%0A
+-%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09return err%0A
++%09// do not check for codechain update during codechain update%0A%09if *all %7C%7C fs.Arg(0) != %22codechain%22 %7B%0A%09%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A
+ %09%7D%0A%09
+- f 1dd8db8be9e32238295ddec575d5e2a977cde76bc6bc70a3ce3d6d293c37d956 vendor/golang.org/x/sys/unix/fcntl.go
++ f 17d765179cdd928346e0588df0f0bb8163e04a2cb1afe894f7dd265e443eb942 vendor/golang.org/x/sys/unix/fcntl.go
+dmppatch 14
+@@ -312,62 +312,62 @@
+ nux%0A
+-// systems by flock_linux_32bit.go to be SYS_FCNTL64.%0A
++// systems by fcntl_linux_32bit.go to be SYS_FCNTL64.%0A
+ var 
+@@ -406,223 +406,142 @@
+ TL%0A%0A
+-// FcntlInt performs a fcntl syscall on fd with the provided command and argument.%0Afunc FcntlInt(fd uintptr, cmd, arg int) (int, error) %7B%0A%09valptr, _, errno := Syscall(fcntl64Syscall, fd, uintptr(cmd), uintptr(arg))%0A
++func fcntl(fd int, cmd, arg int) (int, error) %7B%0A%09valptr, _, errno := Syscall(fcntl64Syscall, uintptr(fd), uintptr(cmd), uintptr(arg))%0A
+ %09var
+@@ -610,16 +610,190 @@
+ r), err%0A
++%7D%0A%0A// FcntlInt performs a fcntl syscall on fd with the provided command and argument.%0Afunc FcntlInt(fd uintptr, cmd, arg int) (int, error) %7B%0A%09return fcntl(int(fd), cmd, arg)%0A
+ %7D%0A%0A// Fc
+- f c9d7ecf9318c066b2948d28ef7a6e1a6ab5fdd991acc59d17ebcec72e5ae90e2 vendor/golang.org/x/sys/unix/mkerrors.sh
++ f 434279e5a2e214c450fef5f9c428df1968a2ea4b9510958978a73d4a3304c8c1 vendor/golang.org/x/sys/unix/mkerrors.sh
+dmppatch 8
+@@ -4276,32 +4276,53 @@
+  %3Csys/socket.h%3E%0A
++#include %3Csys/uio.h%3E%0A
+ #include %3Csys/xa
+@@ -13220,24 +13220,42 @@
+  /%5EXDP_/ %7C%7C%0A
++%09%09$2 ~ /%5ERWF_/ %7C%7C%0A
+ %09%09$2 ~ /%5E(HD
+- f e9420758397d55a447cab5cdfad68b6e5f8384f33116b8ed2f7acc1419d1f97a vendor/golang.org/x/sys/unix/syscall_bsd.go
++ f 65c167ff3cd44c7d255c1792c367cad2ddcba54d18146d91954f3a2c9c2405ee vendor/golang.org/x/sys/unix/syscall_bsd.go
+dmppatch 4
+@@ -14555,68 +14555,8 @@
+ %0A%7D%0A%0A
+-//sys%09fcntl(fd int, cmd int, arg int) (val int, err error)%0A%0A
+ //sy
+- f 72cb283c7ece258e92cfd92a6607e6432b8bedc9e537035c9d1359d7e98e5a92 vendor/golang.org/x/sys/unix/syscall_darwin.go
++ f 2e4853e8cc8b933e22e6867232631ecb37df542df4f551d26e9a4948903c2e95 vendor/golang.org/x/sys/unix/syscall_darwin.go
+dmppatch 4
+@@ -9829,16 +9829,76 @@
+ ed%0A */%0A%0A
++//sys%09fcntl(fd int, cmd int, arg int) (val int, err error)%0A%0A
+ //sys%09ki
+- f f26fd5b0ca015d3df0fef99d25c966f1396046bd787a9950e887c8d0fb63dac8 vendor/golang.org/x/sys/unix/syscall_linux.go
++ f 27b14ae53f533d07b3d686e514e3eab87b81d9318270b7b3053fbf307a041b76 vendor/golang.org/x/sys/unix/syscall_linux.go
+dmppatch 8
+@@ -47256,67 +47256,8 @@
+ or)%0A
+-//sys%09fcntl(fd int, cmd int, arg int) (val int, err error)%0A
+ //sy
+@@ -52287,16 +52287,3219 @@
+ S_WRITE%0A
++//sys%09readv(fd int, iovs %5B%5DIovec) (n int, err error) = SYS_READV%0A//sys%09writev(fd int, iovs %5B%5DIovec) (n int, err error) = SYS_WRITEV%0A//sys%09preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) = SYS_PREADV%0A//sys%09pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) = SYS_PWRITEV%0A//sys%09preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) = SYS_PREADV2%0A//sys%09pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) = SYS_PWRITEV2%0A%0Afunc bytes2iovec(bs %5B%5D%5B%5Dbyte) %5B%5DIovec %7B%0A%09iovecs := make(%5B%5DIovec, len(bs))%0A%09for i, b := range bs %7B%0A%09%09iovecs%5Bi%5D.SetLen(len(b))%0A%09%09if len(b) %3E 0 %7B%0A%09%09%09iovecs%5Bi%5D.Base = &b%5B0%5D%0A%09%09%7D else %7B%0A%09%09%09iovecs%5Bi%5D.Base = (*byte)(unsafe.Pointer(&_zero))%0A%09%09%7D%0A%09%7D%0A%09return iovecs%0A%7D%0A%0A// offs2lohi splits offs into its lower and upper unsigned long. On 64-bit%0A// systems, hi will always be 0. On 32-bit systems, offs will be split in half.%0A// preadv/pwritev chose this calling convention so they don't need to add a%0A// padding-register for alignment on ARM.%0Afunc offs2lohi(offs int64) (lo, hi uintptr) %7B%0A%09return uintptr(offs), uintptr(uint64(offs) %3E%3E SizeofLong)%0A%7D%0A%0Afunc Readv(fd int, iovs %5B%5D%5B%5Dbyte) (n int, err error) %7B%0A%09iovecs := bytes2iovec(iovs)%0A%09n, err = readv(fd, iovecs)%0A%09readvRacedetect(iovecs, n, err)%0A%09return n, err%0A%7D%0A%0Afunc Preadv(fd int, iovs %5B%5D%5B%5Dbyte, offset int64) (n int, err error) %7B%0A%09iovecs := bytes2iovec(iovs)%0A%09lo, hi := offs2lohi(offset)%0A%09n, err = preadv(fd, iovecs, lo, hi)%0A%09readvRacedetect(iovecs, n, err)%0A%09return n, err%0A%7D%0A%0Afunc Preadv2(fd int, iovs %5B%5D%5B%5Dbyte, offset int64, flags int) (n int, err error) %7B%0A%09iovecs := bytes2iovec(iovs)%0A%09lo, hi := offs2lohi(offset)%0A%09n, err = preadv2(fd, iovecs, lo, hi, flags)%0A%09readvRacedetect(iovecs, n, err)%0A%09return n, err%0A%7D%0A%0Afunc readvRacedetect(iovecs %5B%5DIovec, n int, err error) %7B%0A%09if !raceenabled %7B%0A%09%09return%0A%09%7D%0A%09for i := 0; n %3E 0 && i %3C len(iovecs); i++ %7B%0A%09%09m := int(iovecs%5Bi%5D.Len)%0A%09%09if m %3E n %7B%0A%09%09%09m = n%0A%09%09%7D%0A%09%09n -= m%0A%09%09if m %3E 0 %7B%0A%09%09%09raceWriteRange(unsafe.Pointer(iovecs%5Bi%5D.Base), m)%0A%09%09%7D%0A%09%7D%0A%09if err == nil %7B%0A%09%09raceAcquire(unsafe.Pointer(&ioSync))%0A%09%7D%0A%7D%0A%0Afunc Writev(fd int, iovs %5B%5D%5B%5Dbyte) (n int, err error) %7B%0A%09iovecs := bytes2iovec(iovs)%0A%09if raceenabled %7B%0A%09%09raceReleaseMerge(unsafe.Pointer(&ioSync))%0A%09%7D%0A%09n, err = writev(fd, iovecs)%0A%09writevRacedetect(iovecs, n)%0A%09return n, err%0A%7D%0A%0Afunc Pwritev(fd int, iovs %5B%5D%5B%5Dbyte, offset int64) (n int, err error) %7B%0A%09iovecs := bytes2iovec(iovs)%0A%09if raceenabled %7B%0A%09%09raceReleaseMerge(unsafe.Pointer(&ioSync))%0A%09%7D%0A%09lo, hi := offs2lohi(offset)%0A%09n, err = pwritev(fd, iovecs, lo, hi)%0A%09writevRacedetect(iovecs, n)%0A%09return n, err%0A%7D%0A%0Afunc Pwritev2(fd int, iovs %5B%5D%5B%5Dbyte, offset int64, flags int) (n int, err error) %7B%0A%09iovecs := bytes2iovec(iovs)%0A%09if raceenabled %7B%0A%09%09raceReleaseMerge(unsafe.Pointer(&ioSync))%0A%09%7D%0A%09lo, hi := offs2lohi(offset)%0A%09n, err = pwritev2(fd, iovecs, lo, hi, flags)%0A%09writevRacedetect(iovecs, n)%0A%09return n, err%0A%7D%0A%0Afunc writevRacedetect(iovecs %5B%5DIovec, n int) %7B%0A%09if !raceenabled %7B%0A%09%09return%0A%09%7D%0A%09for i := 0; n %3E 0 && i %3C len(iovecs); i++ %7B%0A%09%09m := int(iovecs%5Bi%5D.Len)%0A%09%09if m %3E n %7B%0A%09%09%09m = n%0A%09%09%7D%0A%09%09n -= m%0A%09%09if m %3E 0 %7B%0A%09%09%09raceReadRange(unsafe.Pointer(iovecs%5Bi%5D.Base), m)%0A%09%09%7D%0A%09%7D%0A%7D%0A
+ %0A// mmap
+- f e444080d457451faa911d39141eb55b5b60740d9eb3f131d7beede6ddb665391 vendor/golang.org/x/sys/unix/syscall_openbsd.go
++ f 485b60f302ef2bd1883de13ca1b0c92b0c08917db24d002deea6bd58bd8bcefb vendor/golang.org/x/sys/unix/syscall_openbsd.go
+dmppatch 4
+@@ -10987,17 +10987,8 @@
+ cve%0A
+-// fcntl%0A
+ // f
+- f 513a1f0b17682654af0bb2d0765a7b4e9de64fa28c4d9979de4d06e118580a93 vendor/golang.org/x/sys/unix/zerrors_linux_386.go
++ f ae6c25a4c6eff98dcb5dc16f1de64adccc561609af46841d93cea28fe2be5ede vendor/golang.org/x/sys/unix/zerrors_linux_386.go
+dmppatch 4
+@@ -106842,24 +106842,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f b5918b1ec74dc3b924ef96591fcc9c72fcf2805c6158e6917fb7c1cb65530d7d vendor/golang.org/x/sys/unix/zerrors_linux_amd64.go
++ f dd5042ed767d25d107dfc4a3c28fdf129ae5b2e93fbf61457c49f9e36313ab60 vendor/golang.org/x/sys/unix/zerrors_linux_amd64.go
+dmppatch 4
+@@ -106901,24 +106901,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f 0a24184cdb4000ad2ad454532d174973b98e7de289813d4e0f678661eccea193 vendor/golang.org/x/sys/unix/zerrors_linux_arm.go
++ f bc9b5bc230524a47fddb3a1e8cbba9d5313a8ec8e213f938aaf0b9eb60be4da2 vendor/golang.org/x/sys/unix/zerrors_linux_arm.go
+dmppatch 4
+@@ -107197,24 +107197,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f c7acfeaa1cb91344fcd7960c9054c41a72e740bf7cb7c9551abd1bded5fd64f1 vendor/golang.org/x/sys/unix/zerrors_linux_arm64.go
++ f af75b502f65941143cce954a717b1ffbe75574fef2cb82da8f6a4dd8c37e573f vendor/golang.org/x/sys/unix/zerrors_linux_arm64.go
+dmppatch 4
+@@ -106516,24 +106516,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f 63a931f27073aaa1cee8122f5d960f8ab1603d02359a92c6ea1d6d48adf47ec6 vendor/golang.org/x/sys/unix/zerrors_linux_mips.go
++ f a2ee6e10cb81d6db78846807c11cea68dbd4acca30ec536e4215e55a695686a9 vendor/golang.org/x/sys/unix/zerrors_linux_mips.go
+dmppatch 4
+@@ -106973,24 +106973,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f 11821d2042692c37d5399dcb39c7d09dc432d8f8728778871a998c6831d2e665 vendor/golang.org/x/sys/unix/zerrors_linux_mips64.go
++ f 4d227188101c05e347ce318b39f57d66a198e42b41a81d803ed6b99f7096f272 vendor/golang.org/x/sys/unix/zerrors_linux_mips64.go
+dmppatch 4
+@@ -106974,24 +106974,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f b4c3d1c88c486c1f4d7d2dafdec9ef5a52ba60ab34580db66410d395a869deea vendor/golang.org/x/sys/unix/zerrors_linux_mips64le.go
++ f 3cd190237dacf26e5540bdf636f563f7d83f161b79d5719f0e46a0b3769d6ccf vendor/golang.org/x/sys/unix/zerrors_linux_mips64le.go
+dmppatch 4
+@@ -106976,24 +106976,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f e1d7cf2baeaff14a9a853d0d2906cc4b036f7365442a134889dda951a60d5b6e vendor/golang.org/x/sys/unix/zerrors_linux_mipsle.go
++ f 7922e9e1a41253656f369655bc60a249c462cd5d6fc353d8666b0899b6795e38 vendor/golang.org/x/sys/unix/zerrors_linux_mipsle.go
+dmppatch 4
+@@ -106975,24 +106975,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f d435b4ce99e229aab633de543de052987d6c46c4d550873c18283e6f34b58285 vendor/golang.org/x/sys/unix/zerrors_linux_ppc64.go
++ f b9283eb5f8d89d35f28b667142eded8187db661cf0842b55ddf3f09497787bd1 vendor/golang.org/x/sys/unix/zerrors_linux_ppc64.go
+dmppatch 4
+@@ -109972,24 +109972,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f 7a166a1be22252704c5a7c39733902af3c09de13b16a5f0395854673357a13b3 vendor/golang.org/x/sys/unix/zerrors_linux_ppc64le.go
++ f bdc54cf60b690253020547f997b2f8588a025a508075c991f67c81c28dd4b127 vendor/golang.org/x/sys/unix/zerrors_linux_ppc64le.go
+dmppatch 4
+@@ -109974,24 +109974,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f 75e0b46890475500a059cf4a7339e6da3df6fc27da85d346e380f442ab183e88 vendor/golang.org/x/sys/unix/zerrors_linux_riscv64.go
++ f c63b820cc5526bf7d3a73cf56b56bb046484c6b0fa9ba3b824c52b9bae3e85f3 vendor/golang.org/x/sys/unix/zerrors_linux_riscv64.go
+dmppatch 4
+@@ -106213,24 +106213,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f 27e283e3257b4dc08f279e67f3bb7d323a5c47889853e8c55fb9ebff2466f017 vendor/golang.org/x/sys/unix/zerrors_linux_s390x.go
++ f 7dc96d155cae01ccbdda258c732083983682a18b3d92525e3120c1ce5468bf2b vendor/golang.org/x/sys/unix/zerrors_linux_s390x.go
+dmppatch 4
+@@ -110074,24 +110074,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f 521ca140adf995cd7c394e9b8801f2d49150ec0466ee5708a11600e37e3e17b8 vendor/golang.org/x/sys/unix/zerrors_linux_sparc64.go
++ f 505a3bbc6b0f43896ad55a2698b3db8d14e6bbb07511595512e11878ba6529a2 vendor/golang.org/x/sys/unix/zerrors_linux_sparc64.go
+dmppatch 4
+@@ -109753,24 +109753,383 @@
+       = 0x1%0A
++%09RWF_APPEND                                  = 0x10%0A%09RWF_DSYNC                                   = 0x2%0A%09RWF_HIPRI                                   = 0x1%0A%09RWF_NOWAIT                                  = 0x8%0A%09RWF_SUPPORTED                               = 0x1f%0A%09RWF_SYNC                                    = 0x4%0A%09RWF_WRITE_LIFE_NOT_SET                      = 0x0%0A
+ %09SCM_CREDENT
+- f 20a5d8789baa4e32cb2e6d343ac59d904a5c60f0ee6e10c3830cefdf742fdaaf vendor/golang.org/x/sys/unix/zsyscall_darwin_386.1_11.go
++ f 892032f2d8714dc94c3d49c186f0b9aa3f023dc1b0c2a1d6f4a03aad6dd1b9b8 vendor/golang.org/x/sys/unix/zsyscall_darwin_386.1_11.go
+dmppatch 8
+@@ -6761,272 +6761,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -13687,32 +13687,296 @@
+ tr(options), 0)%0A
++%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A
+ %09if e1 != 0 %7B%0A%09%09
+- f 7f445820cd4f47f301d663fd0a5038f77dc3c1c112a1cf3289ebae30af750575 vendor/golang.org/x/sys/unix/zsyscall_darwin_386.go
++ f 148af198511198af0bd880ecd2212a8ca4aae59e991a727c5ac32c402105ab88 vendor/golang.org/x/sys/unix/zsyscall_darwin_386.go
+dmppatch 8
+@@ -10297,437 +10297,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := syscall_syscall(funcPC(libc_fcntl_trampoline), uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0Afunc libc_fcntl_trampoline()%0A%0A//go:linkname libc_fcntl libc_fcntl%0A//go:cgo_import_dynamic libc_fcntl fcntl %22/usr/lib/libSystem.B.dylib%22%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -20711,32 +20711,461 @@
+ System.B.dylib%22%0A
++%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := syscall_syscall(funcPC(libc_fcntl_trampoline), uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0Afunc libc_fcntl_trampoline()%0A%0A//go:linkname libc_fcntl libc_fcntl%0A//go:cgo_import_dynamic libc_fcntl fcntl %22/usr/lib/libSystem.B.dylib%22%0A
+ %0A// THIS FILE IS
+- f ffbf56591793b0e49160c8e0290e33a0dd6dc773d66e6e84cf1e2daf91b97435 vendor/golang.org/x/sys/unix/zsyscall_darwin_386.s
++ f 05dcb1a9869d1e129219323a5781a8aa5345b02c655ba3484ab82123ba2129f2 vendor/golang.org/x/sys/unix/zsyscall_darwin_386.s
+dmppatch 12
+@@ -1547,74 +1547,8 @@
+ SB)%0A
+-TEXT %C2%B7libc_fcntl_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_fcntl(SB)%0A
+ TEXT
+@@ -2911,32 +2911,98 @@
+ setattrlist(SB)%0A
++TEXT %C2%B7libc_fcntl_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_fcntl(SB)%0A
+ TEXT %C2%B7libc_kill
+@@ -3725,24 +3725,106 @@
+ _chroot(SB)%0A
++TEXT %C2%B7libc_clock_gettime_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_clock_gettime(SB)%0A
+ TEXT %C2%B7libc_
+- f abacd46e794c98234638db22b9dcd64e506621cf1a6874c6e5829a36c9aa75d1 vendor/golang.org/x/sys/unix/zsyscall_darwin_amd64.1_11.go
++ f 8006f5f02ced15dc34784b710ff7f6bdd32a8ebfdb00a412dc58919985d1d53c vendor/golang.org/x/sys/unix/zsyscall_darwin_amd64.1_11.go
+dmppatch 8
+@@ -6764,272 +6764,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -13690,32 +13690,296 @@
+ tr(options), 0)%0A
++%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A
+ %09if e1 != 0 %7B%0A%09%09
+- f 82504d6d610f7b9fe3e59ab15859c909c0928e54d0aa30236626bc0ff6bc54c4 vendor/golang.org/x/sys/unix/zsyscall_darwin_amd64.go
++ f 47287983986aeb609a6266ad2e74523b7e790536e8b7bcb0d00e3828caf4e68c vendor/golang.org/x/sys/unix/zsyscall_darwin_amd64.go
+dmppatch 8
+@@ -10298,437 +10298,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := syscall_syscall(funcPC(libc_fcntl_trampoline), uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0Afunc libc_fcntl_trampoline()%0A%0A//go:linkname libc_fcntl libc_fcntl%0A//go:cgo_import_dynamic libc_fcntl fcntl %22/usr/lib/libSystem.B.dylib%22%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -20712,32 +20712,461 @@
+ System.B.dylib%22%0A
++%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := syscall_syscall(funcPC(libc_fcntl_trampoline), uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0Afunc libc_fcntl_trampoline()%0A%0A//go:linkname libc_fcntl libc_fcntl%0A//go:cgo_import_dynamic libc_fcntl fcntl %22/usr/lib/libSystem.B.dylib%22%0A
+ %0A// THIS FILE IS
+- f c4a645792ab60cce36dad069f8bf239e29dc610a684791b03eb2906d33e16c04 vendor/golang.org/x/sys/unix/zsyscall_darwin_amd64.s
++ f 6b9435cbec336637c016cdf7d8cf4fe0b3aa63f6691c81f1ef63de390efda1ae vendor/golang.org/x/sys/unix/zsyscall_darwin_amd64.s
+dmppatch 8
+@@ -1549,74 +1549,8 @@
+ SB)%0A
+-TEXT %C2%B7libc_fcntl_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_fcntl(SB)%0A
+ TEXT
+@@ -2913,32 +2913,98 @@
+ setattrlist(SB)%0A
++TEXT %C2%B7libc_fcntl_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_fcntl(SB)%0A
+ TEXT %C2%B7libc_kill
+- f 4647dc05353ccc3a6692774f239e45087ccc174557fed7a5c73d69292765d150 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm.1_11.go
++ f b62ba9fc634ca2ce81e7a7b9cea08a0b5f3428e51d0d8ccea6dc6874fdaa9ca8 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm.1_11.go
+dmppatch 8
+@@ -6761,272 +6761,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -13687,32 +13687,296 @@
+ tr(options), 0)%0A
++%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A
+ %09if e1 != 0 %7B%0A%09%09
+- f e260d74342e30592c986d16c0b1b2f2958b2387a50314f795796c79e2f70d1f0 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm.go
++ f ea1082de104332cf0ad61f5f620cd71eb56178ade65c82c12c3fd9069ada74d4 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm.go
+dmppatch 8
+@@ -10297,437 +10297,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := syscall_syscall(funcPC(libc_fcntl_trampoline), uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0Afunc libc_fcntl_trampoline()%0A%0A//go:linkname libc_fcntl libc_fcntl%0A//go:cgo_import_dynamic libc_fcntl fcntl %22/usr/lib/libSystem.B.dylib%22%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -20711,32 +20711,461 @@
+ System.B.dylib%22%0A
++%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := syscall_syscall(funcPC(libc_fcntl_trampoline), uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0Afunc libc_fcntl_trampoline()%0A%0A//go:linkname libc_fcntl libc_fcntl%0A//go:cgo_import_dynamic libc_fcntl fcntl %22/usr/lib/libSystem.B.dylib%22%0A
+ %0A// THIS FILE IS
+- f e937b57af7be3461a12d51461afd8d19658458a4dbb8dd151078639a9fc97af9 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm.s
++ f 08f842fe8b415a453f98799a01e93aebc2435c47008f47e3368fdb866c8e8db4 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm.s
+dmppatch 12
+@@ -1547,74 +1547,8 @@
+ SB)%0A
+-TEXT %C2%B7libc_fcntl_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_fcntl(SB)%0A
+ TEXT
+@@ -2911,32 +2911,98 @@
+ setattrlist(SB)%0A
++TEXT %C2%B7libc_fcntl_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_fcntl(SB)%0A
+ TEXT %C2%B7libc_kill
+@@ -3111,24 +3111,92 @@
+ c_ioctl(SB)%0A
++TEXT %C2%B7libc_sysctl_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_sysctl(SB)%0A
+ TEXT %C2%B7libc_
+- f 137d46ae436a29d2e44088f0628864e42788ae9449466def6898cb35d032a550 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm64.1_11.go
++ f a4553c9e39e00381a40aeeae467dfb08ae533f1ce555c3e3c07b88be6f529ac8 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm64.1_11.go
+dmppatch 8
+@@ -6764,272 +6764,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -13690,32 +13690,296 @@
+ tr(options), 0)%0A
++%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A
+ %09if e1 != 0 %7B%0A%09%09
+- f 1ef2d5b9d96bbaf1c0033157307f9c3f5e1470576a87e4312ecb7ee8fc5b4ef3 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm64.go
++ f 7f91e9bdf8b787712de1a3686159fe46bf5432b7b0b5f3dd0242eeca49613295 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm64.go
+dmppatch 8
+@@ -10298,437 +10298,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := syscall_syscall(funcPC(libc_fcntl_trampoline), uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0Afunc libc_fcntl_trampoline()%0A%0A//go:linkname libc_fcntl libc_fcntl%0A//go:cgo_import_dynamic libc_fcntl fcntl %22/usr/lib/libSystem.B.dylib%22%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -20712,32 +20712,461 @@
+ System.B.dylib%22%0A
++%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := syscall_syscall(funcPC(libc_fcntl_trampoline), uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0Afunc libc_fcntl_trampoline()%0A%0A//go:linkname libc_fcntl libc_fcntl%0A//go:cgo_import_dynamic libc_fcntl fcntl %22/usr/lib/libSystem.B.dylib%22%0A
+ %0A// THIS FILE IS
+- f 4282b7a03631881842dbec01f7976b3cbb676abfef3ad5a03688b73cc31d9e8e vendor/golang.org/x/sys/unix/zsyscall_darwin_arm64.s
++ f 7102eb2f45584428ab535a58b3d86b73e1c40a0fd08c1d5d7604de05c12af448 vendor/golang.org/x/sys/unix/zsyscall_darwin_arm64.s
+dmppatch 12
+@@ -1549,74 +1549,8 @@
+ SB)%0A
+-TEXT %C2%B7libc_fcntl_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_fcntl(SB)%0A
+ TEXT
+@@ -2913,32 +2913,98 @@
+ setattrlist(SB)%0A
++TEXT %C2%B7libc_fcntl_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_fcntl(SB)%0A
+ TEXT %C2%B7libc_kill
+@@ -3727,24 +3727,106 @@
+ _chroot(SB)%0A
++TEXT %C2%B7libc_clock_gettime_trampoline(SB),NOSPLIT,$0-0%0A%09JMP%09libc_clock_gettime(SB)%0A
+ TEXT %C2%B7libc_
+- f 43bdb4001f9400adaa782aa05a95f06179ddad8f152ca37edf7690376d2fe7ff vendor/golang.org/x/sys/unix/zsyscall_dragonfly_amd64.go
++ f 455da5992bc495296dc52acd7b2adf5d9f9dabbb9bef8ff8cd0a04ebcbdc7a43 vendor/golang.org/x/sys/unix/zsyscall_dragonfly_amd64.go
+dmppatch 4
+@@ -7250,272 +7250,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f 94fd2da7460802d845d3b75bfd5771824bd01bdc08a127e9322c2edea0c2606e vendor/golang.org/x/sys/unix/zsyscall_freebsd_386.go
++ f 16b1401ff869cec5f3afaa1da6dacc800e2696ae2731a1f39e15731de7713368 vendor/golang.org/x/sys/unix/zsyscall_freebsd_386.go
+dmppatch 4
+@@ -7230,272 +7230,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f 2529a7956a46c7a3ede4572b30f24edeedcc7d7a35ebb06f5feeb6aab78d1e26 vendor/golang.org/x/sys/unix/zsyscall_freebsd_amd64.go
++ f 3cfcbe2fc249a95a47dcb5cfe9fce7a4c850cc80ad35bc86fa6159b96166e934 vendor/golang.org/x/sys/unix/zsyscall_freebsd_amd64.go
+dmppatch 4
+@@ -6723,272 +6723,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f 8e5c01cbe8d643332211ffca457c67091dda07856c953f85f2799f242ef5c3e3 vendor/golang.org/x/sys/unix/zsyscall_freebsd_arm.go
++ f 799ef6d19b021a40a998a9183bcbce04b7e0636cb89a9ec486ea567e146afeca vendor/golang.org/x/sys/unix/zsyscall_freebsd_arm.go
+dmppatch 4
+@@ -6727,272 +6727,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f 62c7f3e5db77d2f3672f407decd60301131f3ad39228436c5242aa5acb86a403 vendor/golang.org/x/sys/unix/zsyscall_freebsd_arm64.go
++ f e32e64770dbded2bec23d7fd860f9c33df8812759f9aa5cea3058e5ca0ebc6e3 vendor/golang.org/x/sys/unix/zsyscall_freebsd_arm64.go
+dmppatch 4
+@@ -6726,272 +6726,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f 8a623340bc47ce3f636916cd799e51433cb446d58dedf7c90e1d0ba67ccdb9de vendor/golang.org/x/sys/unix/zsyscall_linux_386.go
++ f a632da2baac9a14c0d99bb5afd37ac9d369ec939f0da51872f02aa87d7ad73f9 vendor/golang.org/x/sys/unix/zsyscall_linux_386.go
+dmppatch 8
+@@ -16763,272 +16763,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -39036,32 +39036,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f 74d3652d4617da24abe86cf2fe438b997047e8bd3e17b0e2fd005eb56670110d vendor/golang.org/x/sys/unix/zsyscall_linux_amd64.go
++ f 016c9ea07508aefbe70070b5a6d49c259d091b654efc0a6cbe301aa30d8eab7d vendor/golang.org/x/sys/unix/zsyscall_linux_amd64.go
+dmppatch 8
+@@ -16718,272 +16718,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -38967,32 +38967,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f 1023fa0208cbf31e5f838f3c5310594749e08388e1b288378c854b59b1dc5f5e vendor/golang.org/x/sys/unix/zsyscall_linux_arm.go
++ f 73ba1d7d77adb3532246805e155161813dca5d6e055afedb79cd105142f0918a vendor/golang.org/x/sys/unix/zsyscall_linux_arm.go
+dmppatch 8
+@@ -16768,272 +16768,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -39041,32 +39041,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f 54e47404d56a3df5f644b47699a91e8f5049aa3eb30914b77058447ecec5a020 vendor/golang.org/x/sys/unix/zsyscall_linux_arm64.go
++ f 3eb9e796a57f758185640f56807843486bbf97c55e07d013e9cc6913cfda5887 vendor/golang.org/x/sys/unix/zsyscall_linux_arm64.go
+dmppatch 8
+@@ -16718,272 +16718,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -38967,32 +38967,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f 846effe106d302d4cb16936b55822daa365b2e3cf3e1642aaa737a5c3e8ca7a7 vendor/golang.org/x/sys/unix/zsyscall_linux_mips.go
++ f 38a3b3b4f915c69fa431e0fc81528dd39202cc3adb8e01707b9515bb0f1c5e47 vendor/golang.org/x/sys/unix/zsyscall_linux_mips.go
+dmppatch 8
+@@ -16772,272 +16772,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -39045,32 +39045,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f 000bfbc129b307e93dc86577f882305374a58d369cc99d65c9789b7f47a0e93f vendor/golang.org/x/sys/unix/zsyscall_linux_mips64.go
++ f 289e1446788dee25e11e2b852a8c341c20a4fb3898c497414c429ccb1401a9c1 vendor/golang.org/x/sys/unix/zsyscall_linux_mips64.go
+dmppatch 8
+@@ -16722,272 +16722,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -38971,32 +38971,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f 486a4e8fed9b84d0dd690d8dd8e41f24c390dedc3aacd7e753bbfaaa304a4643 vendor/golang.org/x/sys/unix/zsyscall_linux_mips64le.go
++ f a67e76c01a38d6ecfb761f80a519641414be835f902654f646e9a77894f87b5d vendor/golang.org/x/sys/unix/zsyscall_linux_mips64le.go
+dmppatch 8
+@@ -16726,272 +16726,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -38975,32 +38975,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f bc6e6f0b5e2979267354944dfd0a0ffc7f20e6ff51dd873ea1ee6a7df9271302 vendor/golang.org/x/sys/unix/zsyscall_linux_mipsle.go
++ f 30d9dcf5d02235eb3558f7c95c0f3b57a5a08a70b51fe5ec8abd794297b404bc vendor/golang.org/x/sys/unix/zsyscall_linux_mipsle.go
+dmppatch 8
+@@ -16776,272 +16776,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -39049,32 +39049,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f c7a95a3a551bb4560d764b9913d74c0b21927d0a276c4d20e7e0fd0386e3d0ea vendor/golang.org/x/sys/unix/zsyscall_linux_ppc64.go
++ f 239307276f805e27d2f186b241fd3d62970d911902171203d0a7ca1d9280625d vendor/golang.org/x/sys/unix/zsyscall_linux_ppc64.go
+dmppatch 8
+@@ -16719,272 +16719,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -38968,32 +38968,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f c71f500a0787bf26272faef32d923f481ebcb4c51ab75d20337f989e9f0c84c8 vendor/golang.org/x/sys/unix/zsyscall_linux_ppc64le.go
++ f 027ac04b7b26793c9896756161431e3294bacfbfa0f3711b10ac8a58d914e1d9 vendor/golang.org/x/sys/unix/zsyscall_linux_ppc64le.go
+dmppatch 8
+@@ -16723,272 +16723,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -38972,32 +38972,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f d89b1f2a9ac3f52672ab3a12c264795163230afa9414481f72869add6ea4cdab vendor/golang.org/x/sys/unix/zsyscall_linux_riscv64.go
++ f f40513dc6947d9ed52251115e45d98ed770e02536aa11533ab34d6b46a871b8e vendor/golang.org/x/sys/unix/zsyscall_linux_riscv64.go
+dmppatch 8
+@@ -16724,272 +16724,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -38973,32 +38973,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f b996a987ecadcaabee8617ea91fc4354f1a9d550d7a85cf3c0567593285d39c7 vendor/golang.org/x/sys/unix/zsyscall_linux_s390x.go
++ f c880ac2c855694d5c1cd6006ec23314bf88ccd32e15a30233e5bdefb1c321c52 vendor/golang.org/x/sys/unix/zsyscall_linux_s390x.go
+dmppatch 8
+@@ -16718,272 +16718,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -38967,32 +38967,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f e40df74393208581edb4b47f1b47280c855334ea96c13825f2d387116569c1a8 vendor/golang.org/x/sys/unix/zsyscall_linux_sparc64.go
++ f 20f81a9134c01cfed76b800274d6fc7be97dace75a75fb7cc6ea68ecbde603cc vendor/golang.org/x/sys/unix/zsyscall_linux_sparc64.go
+dmppatch 8
+@@ -16724,272 +16724,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+@@ -38973,32 +38973,2676 @@
+ ), uintptr(np))%0A
++%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc readv(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_READV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc writev(fd int, iovs %5B%5DIovec) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall(SYS_WRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), 0)%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc preadv2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PREADV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A%09n = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0Afunc pwritev2(fd int, iovs %5B%5DIovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) %7B%0A%09var _p0 unsafe.Pointer%0A%09if len(iovs) %3E 0 %7B%0A%09%09_p0 = unsafe.Pointer(&iovs%5B0%5D)%0A%09%7D else %7B%0A%09%09_p0 = unsafe.Pointer(&_zero)%0A%09%7D%0A%09r0, _, e1 := Syscall6(SYS_PWRITEV2, uintptr(fd), uintptr(_p0), uintptr(len(iovs)), uintptr(offs_l), uintptr(offs_h), uintptr(flags))%0A
+ %09n = int(r0)%0A%09if
+- f d9d7a7220f84b7987f65fb423586df74cc73cea79233113ad35abd28561436a3 vendor/golang.org/x/sys/unix/zsyscall_netbsd_386.go
++ f f5885b6f6d9623fe4150c8928bc0475d44f9b86d44151476ac7bec4b6789fd80 vendor/golang.org/x/sys/unix/zsyscall_netbsd_386.go
+dmppatch 4
+@@ -6726,272 +6726,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f 3ca5b35ff1bcdc66275692d79f1df89d4fe7ac5ba030059b498641d67a4c6862 vendor/golang.org/x/sys/unix/zsyscall_netbsd_amd64.go
++ f 4c07550fb20f798e8d8855619ac02675e5ed6979262950111299c4565d4ac9e6 vendor/golang.org/x/sys/unix/zsyscall_netbsd_amd64.go
+dmppatch 4
+@@ -6727,272 +6727,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f ca0f27baaea72b355e3192efa22bb5b1b98a379832c33512f6c125a40e80a63a vendor/golang.org/x/sys/unix/zsyscall_netbsd_arm.go
++ f 465b8fc6db540713e28925005cb3e8b579d5625b1cf4289d65307d48436045ff vendor/golang.org/x/sys/unix/zsyscall_netbsd_arm.go
+dmppatch 4
+@@ -6731,272 +6731,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f e37c0fa58998861367cbb83a691f83eeb83028ed8e3ab6b57c2fcf0493951097 vendor/golang.org/x/sys/unix/zsyscall_netbsd_arm64.go
++ f a7f2c5c7780f409ca9b053c83415367a4474b969a60b4e04e3410521490e656d vendor/golang.org/x/sys/unix/zsyscall_netbsd_arm64.go
+dmppatch 4
+@@ -6727,272 +6727,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f 1a0d551c7ebd67c3dfb99af46995d0b6e31d5e1e6164dc80b1c0dc115fbd8c0b vendor/golang.org/x/sys/unix/zsyscall_openbsd_386.go
++ f cb83331d8543958b6a4d5ede92a255c3e67d1b7c7bf3a7ddd6ea51d24decf688 vendor/golang.org/x/sys/unix/zsyscall_openbsd_386.go
+dmppatch 4
+@@ -6731,272 +6731,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f b5d6de50a13873db696964c93ef29933787b385b538cfdb30d4a2d06a39ce953 vendor/golang.org/x/sys/unix/zsyscall_openbsd_amd64.go
++ f 3cf8e16cab6ef09ab38cc249a2f408683497da941f39d990de26be104bab8570 vendor/golang.org/x/sys/unix/zsyscall_openbsd_amd64.go
+dmppatch 4
+@@ -6732,272 +6732,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f 90a9c093a8ff0582457465add5f7b3cb02fe32c2793d912dc61bb51184a0e187 vendor/golang.org/x/sys/unix/zsyscall_openbsd_arm.go
++ f 500318963dd59300f120feffced08059aacb855b980e298eb4a7f6c92a9b27c3 vendor/golang.org/x/sys/unix/zsyscall_openbsd_arm.go
+dmppatch 4
+@@ -6736,272 +6736,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f 498b27eda9c6be8bd5fba662052e3686f803ddb1bd9320f2a7759ab98c4631c3 vendor/golang.org/x/sys/unix/zsyscall_openbsd_arm64.go
++ f 9acc97c3d6cfd1c404b7f00732a23742b8c7924612dbcbaf3d0db885d40a61b1 vendor/golang.org/x/sys/unix/zsyscall_openbsd_arm64.go
+dmppatch 4
+@@ -6732,272 +6732,8 @@
+ IT%0A%0A
+-func fcntl(fd int, cmd int, arg int) (val int, err error) %7B%0A%09r0, _, e1 := Syscall(SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))%0A%09val = int(r0)%0A%09if e1 != 0 %7B%0A%09%09err = errnoErr(e1)%0A%09%7D%0A%09return%0A%7D%0A%0A// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT%0A%0A
+ func
+- f cb707de4819edae768a3c429f89a8fd594e4f928b529bbaec9051b2729361249 vendor/golang.org/x/sys/windows/syscall_windows.go
++ f 77034d5def261620a1bed478cb5fe6a766cf120ce955820af1e015b53a57d038 vendor/golang.org/x/sys/windows/syscall_windows.go
+dmppatch 15
+@@ -34049,279 +34049,287 @@
+ ket%0A
+-//sys%09sendto(s Handle, buf %5B%5Dbyte, flags int, to unsafe.Pointer, tolen int32) (err error) %5Bfailretval==socket_error%5D = ws2_32.sendto%0A//sys%09recvfrom(s Handle, buf %5B%5Dbyte, flags int, from *RawSockaddrAny, fromlen *int) (n int, err error) %5Bfailretval==-1%5D = ws2_32.recvfrom%0A
++//sys%09sendto(s Handle, buf %5B%5Dbyte, flags int32, to unsafe.Pointer, tolen int32) (err error) %5Bfailretval==socket_error%5D = ws2_32.sendto%0A//sys%09recvfrom(s Handle, buf %5B%5Dbyte, flags int32, from *RawSockaddrAny, fromlen *int32) (n int32, err error) %5Bfailretval==-1%5D = ws2_32.recvfrom%0A
+ //sy
+@@ -48519,81 +48519,107 @@
+ Any%0A
+-%09l := int(unsafe.Sizeof(rsa))%0A%09n, err = recvfrom(fd, p, flags, &rsa, &l)%0A
++%09l := int32(unsafe.Sizeof(rsa))%0A%09n32, err := recvfrom(fd, p, int32(flags), &rsa, &l)%0A%09n = int(n32)%0A
+ %09if 
+@@ -48820,45 +48820,52 @@
+ %0A%09%7D%0A
+-%09return sendto(fd, p, flags, ptr, l)%0A
++%09return sendto(fd, p, int32(flags), ptr, l)%0A
+ %7D%0A%0Af
+- f 2e12a6ff2008896d30e0d8adae7be158a77aff20d8607d4cca0c91b4784f8bbd vendor/golang.org/x/sys/windows/types_windows.go
++ f 170a4f52546abf516b149c62c6169c9e981857a42077a25e2954bb6883602d8e vendor/golang.org/x/sys/windows/types_windows.go
+dmppatch 8
+@@ -21574,16 +21574,34 @@
+ P   = 0%0A
++%09IPPROTO_ICMP = 1%0A
+ %09IPPROTO
+@@ -21882,16 +21882,52 @@
+  0x1002%0A
++%09SO_RCVTIMEO               = 0x1006%0A
+ %09SO_SNDB
+- f 5a3acf2b8a136803e283ffcefb96d32efddadae874854961d4859c99872bdb95 vendor/golang.org/x/sys/windows/zsyscall_windows.go
++ f a42518bea31316a80ea1413f3af5a57e4f2155edbe402b3f95daf7ff2c2f75ab vendor/golang.org/x/sys/windows/zsyscall_windows.go
+dmppatch 15
+@@ -104317,99 +104317,101 @@
+ %0A%7D%0A%0A
+-func sendto(s Handle, buf %5B%5Dbyte, flags int, to unsafe.Pointer, tolen int32) (err error) %7B%0A
++func sendto(s Handle, buf %5B%5Dbyte, flags int32, to unsafe.Pointer, tolen int32) (err error) %7B%0A
+ %09var
+@@ -104737,112 +104737,118 @@
+ %0A%7D%0A%0A
+-func recvfrom(s Handle, buf %5B%5Dbyte, flags int, from *RawSockaddrAny, fromlen *int) (n int, err error) %7B%0A
++func recvfrom(s Handle, buf %5B%5Dbyte, flags int32, from *RawSockaddrAny, fromlen *int32) (n int32, err error) %7B%0A
+ %09var
+@@ -105097,21 +105097,23 @@
+ )))%0A
+-%09n = int(r0)%0A
++%09n = int32(r0)%0A
+ %09if 
+- f 26af5b7b1caadd20c085b6d5138a31af397e482fe693a405c1b00e95cc75db5e vendor/modules.txt
++ f b553518531b4467a122f0a24d8a306ff2cc42c7a2cdf88e1255c342e12d04e18 vendor/modules.txt
+dmppatch 10
+@@ -503,65 +503,65 @@
+ ors%0A
+-# golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413%0A
++# golang.org/x/crypto v0.0.0-20191219195013-becbf705a915%0A
+ gola
+@@ -858,62 +858,62 @@
+ dna%0A
+-# golang.org/x/sys v0.0.0-20191218084908-4a24b4065292%0A
++# golang.org/x/sys v0.0.0-20191224085550-c709ea063b76%0A
+ gola
+treehash 30cabe63fa0de986d9246457d80bf9b2e7970d7b93e3f1700f75b8eb404dc469

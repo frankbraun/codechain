@@ -55,8 +55,11 @@ func Update(argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	if err := secpkg.UpToDate("codechain"); err != nil {
-		return err
+	// do not check for codechain update during codechain update
+	if *all || fs.Arg(0) != "codechain" {
+		if err := secpkg.UpToDate("codechain"); err != nil {
+			return err
+		}
 	}
 	if *all {
 		return updateAll(context.Background())

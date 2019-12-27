@@ -3,6 +3,7 @@ package secpkg
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,6 +51,11 @@ func UpToDate(name string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	if err := UpToDateIfInstalled(ctx, name); err != nil {
+		if err, ok := err.(net.Error); ok && err.Timeout() {
+			fmt.Fprintf(os.Stderr, "WARNING: update check for package '%s' timed out: %s\n",
+				name, err)
+			return nil
+		}
 		return err
 	}
 	return nil

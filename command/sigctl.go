@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain"
-	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
+	"github.com/frankbraun/codechain/util/def"
 	"github.com/frankbraun/codechain/util/log"
 )
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/tree"
+	"github.com/frankbraun/codechain/util/def"
 )
 
 // TreeHash implements the 'treehash' command.

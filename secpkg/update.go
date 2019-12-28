@@ -8,8 +8,8 @@ import (
 
 	"github.com/frankbraun/codechain/archive"
 	"github.com/frankbraun/codechain/hashchain"
-	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/ssot"
+	"github.com/frankbraun/codechain/util/def"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/gnumake"
 	"github.com/frankbraun/codechain/util/homedir"

@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/base64"
 	"github.com/frankbraun/codechain/util/cloudflare"
+	"github.com/frankbraun/codechain/util/def"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/log"

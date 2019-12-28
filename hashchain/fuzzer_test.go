@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/util/def"
 	"github.com/mutecomm/mute/util/fuzzer"
 )
 

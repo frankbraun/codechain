@@ -7,10 +7,10 @@ import (
 	"sort"
 
 	"github.com/frankbraun/codechain/hashchain"
-	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/tree"
 	"github.com/frankbraun/codechain/util"
+	"github.com/frankbraun/codechain/util/def"
 	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/log"
 )

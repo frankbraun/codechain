@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 
 	"github.com/frankbraun/codechain/hashchain"
-	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/patchfile"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/sync"
 	"github.com/frankbraun/codechain/tree"
+	"github.com/frankbraun/codechain/util/def"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/git"
 	"github.com/frankbraun/codechain/util/hex"

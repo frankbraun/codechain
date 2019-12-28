@@ -1,8 +1,8 @@
 package hashchain
 
 import (
-	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/sync"
+	"github.com/frankbraun/codechain/util/def"
 )
 
 // Apply to current working directory and check head if not nil.

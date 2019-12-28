@@ -10,11 +10,11 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/frankbraun/codechain/internal/def"
 	"github.com/frankbraun/codechain/keyfile"
 	"github.com/frankbraun/codechain/secpkg"
 	"github.com/frankbraun/codechain/util/base64"
 	"github.com/frankbraun/codechain/util/bzero"
+	"github.com/frankbraun/codechain/util/def"
 	"github.com/frankbraun/codechain/util/log"
 	"github.com/frankbraun/codechain/util/seckey"
 	"github.com/frankbraun/codechain/util/terminal"

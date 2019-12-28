@@ -4,7 +4,7 @@ package command
 import (
 	"path/filepath"
 
-	"github.com/frankbraun/codechain/internal/def"
+	"github.com/frankbraun/codechain/util/def"
 )
 
 var (

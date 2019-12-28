@@ -65,7 +65,7 @@ func listKeys(homeDir string) error {
 }
 
 // KeyFile implements the 'keyfile' command.
-func KeyFile(homeDir, argv0 string, args ...string) error {
+func KeyFile(checkUpToDate, homeDir, argv0 string, args ...string) error {
 	fs := flag.NewFlagSet(argv0, flag.ContinueOnError)
 	fs.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s -s seckey.bin\n", argv0)
@@ -95,7 +95,7 @@ func KeyFile(homeDir, argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	if err := secpkg.UpToDate("codechain"); err != nil {
+	if err := secpkg.UpToDate(checkUpToDate); err != nil {
 		return err
 	}
 	if *list {

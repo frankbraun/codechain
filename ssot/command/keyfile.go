@@ -7,5 +7,5 @@ import (
 
 // KeyFile implements the ssotpub 'keyfile' command.
 func KeyFile(argv0 string, args ...string) error {
-	return command.KeyFile(homedir.SSOTPub(), argv0, args...)
+	return command.KeyFile("codechain", homedir.SSOTPub(), argv0, args...)
 }

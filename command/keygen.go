@@ -23,7 +23,7 @@ import (
 var testComment string
 
 // KeyGen implements the 'keygen' command.
-func KeyGen(homeDir, argv0 string, args ...string) error {
+func KeyGen(checkUpToDate, homeDir, argv0 string, args ...string) error {
 	var (
 		secretsDir string
 		pass       []byte
@@ -48,7 +48,7 @@ func KeyGen(homeDir, argv0 string, args ...string) error {
 		fs.Usage()
 		return flag.ErrHelp
 	}
-	if err := secpkg.UpToDate("codechain"); err != nil {
+	if err := secpkg.UpToDate(checkUpToDate); err != nil {
 		return err
 	}
 	if *secKey != "" {

@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/frankbraun/codechain/internal/ascii85"
+	"github.com/frankbraun/codechain/util/ascii85"
 )
 
 // ascii85Diff encodes the file with filename in ascii85 and writes it to w as

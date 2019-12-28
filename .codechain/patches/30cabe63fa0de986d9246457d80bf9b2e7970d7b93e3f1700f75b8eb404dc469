@@ -1,0 +1,1040 @@
+codechain patchfile version 2
+treehash 30cabe63fa0de986d9246457d80bf9b2e7970d7b93e3f1700f75b8eb404dc469
+- f 6f69c080fc1349a84036584e6385cf3ac797764b26c8d938a473816977691d3b .secpkg
++ f d594d5385903167d09cc7d8d5e565b5a842800900103ddd0a4f55e6afb74beb5 .secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %22e8d50eec1a2777108c56b244f48e4f28e6a4f3adf614ff3ff1f13ef174117833%22,%0A
++  %22Head%22: %228cc3a48118b525bd82dce068b1053baeb6a5103f791dd784541b7e8a0a16fe8e%22,%0A
+   %22D
+- f 668380ce15d6071ab8d56c218b48d39853607c81acdce5f521c2caeb8a162006 archive/archive.go
++ f 89a68266a49402da64f89ab021826a65d2403279cbd3853309f3b50e5e4def1c archive/archive.go
+dmppatch 5
+@@ -251,56 +251,52 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22gi
+- f b92a7f25005478da5f2f1b4aad5498846c6371d34eb024159c520f02f854f558 archive/archive_test.go
++ f 6554dc20f91067dd816f77c837a2fe170bcd9fe66be920a2b658b949cefd0a23 archive/archive_test.go
+dmppatch 5
+@@ -125,56 +125,52 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22gi
+- f b92b46ee3df98710f160a306a4b266665cec807efce3318b9bf5c135d4900647 archive/createdist.go
++ f ffadde29ad8dd443ee91bd2f2bc2c1be9951e2a8ad16884d53816e002b41d17f archive/createdist.go
+dmppatch 5
+@@ -125,56 +125,52 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22gi
+- f 74a890131130ff3b90da0f666e8b8fecccc6262fdd8f0fbdc0c428db1d6718d5 cmd/util/ccdiff/ccdiff.go
++ f 6133779382333ff23352c8c09e47db048f959e1d8a3ce730ed63a21190cb2897 cmd/util/ccdiff/ccdiff.go
+dmppatch 8
+@@ -123,56 +123,8 @@
+ s%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -204,16 +204,60 @@
+ n/util%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 98f0d57628fef5c7816450e8d7e33ff9140f7fc0b9b4a80e2812ec5e930f561d cmd/util/ccpatch/ccpatch.go
++ f b5d2196461a1eaf89c6f49594092b5c41b8b7d6f8b0dbfe1b29ff364d37eb4e2 cmd/util/ccpatch/ccpatch.go
+dmppatch 8
+@@ -94,56 +94,8 @@
+ s%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -175,16 +175,60 @@
+ n/util%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 14a3cc7ede37de63b4d3ffb5b3da419279c5dfb18668a2e94b01ca1958349dec codechain.go
++ f 5d406ba974f154fc5bcbe66abd66bdf43c5b1a3771e641995f961ba5fdc9aee2 codechain.go
+dmppatch 10
+@@ -1306,68 +1306,81 @@
+ n%22:%0A
+-%09%09err = command.KeyGen(homedir.Codechain(), argv0, args...)%0A
++%09%09err = command.KeyGen(%22codechain%22, homedir.Codechain(), argv0, args...)%0A
+ %09cas
+@@ -1396,69 +1396,82 @@
+ e%22:%0A
+-%09%09err = command.KeyFile(homedir.Codechain(), argv0, args...)%0A
++%09%09err = command.KeyFile(%22codechain%22, homedir.Codechain(), argv0, args...)%0A
+ %09cas
+- f cade04d0d5a51f8a86b5cae73b1e35b568898f4734efa3a0d38ca94fa391a795 command/addkey.go
++ f 00e4811a15e326edcde37cccf08cbd2608786b3fce2b3dd6d9d3fda3414dd14e command/addkey.go
+dmppatch 8
+@@ -90,107 +90,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -128,16 +128,107 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 3f95683c45737e8ba6477f0855d6f245d7a3b877721db9ea5c82b5c07fdc4454 command/apply.go
++ f e09cebb45c368c79d3e7f11844f9eb71d29b5b5ad76b6010947083bd7c1f383f command/apply.go
+dmppatch 8
+@@ -133,56 +133,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -171,16 +171,60 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f ecc2c683cadd6bddd5305ee58bd4c529b16022c81b8e6244eb899cafe78d6b74 command/cleanslate.go
++ f c9fda1ad7e6ff0678cb690016e41c3e8641cfbfd6910fa7b8c731ce4f0bdf21a command/cleanslate.go
+dmppatch 8
+@@ -75,56 +75,8 @@
+ h%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -113,16 +113,60 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 8a80c0e66c5177e562654fb585e67f354ceff45ba69fdf5d399fd38369d6e6d7 command/command.go
++ f 714f8b400851cd539d0d272f8a9adb42a97041d6c815c1498983beb1e7bcdad6 command/command.go
+dmppatch 5
+@@ -95,56 +95,52 @@
+ h%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ )%0A%0Av
+- f e88146448d440a6bfc91783af7286e0d90ca1ed61b552197fe62fef59d2abab1 command/command_test.go
++ f a8c765b8716c4a1c05516b6b7f577b17960c1d6ce6fe4386bd99f5988d48d948 command/command_test.go
+dmppatch 25
+@@ -124,56 +124,52 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22gi
+@@ -2617,73 +2617,86 @@
+ bin%0A
+-%09err = KeyGen(homedir.Codechain(), %22keygen%22, %22-s%22, %22seckey.bin%22)%0A
++%09err = KeyGen(%22codechain%22, homedir.Codechain(), %22keygen%22, %22-s%22, %22seckey.bin%22)%0A
+ %09if 
+@@ -2791,75 +2791,88 @@
+ bin%0A
+-%09err = KeyFile(homedir.Codechain(), %22pubkey%22, %22-s%22, %22testkey.bin%22)%0A
++%09err = KeyFile(%22codechain%22, homedir.Codechain(), %22pubkey%22, %22-s%22, %22testkey.bin%22)%0A
+ %09if 
+@@ -4260,69 +4260,82 @@
+  -h%0A
+-%09err = KeyGen(homedir.Codechain(), %22codechain keygen%22, %22-h%22)%0A
++%09err = KeyGen(%22codechain%22, homedir.Codechain(), %22codechain keygen%22, %22-h%22)%0A
+ %09if 
+@@ -4461,71 +4461,84 @@
+  -h%0A
+-%09err = KeyFile(homedir.Codechain(), %22codechain keyfile%22, %22-h%22)%0A
++%09err = KeyFile(%22codechain%22, homedir.Codechain(), %22codechain keyfile%22, %22-h%22)%0A
+ %09if 
+- f cd4928a82cb00055f1f852556fbf83be0f32fc38356683d9dd79853287589e62 command/createdist.go
++ f 6dfc78ae5d896ff2bd70c7d3366624aa2720ef49aedb82300896ddcf7eca2196 command/createdist.go
+dmppatch 8
+@@ -133,56 +133,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -171,16 +171,60 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 6d630b6e4e3bb74ca5cf8c4098466370e24072d1fabd53c03255fd309fc0dab8 command/keyfile.go
++ f eaefde96169d1efab9293dfe6757167ead59d2d7736a944124542bed2798521a command/keyfile.go
+dmppatch 22
+@@ -106,107 +106,8 @@
+ l%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -187,16 +187,63 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22github
+@@ -280,16 +280,60 @@
+ /bzero%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+@@ -1544,68 +1544,83 @@
+ nd.%0A
+-func KeyFile(homeDir, argv0 string, args ...string) error %7B%0A
++func KeyFile(checkUpToDate, homeDir, argv0 string, args ...string) error %7B%0A
+ %09fs 
+@@ -2524,62 +2524,64 @@
+ %0A%09%7D%0A
+-%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A
++%09if err := secpkg.UpToDate(checkUpToDate); err != nil %7B%0A
+ %09%09re
+- f 6826dbb6c9f26e30f7b37ff8016037cdaed185454b2debff2d523267b074a6c7 command/keygen.go
++ f 37a688e56e24eaf82d89320ab9ac9486ae9c363740c043bd1f2f776670df312d command/keygen.go
+dmppatch 22
+@@ -106,107 +106,8 @@
+ l%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -187,16 +187,63 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22github
+@@ -280,16 +280,60 @@
+ /bzero%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+@@ -583,67 +583,82 @@
+ nd.%0A
+-func KeyGen(homeDir, argv0 string, args ...string) error %7B%0A
++func KeyGen(checkUpToDate, homeDir, argv0 string, args ...string) error %7B%0A
+ %09var
+@@ -1278,62 +1278,64 @@
+ %0A%09%7D%0A
+-%09if err := secpkg.UpToDate(%22codechain%22); err != nil %7B%0A
++%09if err := secpkg.UpToDate(checkUpToDate); err != nil %7B%0A
+ %09%09re
+- f ff2f89c99c4f0153e0ab1b876508e6ec5993bc7aa172d45b6f989c2d69ca2ec7 command/publish.go
++ f 1177dfff0cfdc09e4bc0b606b090e729fa557434f265fd94bdce33bcc67dc126 command/publish.go
+dmppatch 8
+@@ -116,56 +116,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -279,16 +279,60 @@
+ n/tree%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f efe4d12b4d414a1eabe2b04abdcb75c6e9bb71e33915e819871b4b60df056994 command/remkey.go
++ f d3aea9df0b460895e1769d03f6129727ee47e18dd5ff120b8ff97ccfa4565b71 command/remkey.go
+dmppatch 8
+@@ -90,107 +90,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -128,16 +128,107 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f a9127878e925176c4525e545dfa52254323969974ee7424203bafc23b51b266b command/review.go
++ f 6e68f816a672fbba96c6e00198cad9c9b5140ef9306eccc67788efc85328e35a command/review.go
+dmppatch 8
+@@ -100,107 +100,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -178,16 +178,107 @@
+ n/sync%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f b6276f4a321335f196b38f19571c46f04cb183e8e5978120046ef780f3a6c933 command/sigctl.go
++ f f01ee8a46e9453216257b32d5632512edddd1fdd3c32d1409e76f4cf481c689d command/sigctl.go
+dmppatch 8
+@@ -90,56 +90,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -128,16 +128,60 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f e4fbaf23a38788931448454bd1897bf4edf168fae64507d425e7f818abbfa3e0 command/start.go
++ f 4b022032521c2ae69a07755729a3d7a60659b29833aa45ad76e6916c9cb23df6 command/start.go
+dmppatch 8
+@@ -90,56 +90,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -128,16 +128,60 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 7f8f2745ddd1b26ba241dbec357adc400a65d9379e1aea7403118b0352a7ca94 command/status.go
++ f 65120571e538085a205dec048e90e3f20610e610d51187941577ad4bcaff4e79 command/status.go
+dmppatch 8
+@@ -98,56 +98,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -216,16 +216,60 @@
+ n/util%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 922ce9a7bf8ae842cec2afc341c7b93e2668fbcac2bfaaa38f0c81343aaf3411 command/treehash.go
++ f 6b747d49c0d0866004d5309954da54f75374c19b6285197551a00b3dac69e5c7 command/treehash.go
+dmppatch 8
+@@ -45,56 +45,8 @@
+ s%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -123,16 +123,60 @@
+ n/tree%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ )%0A%0A// Tr
+- f f859fadaf554787536ffe3873447a9e3983136c7cb0d49bdcda1149ab6ef0080 go.mod
++ f 70213d929655bb8e3878c55c0486eeecd0647b854fa0c6b252584616c70260b1 go.mod
+dmppatch 17
+@@ -33,16 +33,25 @@
+ echain%0A%0A
++go 1.13%0A%0A
+ require 
+@@ -56,53 +56,53 @@
+ e (%0A
+-%09github.com/cloudflare/cloudflare-go v0.10.8%0A
++%09github.com/cloudflare/cloudflare-go v0.11.0%0A
+ %09git
+@@ -329,64 +329,64 @@
+ 371%0A
+-%09golang.org/x/crypto v0.0.0-20191219195013-becbf705a915%0A
++%09golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876%0A
+ %09gol
+@@ -448,17 +448,8 @@
+ irect%0A)%0A
+-%0Ago 1.13%0A
+- f 2d7438834108a345af2c9cf990fd12acb18d7f50bd7ff75ba3b471e215a077c1 go.sum
++ f 2f2f7dfef0878d4c0b4a077351be4e4d954dc3061711ed4db8615a46ffdf3c6e go.sum
+dmppatch 46
+@@ -86,199 +86,199 @@
+ MU=%0A
+-github.com/cloudflare/cloudflare-go v0.10.8 h1:waPdLF0S9hb9Q8unE3A/zFJDMaPI1xZNYu/WL0aw8rE=%0Agithub.com/cloudflare/cloudflare-go v0.10.8/go.mod h1:+LCrBrz3ssRmKHnlTwQOUmi3tMcNi0H5UqpMUgKkwcg=%0A
++github.com/cloudflare/cloudflare-go v0.11.0 h1:pgtWxTGgnDI7ybyzkcOOzE7LRChACcoMfkMCSHLaNYo=%0Agithub.com/cloudflare/cloudflare-go v0.11.0/go.mod h1:/FTeLWG9RAMaxNx2eAJ17d5n0XzlfMjFhU9sjMuKcWo=%0A
+ gith
+@@ -400,90 +400,8 @@
+ dU=%0A
+-github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=%0A
+ gith
+@@ -1177,90 +1177,8 @@
+ tE=%0A
+-github.com/mattn/go-isatty v0.0.8 h1:HLtExJ+uU2HOZ+wI0Tt5DtUDrx8yhUqDcp7fYERX4CE=%0A
+ gith
+@@ -1439,100 +1439,100 @@
+ WE=%0A
+-github.com/mattn/go-runewidth v0.0.4/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=%0A
++github.com/mattn/go-runewidth v0.0.7/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=%0A
+ gith
+@@ -1754,200 +1754,104 @@
+ q8=%0A
+-github.com/olekukonko/tablewriter v0.0.1/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=%0Agithub.com/olekukonko/tablewriter v0.0.2/go.mod h1:rSAaSIOAGT9odnlyGlUfAJaoc5w2fSBUmeGDbRWPxyQ=%0A
++github.com/olekukonko/tablewriter v0.0.4/go.mod h1:zq6QwlOf5SlnkVbMSr5EoBv3636FWnp+qbPhuoO21uA=%0A
+ gith
+@@ -2649,93 +2649,93 @@
+ m4=%0A
+-github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=%0A
++github.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=%0A
+ gola
+@@ -2844,221 +2844,221 @@
+ +w=%0A
+-golang.org/x/crypto v0.0.0-20191219195013-becbf705a915 h1:aJ0ex187qoXrJHPo8ZasVTASQB7llQP6YeNzgDALPRk=%0Agolang.org/x/crypto v0.0.0-20191219195013-becbf705a915/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=%0A
++golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876 h1:sKJQZMuxjOAR/Uo2LBfU90onWEf1dF4C+0hPJCc9Mpc=%0Agolang.org/x/crypto v0.0.0-20191227163750-53104e6ec876/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=%0A
+ gola
+@@ -3164,215 +3164,215 @@
+ lg=%0A
+-golang.org/x/net v0.0.0-20191109021931-daa7c04131f5 h1:bHNaocaoJxYBo5cw41UyTMLjYlb8wPY7+WFrnklbHOM=%0Agolang.org/x/net v0.0.0-20191109021931-daa7c04131f5/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=%0A
++golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 h1:efeOvDhwQ29Dj3SdAV/MJf8oukgn+8D8WgaCaRMchF8=%0Agolang.org/x/net v0.0.0-20191209160850-c0dbc17a3553/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=%0A
+ gola
+@@ -3573,32 +3573,132 @@
+ nysNCUPdjciGhY=%0A
++golang.org/x/sys v0.0.0-20190412213103-97732733099d h1:+R4KGOnez64A81RvjARKc4UT5/tI9ujCIVX+P5KiHuI=%0A
+ golang.org/x/sys
+@@ -3780,32 +3780,132 @@
+ ClVuFLEZdDNbEs=%0A
++golang.org/x/sys v0.0.0-20191026070338-33540a1f6037 h1:YyJpGZS1sBuBCzLAR1VEpK193GlqGZbnPFnPV/5Rsb4=%0A
+ golang.org/x/sys
+- f dda2a29b5c538d398a54b3fd110ddeb6551ecf3aff2c352ceab523dc66586f91 hashchain/addkey.go
++ f dd7b5096496a18b388521c1751ffddeeed4d209963918c6830d28825d5bfa8d3 hashchain/addkey.go
+dmppatch 5
+@@ -116,59 +116,55 @@
+ pe%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22gi
+- f 2251d8e88d3c2576929424a863efab2e19191fa181d0392d187bf9687db8854f hashchain/apply.go
++ f 490c0f619806f8211f2acfd1e79a5bea43984865255ab0257ec3d3e7f473d213 hashchain/apply.go
+dmppatch 8
+@@ -25,56 +25,8 @@
+ t (%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -61,16 +61,60 @@
+ n/sync%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ )%0A%0A// Ap
+- f 595ea15c019c7dc28d3f3f4462a64b4f28c4e537423d3841a6db70003d197e46 hashchain/deepverify_test.go
++ f d0daee905788fa75fe47d6e7cdc970bce956c3aa73e8a1e468f87428878876bd hashchain/deepverify_test.go
+dmppatch 5
+@@ -73,56 +73,52 @@
+ g%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22gi
+- f c124192c959c99053c5ef04d61ee3b872204af03cf592fea3bbea349866b7502 hashchain/fuzzer_test.go
++ f f1a5bce55f96ec649515190cf7a78befcb029b9ed545440f336c8e74df001604 hashchain/fuzzer_test.go
+dmppatch 5
+@@ -93,56 +93,52 @@
+ g%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22gi
+- f 39a09ab8be070ba7ac08108bcbde65bd6299f20e455ddad1d272dc0121318f35 hashchain/internal/state/state.go
++ f 8acee1c6921f99b111e78b1fa44a78a152ea5a1273b4ef2c332df1c8a09c895f hashchain/internal/state/state.go
+dmppatch 8
+@@ -93,59 +93,8 @@
+ t%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A
+ %09%22gi
+@@ -169,16 +169,63 @@
+ n/util%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22github
+- f 1e5ec96cc5be6f8f473633db11c77b7158284478a8b11ac39f8d8a24e07181dc hashchain/remkey.go
++ f 8c5b974ef32d01d8779314d5dc8e06e2b44fe4786981f84a11472f34f262af4e hashchain/remkey.go
+dmppatch 5
+@@ -87,59 +87,55 @@
+ pe%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22gi
+- f fa59471cfe4c5941a00c857b649385e0d1eb4f1c7ba913605ddd8f0e115d1545 hashchain/signature.go
++ f 9242211b462cd558ca940956095658c717454a3ae5a259fd9fff783cf599c98f hashchain/signature.go
+dmppatch 5
+@@ -105,59 +105,55 @@
+ pe%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22gi
+- f f65f537d21edef2241f398f3fa5876bafe852d92603c7782220438682930aea6 hashchain/source.go
++ f b16f72b089c5b4f94b1685b48cd32b2b7aa56738fd1ff60a856989ff55eb3b86 hashchain/source.go
+dmppatch 8
+@@ -105,59 +105,8 @@
+ pe%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A
+ %09%22gi
+@@ -141,16 +141,63 @@
+ n/util%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22github
+- f feb93e059b8109efabc9b9fddc3c21af29406ee576069fb57fcb78cb25d44c21 hashchain/start.go
++ f d903b17a42a9bc268a12ae80ec43ec46d5da10e98da54141ffbcdea7487ec9fd hashchain/start.go
+dmppatch 5
+@@ -132,59 +132,55 @@
+ pe%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22gi
+- f c6d22aad166695cddc664223c9b99524f36e04b54cd320dc20175574ecb51e76 hashchain/verify.go
++ f 9727fc69e4ffd36812262e8e8d127770856bd02a794299509c5fb215ba6669a3 hashchain/verify.go
+dmppatch 5
+@@ -212,59 +212,55 @@
+ pe%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22gi
+- f a7b3276bbce38a5f71e40f1c0e4337b9336dbcd60886677c04ac1867da082f48 internal/ascii85/ascii85.go
+- f 21b5dede453f80c272db64e68b9752ea93819d0cd91d1c87fe5e57fccd2b79a7 internal/ascii85/ascii85_test.go
+- f ab8b97b5850dfeae3d85b1f80c988421d671c967a265b25d2db18b26b521b951 internal/base64/base64.go
+- f 9e8f6ab25eda38ebba91bbe264ded311f7f608a9736a39cb6bd2c7f00dbafa9b internal/def/def.go
+- f 378a4d0e4c949ce108d1cf0c8a8e42c897096e3cbecf5d641e9870ce2cc6f2c4 keyfile/keyfile.go
++ f 18aee69fda93215b1835110a0546ad76247015430d074eeec2f9b361f2a6f10c keyfile/keyfile.go
+dmppatch 5
+@@ -172,59 +172,55 @@
+ s%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22gi
+- f 6f69c080fc1349a84036584e6385cf3ac797764b26c8d938a473816977691d3b packages/codechain.secpkg
++ f d594d5385903167d09cc7d8d5e565b5a842800900103ddd0a4f55e6afb74beb5 packages/codechain.secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %22e8d50eec1a2777108c56b244f48e4f28e6a4f3adf614ff3ff1f13ef174117833%22,%0A
++  %22Head%22: %228cc3a48118b525bd82dce068b1053baeb6a5103f791dd784541b7e8a0a16fe8e%22,%0A
+   %22D
+- f 886c42734b8f5671b7a39b8a2f0702b5468d4910923c9881b306bffe29b4fb89 patchfile/ascii85.go
++ f 6e9d6d1cea0d7f8dee0685ada54709055748a06c55e4a09c041a35f081d9b076 patchfile/ascii85.go
+dmppatch 5
+@@ -52,60 +52,56 @@
+ l%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/ascii85%22%0A
++%09%22github.com/frankbraun/codechain/util/ascii85%22%0A
+ )%0A%0A/
+- f 113eae1265cf0f5939348f481d6fd36598fa8931fcc793fab7dd41b5aca3806f secpkg/checkupdate.go
++ f bd8b4826bf6783e157efa851502542a27bb90d6adaca71533cfec23896dccd5a secpkg/checkupdate.go
+dmppatch 8
+@@ -114,56 +114,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -150,16 +150,60 @@
+ n/ssot%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f aa84a62f41ed331b1fe6407b9f2d60845037eec1fe74b3c6dff386b4cd4c2964 secpkg/ensure.go
++ f 3f438af001efb679c3e8f3488383535f44faa5d27a5990ae7ac29d3269700e37 secpkg/ensure.go
+dmppatch 5
+@@ -127,56 +127,52 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22gi
+- f 306384d40357e6a1dbb8ced5561cdc036e39a4e7226c675b553918127244ce3b secpkg/install.go
++ f 4efc32060ec9762930c6d9a97baa4bfb630abf5c9e42ef21dd8ec02514b8a38a secpkg/install.go
+dmppatch 8
+@@ -165,56 +165,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -201,16 +201,60 @@
+ n/ssot%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f cce954445736dacc8b1f25f4519b36f7246213e8b5dd169cbc2184ade4b1b25d secpkg/update.go
++ f 7caddb9d7485dd28c3bcd2dac666dcf211ee3f773b3f4ffa2e584ee13b9e6c81 secpkg/update.go
+dmppatch 8
+@@ -152,56 +152,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -188,16 +188,60 @@
+ n/ssot%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f c2c034731dedd02e7ef08d3b97d43fdfccc7aae5c45a018fb871f9804064bf39 secpkg/uptodate.go
++ f 47cbb36c4573750c55ce850b4f814e1e8fc3da7a827b660eeae0a097cb62766d secpkg/uptodate.go
+dmppatch 8
+@@ -36,16 +36,23 @@
+ %0A%09%22fmt%22%0A
++%09%22net%22%0A
+ %09%22os%22%0A%09%22
+@@ -1656,32 +1656,204 @@
+ ); err != nil %7B%0A
++%09%09if err, ok := err.(net.Error); ok && err.Timeout() %7B%0A%09%09%09fmt.Fprintf(os.Stderr, %22WARNING: update check for package '%25s' timed out: %25s%5Cn%22,%0A%09%09%09%09name, err)%0A%09%09%09return nil%0A%09%09%7D%0A
+ %09%09return err%0A%09%7D%0A
+- f b84b865e8e9b65e8105108b5899c746a82ae6b1371c2f773e8ef62ab3cde370f ssot/command/createpkg.go
++ f 3345ce3584c9b5323fc4e4db0bf85ab8edbc4e852307157bcd7064cd9acfd8d9 ssot/command/createpkg.go
+dmppatch 8
+@@ -193,56 +193,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -322,16 +322,60 @@
+ dflare%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 36c19288c1a94cbd0d3ac5262af6ed984656ca2934f3c0698a3159ee2df34f51 ssot/command/keyfile.go
++ f 0665ea0fc6e180c54cbecb06e24d2e6b1aa351a1e305405a7dc77f93d8d31b04 ssot/command/keyfile.go
+dmppatch 5
+@@ -221,65 +221,78 @@
+ r %7B%0A
+-%09return command.KeyFile(homedir.SSOTPub(), argv0, args...)%0A
++%09return command.KeyFile(%22codechain%22, homedir.SSOTPub(), argv0, args...)%0A
+ %7D%0A
+- f fab881267ecdf6594927af39a6ef905fc9691e2c004884dd8b2de220735b364a ssot/command/keygen.go
++ f e265e4ff053949551ebe10ecea53f8d0f285bf8b45ab8a490302216a06ae2a45 ssot/command/keygen.go
+dmppatch 5
+@@ -218,64 +218,77 @@
+ r %7B%0A
+-%09return command.KeyGen(homedir.SSOTPub(), argv0, args...)%0A
++%09return command.KeyGen(%22codechain%22, homedir.SSOTPub(), argv0, args...)%0A
+ %7D%0A
+- f a36f137a5862fea1e622ea853b23cc594977eedb94807464a707a350589f0c4b ssot/command/refresh.go
++ f a36dda426bb40eeccbaee2fa7de0b43b76e28edad32da70068de01044de13b74 ssot/command/refresh.go
+dmppatch 12
+@@ -81,107 +81,8 @@
+ e%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -159,16 +159,63 @@
+ n/ssot%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22github
+@@ -257,16 +257,60 @@
+ dflare%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 279ca6a4eb0d923b21682f0872a0473463531b8d2b1344cd6af39308cb53f990 ssot/command/signhead.go
++ f 95c48b07981a07cc3a5dbda46bfbe5f68f8ce02558e3f3925da8d09f2d812f2d ssot/command/signhead.go
+dmppatch 12
+@@ -193,107 +193,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -271,16 +271,63 @@
+ n/ssot%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22github
+@@ -369,16 +369,60 @@
+ dflare%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 86de3ac3080c022c3b7dde40451fb211021d2445f91f87bbcfd1eed62b573098 ssot/command/testbuild.go
++ f c962d1596e1ed27bdc83ca06a48718e6bc13b363398288cbc191f21e2620f1c0 ssot/command/testbuild.go
+dmppatch 8
+@@ -130,56 +130,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -168,16 +168,60 @@
+ secpkg%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 5f57e53f3d059d207dabb2c27955f04455e96fca93a332c85caa7c904ed5d5fa ssot/rotateto.go
++ f 2b17a6a7145187b6f558fe26a48230500d53cce9c2123e612ec1c6f53c3e4f25 ssot/rotateto.go
+dmppatch 5
+@@ -75,59 +75,55 @@
+ e%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09uti
+- f 814e1c80b9683bf5579ecbd8d65c02708275809c3bdf72f16452376e6838a150 ssot/ssot.go
++ f 0aa96e87534d6b3104fb56d1a34d3df6f58a891a0de01d22efcbcc6f4ff31c60 ssot/ssot.go
+dmppatch 5
+@@ -166,107 +166,99 @@
+ or%22%0A
+-%09%22github.com/frankbraun/codechain/internal/base64%22%0A%09%22github.com/frankbraun/codechain/internal/def%22%0A
++%09%22github.com/frankbraun/codechain/util/base64%22%0A%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22gi
+- f 7e7a87eaadd06ad7f40c2bffa26afbceba711aa7cb14d633f670074f49759164 sync/sync.go
++ f 507579211e8560d08b9b5a47046785d338a67154d185e63735ba66629eb463f8 sync/sync.go
+dmppatch 8
+@@ -119,56 +119,8 @@
+ h%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -240,16 +240,60 @@
+ n/util%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f 28307a7507546f23d27b424a3805a23737a2f2192799b8464ef275839fdf2588 sync/sync_test.go
++ f 2ddc60538e624adc65e037b8c4583bef9e90055f87f42b392f41bb765ff2f3d7 sync/sync_test.go
+dmppatch 8
+@@ -118,56 +118,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -154,16 +154,60 @@
+ n/sync%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
++ f a7b3276bbce38a5f71e40f1c0e4337b9336dbcd60886677c04ac1867da082f48 util/ascii85/ascii85.go
+utf8file 75
+// Package ascii85 implements ascii85 encoding related utility functions.
+package ascii85
+
+import (
+	"bytes"
+	"encoding/ascii85"
+	"io"
+)
+
+type newlineWriteCloser struct {
+	buf         bytes.Buffer
+	charsInLine int
+	lines       int
+}
+
+func (n *newlineWriteCloser) Write(p []byte) (int, error) {
+	startLen := len(p)
+	for len(p)+n.charsInLine >= 80 {
+		if _, err := n.buf.Write(p[:80-n.charsInLine]); err != nil {
+			return 0, err
+		}
+		p = p[80-n.charsInLine:]
+		if _, err := n.buf.WriteRune('\n'); err != nil {
+			return 0, err
+		}
+		n.charsInLine = 0
+		n.lines++
+	}
+	if len(p) > 0 {
+		if _, err := n.buf.Write(p); err != nil {
+			return 0, err
+		}
+		n.charsInLine = len(p)
+	}
+	return startLen, nil
+}
+
+func (n *newlineWriteCloser) Close() error {
+	if n.charsInLine > 0 {
+		if _, err := n.buf.WriteRune('\n'); err != nil {
+			return err
+		}
+		n.charsInLine = 0
+		n.lines++
+	}
+	return nil
+}
+
+// Encode src to ascii85 with a newline every 80 encoded characters and return
+// the result and the number of encoded lines.
+func Encode(src []byte) ([]byte, int, error) {
+	var n newlineWriteCloser
+	a := ascii85.NewEncoder(&n)
+	if _, err := a.Write(src); err != nil {
+		return nil, 0, err
+	}
+	if err := a.Close(); err != nil {
+		return nil, 0, err
+	}
+	if err := n.Close(); err != nil {
+		return nil, 0, err
+	}
+	return n.buf.Bytes(), n.lines, nil
+}
+
+// Decode ascii85 encoded src and return it.
+func Decode(src []byte) ([]byte, error) {
+	var dst bytes.Buffer
+	dec := ascii85.NewDecoder(bytes.NewBuffer(src))
+	if _, err := io.Copy(&dst, dec); err != nil {
+		return nil, err
+	}
+	return dst.Bytes(), nil
+}
+
++ f 21b5dede453f80c272db64e68b9752ea93819d0cd91d1c87fe5e57fccd2b79a7 util/ascii85/ascii85_test.go
+utf8file 60
+package ascii85
+
+import (
+	"bytes"
+	"testing"
+
+	"github.com/frankbraun/codechain/util/hex"
+)
+
+const (
+	b64 = "21543db19f5b682f3d07bdacef6b2c31804021b7b98fbe196d9d4d828df16270" +
+		"70a12f80717235e6aa48111187e3ddd935e09b61bd0289e0fd08ad748f9a39af"
+)
+
+func TestEncodeDecode64(t *testing.T) {
+	buf, err := hex.Decode(b64, 64)
+	if err != nil {
+		t.Fatalf("hex.Decode() failed: %v", err)
+	}
+
+	enc, lines, err := Encode(buf)
+	if err != nil {
+		t.Fatalf("Encode() failed: %v", err)
+	}
+	if lines != 1 {
+		t.Error("lines should equal 1")
+	}
+
+	dec, err := Decode(enc)
+	if err != nil {
+		t.Fatalf("Decode() failed: %v", err)
+	}
+	if !bytes.Equal(dec, buf) {
+		t.Error("Encode() + Decode() failed")
+	}
+}
+
+func TestEncodeDecode65(t *testing.T) {
+	buf, err := hex.Decode(b64+"ff", 65)
+	if err != nil {
+		t.Fatalf("hex.Decode() failed: %v", err)
+	}
+
+	enc, lines, err := Encode(buf)
+	if err != nil {
+		t.Fatalf("Encode() failed: %v", err)
+	}
+	if lines != 2 {
+		t.Error("lines should equal 2")
+	}
+
+	dec, err := Decode(enc)
+	if err != nil {
+		t.Fatalf("Decode() failed: %v", err)
+	}
+	if !bytes.Equal(dec, buf) {
+		t.Error("Encode() + Decode() failed")
+	}
+}
+
++ f ab8b97b5850dfeae3d85b1f80c988421d671c967a265b25d2db18b26b521b951 util/base64/base64.go
+utf8file 27
+// Package base64 implements base64 encoding related utility functions.
+package base64
+
+import (
+	"encoding/base64"
+	"fmt"
+)
+
+// Encode returns the base64 encoding of src (URL encoding without padding).
+func Encode(src []byte) string {
+	return base64.RawURLEncoding.EncodeToString(src)
+}
+
+// Decode returns the bytes represented by the base64 string s
+// (assuming that s is URL encoded without padding).
+// Decode expects that the resulting byte slice has length l.
+func Decode(s string, l int) ([]byte, error) {
+	r, err := base64.RawURLEncoding.DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+	if len(r) != l {
+		return nil, fmt.Errorf("base64: wrong length %d (expecting %d): %s", 2*len(r), 2*l, s)
+	}
+	return r, nil
+}
+
++ f 9e8f6ab25eda38ebba91bbe264ded311f7f608a9736a39cb6bd2c7f00dbafa9b util/def/def.go
+utf8file 60
+// Package def defines default values used in Codechain.
+package def
+
+import (
+	"os"
+	"path/filepath"
+)
+
+// DefaultCodechainDir is the default directory used for Codechain related files.
+// Can be overwritten with the environment variable CODECHAIN_DIR.
+const DefaultCodechainDir = ".codechain"
+
+// CodechainDir is the directory used for Codechain releated files. If not set
+// with the environment variable CODECHAIN_DIR, DefaultCodechainDir is used.
+// If CODECHAIN_DIR is used, the environment variable CODECHAIN_EXCLUDE can be
+// used to exclude a second Codechain directory from all Codechain commands.
+var CodechainDir = DefaultCodechainDir
+
+func init() {
+	dir := os.Getenv("CODECHAIN_DIR")
+	if dir != "" {
+		CodechainDir = dir
+		ExcludePaths = append(ExcludePaths, dir)
+	}
+	exclude := os.Getenv("CODECHAIN_EXCLUDE")
+	if exclude != "" {
+		ExcludePaths = append(ExcludePaths, exclude)
+	}
+	HashchainFile = filepath.Join(CodechainDir, "hashchain")
+	PatchDir = filepath.Join(CodechainDir, "patches")
+}
+
+// SecretsSubDir is the default subdirectory of a tool's home directory used
+// to store secret key files
+const SecretsSubDir = "secrets"
+
+// CodechainHeadName is the TXT entry used for Codechain's secpkg heads.
+const CodechainHeadName = "_codechain-head."
+
+// CodechainURLName is the TXT entry used for Codechain's secpkg URLs.
+const CodechainURLName = "_codechain-url."
+
+// CodechainTestName is the TXT entry used to test Dyn credentials.
+const CodechainTestName = "_codechain-test."
+
+// ExcludePaths is the default list of paths not considered by Codechain.
+// Do not ever change this list! It will break existing Codechains.
+var ExcludePaths = []string{
+	DefaultCodechainDir,
+	".git",
+	".gitignore",
+	".travis.yml",
+}
+
+// HashchainFile is the default name of the hashchain file.
+var HashchainFile string
+
+// PatchDir is the default name of the patch file directory.
+var PatchDir string
+
+- f 74b50718a02d6e33a36cc2903d877ab876a623650ebfe7ed8899a759b7658a90 util/file/file_test.go
++ f 9386464da3a25b54daa71262f7ae219b880c2d61829fe3f2941d4d5f2c585cf2 util/file/file_test.go
+dmppatch 8
+@@ -82,56 +82,8 @@
+ g%22%0A%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -118,16 +118,60 @@
+ n/tree%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f ffa43fb0d14b329a000ad6d91326067fee30acaeeef7a41f0c6dd79a9b4cb91d util/homedir/homedir.go
++ f 515608b72ba20dca0e700a467b122b2fc190b0fd629904d29627a4dc803a1b3f util/homedir/homedir.go
+dmppatch 20
+@@ -227,38 +227,96 @@
+ %0A)%0A%0A
+-func get(app string) string %7B%0A
++// Get returns the home directory for the given app name.%0Afunc Get(app string) string %7B%0A
+ %09env
+@@ -638,33 +638,33 @@
+ g %7B%0A
+-%09return get(%22codechain%22)%0A
++%09return Get(%22codechain%22)%0A
+ %7D%0A%0A/
+@@ -740,30 +740,30 @@
+ g %7B%0A
+-%09return get(%22secpkg%22)%0A
++%09return Get(%22secpkg%22)%0A
+ %7D%0A%0A/
+@@ -842,29 +842,29 @@
+ g %7B%0A
+-%09return get(%22ssotpub%22)%0A
++%09return Get(%22ssotpub%22)%0A
+ %7D%0A
+- f c0a749a8025c882f089bcbff6c49cd74e6e343e20fcc083fa1a6bd9679285c0a util/seckey/seckey.go
++ f cdb69990c5babccf7610617e55159390050287ff7990e30ef02cab1befedf6dd util/seckey/seckey.go
+dmppatch 8
+@@ -202,56 +202,8 @@
+ in%22%0A
+-%09%22github.com/frankbraun/codechain/internal/def%22%0A
+ %09%22gi
+@@ -287,16 +287,60 @@
+ /bzero%22%0A
++%09%22github.com/frankbraun/codechain/util/def%22%0A
+ %09%22github
+- f d27a0a3e712bcc6cdd3e6fb34edadca6d7e475aabaab93ffa99a2750c47d77ff vendor/github.com/cloudflare/cloudflare-go/go.mod
++ f 6fb9b41ee9f73d5069cd503960ca9c62684c224b0a4848a29d88c9b089d30b81 vendor/github.com/cloudflare/cloudflare-go/go.mod
+dmppatch 10
+@@ -107,50 +107,50 @@
+ ect%0A
+-%09github.com/olekukonko/tablewriter v0.0.2%0A
++%09github.com/olekukonko/tablewriter v0.0.4%0A
+ %09git
+@@ -215,92 +215,92 @@
+ 4.0%0A
+-%09github.com/urfave/cli v1.22.1%0A%09golang.org/x/net v0.0.0-20191109021931-daa7c04131f5%0A
++%09github.com/urfave/cli v1.22.2%0A%09golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553%0A
+ %09gol
+- f 1739dadc46c78b3793d915f95f802fccb72610e024116d5361c67b74bc734714 vendor/github.com/cloudflare/cloudflare-go/go.sum
++ f 5a9bb3b175f9ebea49fb5da7db95787adf28e2cf83529681e57d8a8dddf50d0d vendor/github.com/cloudflare/cloudflare-go/go.sum
+dmppatch 16
+@@ -758,16 +758,370 @@
+ //U1FU=%0A
++github.com/mattn/go-runewidth v0.0.6 h1:V2iyH+aX9C5fsYCpK60U8BYIvmhqxuOL3JZcqc1NB7k=%0Agithub.com/mattn/go-runewidth v0.0.6/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=%0Agithub.com/mattn/go-runewidth v0.0.7 h1:Ei8KR0497xHyKJPAv59M1dkC+rOZCMBJ+t3fZ+twI54=%0Agithub.com/mattn/go-runewidth v0.0.7/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=%0A
+ github.c
+@@ -1482,16 +1482,386 @@
+ RWPxyQ=%0A
++github.com/olekukonko/tablewriter v0.0.3 h1:i0LBnzgiChAWHJYTQAZJDOgf8MNxAVYZJ2m63SIDimI=%0Agithub.com/olekukonko/tablewriter v0.0.3/go.mod h1:YZeBtGzYYEsCHp2LST/u/0NDwGkRoBtmn1cIWCJiS6M=%0Agithub.com/olekukonko/tablewriter v0.0.4 h1:vHD/YYe1Wolo78koG299f7V/VAS08c6IpCLn+Ejf/w8=%0Agithub.com/olekukonko/tablewriter v0.0.4/go.mod h1:zq6QwlOf5SlnkVbMSr5EoBv3636FWnp+qbPhuoO21uA=%0A
+ github.c
+@@ -3001,16 +3001,179 @@
+ NtXRu0=%0A
++github.com/urfave/cli v1.22.2 h1:gsqYFH8bb9ekPA12kRo0hfjngWQjkJPlN9R0N78BoUo=%0Agithub.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=%0A
+ golang.o
+@@ -4508,32 +4508,660 @@
+ uOLi4/5GtJWs/s=%0A
++golang.org/x/net v0.0.0-20191119073136-fc4aabc6c914 h1:MlY3mEfbnWGmUi4rtHOtNnnnN4UJRGSyLPx+DXA5Sq4=%0Agolang.org/x/net v0.0.0-20191119073136-fc4aabc6c914/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=%0Agolang.org/x/net v0.0.0-20191125084936-ffdde1057850 h1:Vq85/r8R9IdcUHmZ0/nQlUg1v15rzvQ2sHdnZAj/x7s=%0Agolang.org/x/net v0.0.0-20191125084936-ffdde1057850/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=%0Agolang.org/x/net v0.0.0-20191126235420-ef20fe5d7933/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=%0Agolang.org/x/net v0.0.0-20191209160850-c0dbc17a3553/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=%0A
+ golang.org/x/sys
+- f 1f54d9f77673fbb1c67bd3d57bc28583b951b77a2fac1f52acff065aa85b86d2 vendor/github.com/cloudflare/cloudflare-go/origin_ca.go
++ f 675c3e761b3e5482d1fdc0a00c867469d536b6aa4dd31afb20ac09d093f3b9d3 vendor/github.com/cloudflare/cloudflare-go/origin_ca.go
+dmppatch 8
+@@ -546,16 +546,73 @@
+ idity%22%60%0A
++%09RevokedAt       time.Time %60json:%22revoked_at,omitempty%22%60%0A
+ %09CSR    
+@@ -643,16 +643,700 @@
+ :%22csr%22%60%0A
++%7D%0A%0A// UnmarshalJSON handles custom parsing from an API response to an OriginCACertificate%0A// http://choly.ca/post/go-json-marshalling/%0Afunc (c *OriginCACertificate) UnmarshalJSON(data %5B%5Dbyte) error %7B%0A%09type alias OriginCACertificate%0A%0A%09aux := &struct %7B%0A%09%09ExpiresOn string %60json:%22expires_on%22%60%0A%09%09*alias%0A%09%7D%7B%0A%09%09alias: (*alias)(c),%0A%09%7D%0A%0A%09var err error%0A%0A%09if err = json.Unmarshal(data, &aux); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09// This format comes from time.Time.String() source%0A%09c.ExpiresOn, err = time.Parse(%222006-01-02 15:04:05.999999999 -0700 MST%22, aux.ExpiresOn)%0A%0A%09if err != nil %7B%0A%09%09c.ExpiresOn, err = time.Parse(time.RFC3339, aux.ExpiresOn)%0A%09%7D%0A%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09return nil%0A
+ %7D%0A%0A// Or
+- f a719b8b0c5941b9c6d4cb539bf3aff62cc490ae89dcf84dc8cd21803fc1f298f vendor/github.com/cloudflare/cloudflare-go/spectrum.go
++ f cc040d294aa62612b16d0173f88d357630ca4aff7d4e6633e10597d4267a15ef vendor/github.com/cloudflare/cloudflare-go/spectrum.go
+dmppatch 13
+@@ -83,16 +83,694 @@
+ ors%22%0A)%0A%0A
++// ProxyProtocol implements json.Unmarshaler in order to support deserializing of the deprecated boolean%0A// value for %60proxy_protocol%60%0Atype ProxyProtocol string%0A%0A// UnmarshalJSON handles deserializing of both the deprecated boolean value and the current string value%0A// for the %60proxy_protocol%60 field.%0Afunc (p *ProxyProtocol) UnmarshalJSON(data %5B%5Dbyte) error %7B%0A%09var raw interface%7B%7D%0A%09if err := json.Unmarshal(data, &raw); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09switch pp := raw.(type) %7B%0A%09case string:%0A%09%09*p = ProxyProtocol(pp)%0A%09case bool:%0A%09%09if pp %7B%0A%09%09%09*p = %22v1%22%0A%09%09%7D else %7B%0A%09%09%09*p = %22off%22%0A%09%09%7D%0A%09default:%0A%09%09return fmt.Errorf(%22invalid type for proxy_protocol field: %25T%22, pp)%0A%09%7D%0A%09return nil%0A%7D%0A%0A
+ // Spect
+@@ -1443,87 +1443,87 @@
+ y%22%60%0A
+-%09ProxyProtocol bool                          %60json:%22proxy_protocol,omitempty%22%60%0A
++%09ProxyProtocol ProxyProtocol                 %60json:%22proxy_protocol,omitempty%22%60%0A
+ %09TLS
+@@ -1812,24 +1812,702 @@
+ itempty%22%60%0A%7D%0A
++%0A// UnmarshalJSON handles setting the %60ProxyProtocol%60 field based on the value of the deprecated %60spp%60 field.%0Afunc (a *SpectrumApplication) UnmarshalJSON(data %5B%5Dbyte) error %7B%0A%09var body map%5Bstring%5Dinterface%7B%7D%0A%09if err := json.Unmarshal(data, &body); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09var app spectrumApplicationRaw%0A%09if err := json.Unmarshal(data, &app); err != nil %7B%0A%09%09return err%0A%09%7D%0A%0A%09if spp, ok := body%5B%22spp%22%5D; ok && spp.(bool) == true %7B%0A%09%09app.ProxyProtocol = %22simple%22%0A%09%7D%0A%0A%09*a = SpectrumApplication(app)%0A%09return nil%0A%7D%0A%0A// spectrumApplicationRaw is used to inspect an application body to support the deprecated boolean value for %60spp%60%0Atype spectrumApplicationRaw SpectrumApplication%0A
+ %0A// Spectrum
+- f 14bd945ee5a5126157c852359ba2e8212997b1c83ff21fb241b5f79f655d8180 vendor/github.com/cloudflare/cloudflare-go/waf.go
++ f 2b5db8f58c561bbe7a8a0438328862b958f97450e8652f23bdf7314f9952ebae vendor/github.com/cloudflare/cloudflare-go/waf.go
+dmppatch 59
+@@ -39,16 +39,38 @@
+ g/json%22%0A
++%09%22net/url%22%0A%09%22strconv%22%0A
+ %0A%09%22githu
+@@ -3124,35 +3124,154 @@
+ ) %7B%0A
+-%09var p WAFPackagesResponse%0A
++%09// Construct a query string%0A%09v := url.Values%7B%7D%0A%09// Request as many WAF packages as possible per page - API max is 100%0A%09v.Set(%22per_page%22, %22100%22)%0A%0A
+ %09var
+@@ -3328,501 +3328,787 @@
+ ror%0A
+-%09uri := %22/zones/%22 + zoneID + %22/firewall/waf/packages%22%0A%09res, err = api.makeRequest(%22GET%22, uri, nil)%0A%09if err != nil %7B%0A%09%09return %5B%5DWAFPackage%7B%7D, errors.Wrap(err, errMakeRequestError)%0A%09%7D%0A%09err = json.Unmarshal(res, &p)%0A%09if err != nil %7B%0A%09%09return %5B%5DWAFPackage%7B%7D, errors.Wrap(err, errUnmarshalError)%0A
++%09page := 1%0A%0A%09// Loop over makeRequest until what we've fetched all records%0A%09for %7B%0A%09%09v.Set(%22page%22, strconv.Itoa(page))%0A%09%09query := %22?%22 + v.Encode()%0A%09%09uri := %22/zones/%22 + zoneID + %22/firewall/waf/packages%22 + query%0A%09%09res, err = api.makeRequest(%22GET%22, uri, nil)%0A%09%09if err != nil %7B%0A%09%09%09return %5B%5DWAFPackage%7B%7D, errors.Wrap(err, errMakeRequestError)%0A%09%09%7D%0A%0A%09%09var p WAFPackagesResponse%0A%09%09err = json.Unmarshal(res, &p)%0A%09%09if err != nil %7B%0A%09%09%09return %5B%5DWAFPackage%7B%7D, errors.Wrap(err, errUnmarshalError)%0A%09%09%7D%0A%0A%09%09if !p.Success %7B%0A%09%09%09// TODO: Provide an actual error message instead of always returning nil%0A%09%09%09return %5B%5DWAFPackage%7B%7D, err%0A%09%09%7D%0A%0A%09%09packages = append(packages, p.Result...)%0A%09%09if p.ResultInfo.Page %3E= p.ResultInfo.TotalPages %7B%0A%09%09%09break%0A%09%09%7D%0A%0A%09%09// Loop around and fetch the next page%0A%09%09page++%0A
+ %09%7D%0A
+-%09if !p.Success %7B%0A%09%09// TODO: Provide an actual error message instead of always returning nil%0A%09%09return %5B%5DWAFPackage%7B%7D, err%0A%09%7D%0A%09for pi := range p.Result %7B%0A%09%09packages = append(packages, p.Result%5Bpi%5D)%0A%09%7D%0A
++%0A
+ %09ret
+@@ -5550,24 +5550,168 @@
+ p, error) %7B%0A
++%09// Construct a query string%0A%09v := url.Values%7B%7D%0A%09// Request as many WAF groups as possible per page - API max is 100%0A%09v.Set(%22per_page%22, %22100%22)%0A%0A
+ %09var groups 
+@@ -5756,542 +5756,796 @@
+ ror%0A
++%09page := 1%0A
+ %0A
+-%09uri := %22/zones/%22 + zoneID + %22/firewall/waf/packages/%22 + packageID + %22/groups%22%0A%09res, err = api.makeRequest(%22GET%22, uri, nil)%0A%09if err != nil %7B%0A%09%09return %5B%5DWAFGroup%7B%7D, errors.Wrap(err, errMakeRequestError)%0A%09%7D%0A
++%09// Loop over makeRequest until what we've fetched all records%0A%09for %7B%0A%09%09v.Set(%22page%22, strconv.Itoa(page))%0A%09%09query := %22?%22 + v.Encode()%0A%09%09uri := %22/zones/%22 + zoneID + %22/firewall/waf/packages/%22 + packageID + %22/groups%22 + query%0A%09%09res, err = api.makeRequest(%22GET%22, uri, nil)%0A%09%09if err != nil %7B%0A%09%09%09return %5B%5DWAFGroup%7B%7D, errors.Wrap(err, errMakeRequestError)%0A%09%09%7D%0A%0A%09%09var r WAFGroupsResponse%0A%09%09err = json.Unmarshal(res, &r)%0A%09%09if err != nil %7B%0A%09%09%09return %5B%5DWAFGroup%7B%7D, errors.Wrap(err, errUnmarshalError)%0A%09%09%7D%0A
+ %0A
+-%09var r WAFGroupsResponse%0A%09err = json.Unmarshal(res, &r)%0A%09if err != nil %7B%0A%09%09return %5B%5DWAFGroup%7B%7D, errors.Wrap(err, errUnmarshalError)%0A%09%7D%0A
++%09%09if !r.Success %7B%0A%09%09%09// TODO: Provide an actual error message instead of always returning nil%0A%09%09%09return %5B%5DWAFGroup%7B%7D, err%0A%09%09%7D%0A
+ %0A
+-%09if !r.Success %7B%0A%09%09// TODO: Provide an actual error message instead of always returning nil%0A%09%09return %5B%5DWAFGroup%7B%7D, err%0A%09%7D%0A
++%09%09groups = append(groups, r.Result...)%0A%09%09if r.ResultInfo.Page %3E= r.ResultInfo.TotalPages %7B%0A%09%09%09break%0A%09%09%7D%0A
+ %0A
+-%09for gi := range r.Result %7B%0A%09%09groups = append(groups, r.Result%5Bgi%5D)%0A
++%09%09// Loop around and fetch the next page%0A%09%09page++%0A
+ %09%7D%0A%09
+@@ -8035,16 +8035,159 @@
+ rror) %7B%0A
++%09// Construct a query string%0A%09v := url.Values%7B%7D%0A%09// Request as many WAF rules as possible per page - API max is 100%0A%09v.Set(%22per_page%22, %22100%22)%0A%0A
+ %09var rul
+@@ -8234,538 +8234,793 @@
+ ror%0A
++%09page := 1%0A
+ %0A
+-%09uri := %22/zones/%22 + zoneID + %22/firewall/waf/packages/%22 + packageID + %22/rules%22%0A%09res, err = api.makeRequest(%22GET%22, uri, nil)%0A%09if err != nil %7B%0A%09%09return %5B%5DWAFRule%7B%7D, errors.Wrap(err, errMakeRequestError)%0A%09%7D%0A
++%09// Loop over makeRequest until what we've fetched all records%0A%09for %7B%0A%09%09v.Set(%22page%22, strconv.Itoa(page))%0A%09%09query := %22?%22 + v.Encode()%0A%09%09uri := %22/zones/%22 + zoneID + %22/firewall/waf/packages/%22 + packageID + %22/rules%22 + query%0A%09%09res, err = api.makeRequest(%22GET%22, uri, nil)%0A%09%09if err != nil %7B%0A%09%09%09return %5B%5DWAFRule%7B%7D, errors.Wrap(err, errMakeRequestError)%0A%09%09%7D%0A
+ %0A
+-%09var r WAFRulesResponse%0A%09err = json.Unmarshal(res, &r)%0A%09if err != nil %7B%0A%09%09return %5B%5DWAFRule%7B%7D, errors.Wrap(err, errUnmarshalError)%0A%09%7D%0A
++%09%09var r WAFRulesResponse%0A%09%09err = json.Unmarshal(res, &r)%0A%09%09if err != nil %7B%0A%09%09%09return %5B%5DWAFRule%7B%7D, errors.Wrap(err, errUnmarshalError)%0A%09%09%7D%0A%0A%09%09if !r.Success %7B%0A%09%09%09// TODO: Provide an actual error message instead of always returning nil%0A%09%09%09return %5B%5DWAFRule%7B%7D, err%0A%09%09%7D%0A
+ %0A
+-%09if !r.Success %7B%0A%09%09// TODO: Provide an actual error message instead of always returning nil%0A%09%09return %5B%5DWAFRule%7B%7D, err%0A%09%7D%0A
++%09%09rules = append(rules, r.Result...)%0A%09%09if r.ResultInfo.Page %3E= r.ResultInfo.TotalPages %7B%0A%09%09%09break%0A%09%09%7D%0A
+ %0A
+-%09for ri := range r.Result %7B%0A%09%09rules = append(rules, r.Result%5Bri%5D)%0A
++%09%09// Loop around and fetch the next page%0A%09%09page++%0A
+ %09%7D%0A
++%0A
+ %09ret
+- f fc84b8c867509af9c8ad6153cb4f9732ac62fd59f2f3e5d53255c548b09c9e7e vendor/github.com/cloudflare/cloudflare-go/zone.go
++ f 5eabaf458f33a1675002f7e913d29b8efd9d2ffe8de28ea0cdedb6591b6ec40d vendor/github.com/cloudflare/cloudflare-go/zone.go
+dmppatch 3
+@@ -25660,28 +25660,421 @@
+ %09%7D%0A%0A%09return response, nil%0A%7D%0A
++%0A// ZoneExport returns the text BIND config for the given zone%0A//%0A// API reference: https://api.cloudflare.com/#dns-records-for-a-zone-export-dns-records%0Afunc (api *API) ZoneExport(zoneID string) (string, error) %7B%0A%09res, err := api.makeRequest(%22GET%22, %22/zones/%22+zoneID+%22/dns_records/export%22, nil)%0A%09if err != nil %7B%0A%09%09return %22%22, errors.Wrap(err, errMakeRequestError)%0A%09%7D%0A%09return string(res), nil%0A%7D%0A
+- f b553518531b4467a122f0a24d8a306ff2cc42c7a2cdf88e1255c342e12d04e18 vendor/modules.txt
++ f bf35cb661e9d14252b80bd62a1b37c1b23b260bee126f89eda850e80ad852066 vendor/modules.txt
+dmppatch 14
+@@ -1,50 +1,50 @@
+-# github.com/cloudflare/cloudflare-go v0.10.8%0A
++# github.com/cloudflare/cloudflare-go v0.11.0%0A
+ gith
+@@ -503,65 +503,65 @@
+ ors%0A
+-# golang.org/x/crypto v0.0.0-20191219195013-becbf705a915%0A
++# golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876%0A
+ gola
+@@ -782,62 +782,62 @@
+ nal%0A
+-# golang.org/x/net v0.0.0-20191109021931-daa7c04131f5%0A
++# golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553%0A
+ gola
+treehash bd3f906fa44f348da2d5ec68bdafd0c0dfb12bb9229ad1bcf6083b10300b868a

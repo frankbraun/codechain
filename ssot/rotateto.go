@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/util/base64"
 	utime "github.com/frankbraun/codechain/util/time"
 )
 

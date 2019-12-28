@@ -1,0 +1,31 @@
+export base64 package
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch master
+# Your branch is ahead of 'origin/master' by 2 commits.
+#   (use "git push" to publish your local commits)
+#
+# Changes to be committed:
+#	modified:   command/addkey.go
+#	modified:   command/keyfile.go
+#	modified:   command/keygen.go
+#	modified:   command/remkey.go
+#	modified:   command/review.go
+#	modified:   hashchain/addkey.go
+#	modified:   hashchain/internal/state/state.go
+#	modified:   hashchain/remkey.go
+#	modified:   hashchain/signature.go
+#	modified:   hashchain/source.go
+#	modified:   hashchain/start.go
+#	modified:   hashchain/verify.go
+#	deleted:    internal/base64/base64.go
+#	modified:   keyfile/keyfile.go
+#	modified:   ssot/command/refresh.go
+#	modified:   ssot/command/signhead.go
+#	modified:   ssot/rotateto.go
+#	modified:   ssot/ssot.go
+#
+# Untracked files:
+#	util/base64/
+#

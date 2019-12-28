@@ -11,7 +11,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/frankbraun/codechain/internal/base64"
+	"github.com/frankbraun/codechain/util/base64"
 	"github.com/frankbraun/codechain/util/file"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/nacl/secretbox"

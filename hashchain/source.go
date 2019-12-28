@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/frankbraun/codechain/hashchain/linktype"
-	"github.com/frankbraun/codechain/internal/base64"
 	"github.com/frankbraun/codechain/util"
+	"github.com/frankbraun/codechain/util/base64"
 	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/time"
 )

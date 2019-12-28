@@ -10,7 +10,8 @@ import (
 	"github.com/frankbraun/codechain/util/log"
 )
 
-func get(app string) string {
+// Get returns the home directory for the given app name.
+func Get(app string) string {
 	env := strings.ToUpper(app) + "HOMEDIR"
 	if homeDir := os.Getenv(env); homeDir != "" {
 		log.Printf("$%s=%s", env, homeDir)
@@ -23,15 +24,15 @@ func get(app string) string {
 
 // Codechain returns the home directory for 'codechain'.
 func Codechain() string {
-	return get("codechain")
+	return Get("codechain")
 }
 
 // SecPkg returns the home directory for 'secpkg'.
 func SecPkg() string {
-	return get("secpkg")
+	return Get("secpkg")
 }
 
 // SSOTPub returns the home directory for 'ssotpub'.
 func SSOTPub() string {
-	return get("ssotpub")
+	return Get("ssotpub")
 }

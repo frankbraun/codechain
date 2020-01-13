@@ -93,7 +93,7 @@ func TestKey(t *testing.T) {
 		t.Errorf("TreeList() -l failed: %v", err)
 	}
 	seckey.TestPass = "passphrase"
-	testComment = "John Doe"
+	TestComment = "John Doe"
 	// codechain keygen -s seckey.bin
 	err = KeyGen("codechain", homedir.Codechain(), "keygen", "-s", "seckey.bin")
 	if err != nil {
@@ -117,7 +117,7 @@ func TestKey(t *testing.T) {
 		t.Errorf("file '%s' doesn't exist", def.HashchainFile)
 	}
 	// codechain addkey -w 2 pubkey signature comment
-	err = AddKey("addkey", "-w", "2", testPubkey, testSig, testComment)
+	err = AddKey("addkey", "-w", "2", testPubkey, testSig, TestComment)
 	if err != nil {
 		t.Errorf("AddKey() failed: %v ", err)
 	}

@@ -20,7 +20,8 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-var testComment string
+// TestComment is a comment used for testing purposes. Do not set!
+var TestComment string
 
 // KeyGen implements the 'keygen' command.
 func KeyGen(checkUpToDate, homeDir, argv0 string, args ...string) error {
@@ -74,14 +75,14 @@ func KeyGen(checkUpToDate, homeDir, argv0 string, args ...string) error {
 	} else {
 		pass = []byte(seckey.TestPass)
 	}
-	if testComment == "" {
+	if TestComment == "" {
 		fmt.Println("comment (e.g., John Doe <john@example.com>; can be empty; cannot be changed):")
 		comment, err = terminal.ReadLine(os.Stdin)
 		if err != nil {
 			return err
 		}
 	} else {
-		comment = []byte(testComment)
+		comment = []byte(TestComment)
 	}
 	pub, sec, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {

@@ -16,7 +16,7 @@ import (
 	"github.com/frankbraun/codechain/util/terminal"
 )
 
-// TestPass is a passphrase used for testing purposes.
+// TestPass is a passphrase used for testing purposes. Do not set!
 var TestPass string
 
 // Check that the file seckey exists, if it is given.

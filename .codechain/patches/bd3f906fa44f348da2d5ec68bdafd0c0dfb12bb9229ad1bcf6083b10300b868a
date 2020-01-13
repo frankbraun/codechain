@@ -1,0 +1,74 @@
+codechain patchfile version 2
+treehash bd3f906fa44f348da2d5ec68bdafd0c0dfb12bb9229ad1bcf6083b10300b868a
+- f d594d5385903167d09cc7d8d5e565b5a842800900103ddd0a4f55e6afb74beb5 .secpkg
++ f ca523e4335ceca6aa78c7b96bfc2e4b39055f683901dfdb29414796b1b67b42e .secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %228cc3a48118b525bd82dce068b1053baeb6a5103f791dd784541b7e8a0a16fe8e%22,%0A
++  %22Head%22: %22e396d9fefba1763a86f2aa63e12de29a58739f72ceb9828050da8a85ead4107d%22,%0A
+   %22D
+- f a8c765b8716c4a1c05516b6b7f577b17960c1d6ce6fe4386bd99f5988d48d948 command/command_test.go
++ f 562b849735b800cc3c1aed8ad6e02bde4b86364aac7267b571a3e7eb51a2d6de command/command_test.go
+dmppatch 10
+@@ -2556,34 +2556,34 @@
+ se%22%0A
+-%09testComment = %22John Doe%22%0A
++%09TestComment = %22John Doe%22%0A
+ %09// 
+@@ -3294,77 +3294,77 @@
+ ent%0A
+-%09err = AddKey(%22addkey%22, %22-w%22, %222%22, testPubkey, testSig, testComment)%0A
++%09err = AddKey(%22addkey%22, %22-w%22, %222%22, testPubkey, testSig, TestComment)%0A
+ %09if 
+- f 37a688e56e24eaf82d89320ab9ac9486ae9c363740c043bd1f2f776670df312d command/keygen.go
++ f 4cc48e5f8079214845fab36b1780707e73896191847305a996cedf44c07fad8e command/keygen.go
+dmppatch 15
+@@ -516,31 +516,98 @@
+ %0A)%0A%0A
+-var testComment string%0A
++// TestComment is a comment used for testing purposes. Do not set!%0Avar TestComment string%0A
+ %0A// 
+@@ -1926,32 +1926,32 @@
+ %0A%09%7D%0A
+-%09if testComment == %22%22 %7B%0A
++%09if TestComment == %22%22 %7B%0A
+ %09%09fm
+@@ -2136,40 +2136,40 @@
+ e %7B%0A
+-%09%09comment = %5B%5Dbyte(testComment)%0A
++%09%09comment = %5B%5Dbyte(TestComment)%0A
+ %09%7D%0A%09
+- f d594d5385903167d09cc7d8d5e565b5a842800900103ddd0a4f55e6afb74beb5 packages/codechain.secpkg
++ f ca523e4335ceca6aa78c7b96bfc2e4b39055f683901dfdb29414796b1b67b42e packages/codechain.secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %228cc3a48118b525bd82dce068b1053baeb6a5103f791dd784541b7e8a0a16fe8e%22,%0A
++  %22Head%22: %22e396d9fefba1763a86f2aa63e12de29a58739f72ceb9828050da8a85ead4107d%22,%0A
+   %22D
+- f 4e368effe72439d8efe4512fdc952aca69ac5719b8a3695f39c0e122744d4fbf packages/scrit-testnet.secpkg
++ f 95d902d65c41363f5ac1976b0dad8c5d14bdb9b1a9b58daac3a2fd28a5ad2995 packages/scrit-testnet.secpkg
+dmppatch 5
+@@ -26,86 +26,86 @@
+ t%22,%0A
+-  %22Head%22: %22c65ddb1c66dea95a5ed04b3ec0c7dc3542145e9aefaf6d76c353b76dd7bf964b%22,%0A
++  %22Head%22: %2239066fdcd7140b330457a5d3c743517d4e3e2380bd438d5685d01cfaf2f69c4a%22,%0A
+   %22D
+- f 2709eb7b83939a52c5a7c7a5d92fc6b83be0d34a690ceef42890a4b0c01d6971 packages/scrit.secpkg
++ f bba865efa26d77b3cf89734c7e6c30954e9a4d5c5ca4b71c751ce050b28468d1 packages/scrit.secpkg
+dmppatch 5
+@@ -18,86 +18,86 @@
+ t%22,%0A
+-  %22Head%22: %225b13602a88fd3723122e4b9f00b89b9cc491286a9373877f5e718c63f320ce00%22,%0A
++  %22Head%22: %22a43b85ea4cb2f71374c2ff0c2c7897cbbaf257f2db6d8a32c94c82e29e0f6115%22,%0A
+   %22D
+- f cdb69990c5babccf7610617e55159390050287ff7990e30ef02cab1befedf6dd util/seckey/seckey.go
++ f d10039c3ad61d8c5b8eb5a93c1250c4310f2565fcb0fb64b16e55deae1450308 util/seckey/seckey.go
+dmppatch 5
+@@ -432,63 +432,75 @@
+ %0A)%0A%0A
+-// TestPass is a passphrase used for testing purposes.%0A
++// TestPass is a passphrase used for testing purposes. Do not set!%0A
+ var 
+treehash b82ade2fdc0a59c65ec3aecd795b375fb9113e29318606f9889ce0e7a7d1e075

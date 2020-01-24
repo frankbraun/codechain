@@ -3,7 +3,6 @@ package secpkg
 import (
 	"crypto/rand"
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"net/url"
 	"strings"
@@ -38,7 +37,7 @@ func New(name, dns string, head [32]byte, encrypted bool) (*Package, error) {
 	pkg.DNS = dns
 	if encrypted {
 		var key [32]byte
-		if _, err := io.ReadFull(rand.Reader, key[:]); err != nil {
+		if _, err := rand.Read(key[:]); err != nil {
 			return nil, err
 		}
 		pkg.Key = hex.Encode(key[:])

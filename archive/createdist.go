@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 
@@ -49,7 +48,7 @@ func CreateEncryptedDist(c *hashchain.HashChain, filename string, key *[32]byte)
 		return err
 	}
 	var nonce [24]byte
-	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
+	if _, err := rand.Read(nonce[:]); err != nil {
 		return err
 	}
 	enc := secretbox.Seal(nonce[:], b.Bytes(), &nonce, key)

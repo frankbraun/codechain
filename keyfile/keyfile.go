@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	b64 "encoding/base64"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -32,10 +31,10 @@ func Create(filename string, passphrase []byte, secretKey, signature [64]byte, c
 	if exists {
 		return fmt.Errorf("file '%s' exists already", filename)
 	}
-	if _, err := io.ReadFull(rand.Reader, salt[:]); err != nil {
+	if _, err := rand.Read(salt[:]); err != nil {
 		return err
 	}
-	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
+	if _, err := rand.Read(nonce[:]); err != nil {
 		return err
 	}
 	derivedKey := argon2.IDKey(passphrase, salt[:], 1, 64*1024, 4, 32)

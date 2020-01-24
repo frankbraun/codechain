@@ -4,7 +4,6 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/frankbraun/codechain/hashchain/linktype"
@@ -39,7 +38,7 @@ func Start(filename string, secKey [64]byte, comment []byte) (*HashChain, string
 
 	// create signature
 	var nonce [24]byte
-	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
+	if _, err := rand.Read(nonce[:]); err != nil {
 		c.lock.Release()
 		return nil, "", err
 	}

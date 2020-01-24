@@ -3,7 +3,6 @@ package bzero
 import (
 	"bytes"
 	"crypto/rand"
-	"io"
 	"testing"
 )
 
@@ -15,7 +14,7 @@ func TestBytes(t *testing.T) {
 		t.Error("buffers differ")
 	}
 	// fill buffer with random data
-	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
+	if _, err := rand.Read(buf); err != nil {
 		t.Fatal(err)
 	}
 	// zero

@@ -109,7 +109,7 @@ func checkUpdate(ctx context.Context, visited map[string]bool, name string) (boo
 	log.Println("7. check if HEAD is contained in hashchain")
 	if !needsUpdate {
 		srcDir := filepath.Join(pkgDir, "src")
-		c, err := hashchain.ReadFile(filepath.Join(srcDir, def.HashchainFile))
+		c, err := hashchain.ReadFile(filepath.Join(srcDir, def.UnoverwriteableHashchainFile))
 		if err != nil {
 			return false, err
 		}

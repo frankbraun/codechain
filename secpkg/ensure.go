@@ -90,7 +90,7 @@ func ensure(
 			}
 			// make sure HEAD of .secpkg is actually contained in hash chain
 			// (that is, we have updated the correct package).
-			hashchainFile := filepath.Join(pkgDir, "src", def.HashchainFile)
+			hashchainFile := filepath.Join(pkgDir, "src", def.UnoverwriteableHashchainFile)
 			c, err := hashchain.ReadFile(hashchainFile)
 			if err != nil {
 				return false, err

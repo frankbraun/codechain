@@ -109,20 +109,20 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 		if err != nil {
 			return err
 		}
-		err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,
+		err = archive.ApplyEncryptedFile(def.UnoverwriteableHashchainFile, def.PatchDir,
 			distFile, &head, key)
 		if err != nil {
 			os.RemoveAll(pkgDir)
 			return err
 		}
 	} else {
-		err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)
+		err = archive.ApplyFile(def.UnoverwriteableHashchainFile, def.PatchDir, distFile, &head)
 		if err != nil {
 			os.RemoveAll(pkgDir)
 			return err
 		}
 	}
-	c, err := hashchain.ReadFile(def.HashchainFile)
+	c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)
 	if err != nil {
 		os.RemoveAll(pkgDir)
 		return err

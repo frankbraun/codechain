@@ -38,7 +38,10 @@ func containsFile(dir string) (bool, error) {
 }
 
 func testBuild() error {
+	log.Println("test build")
+
 	// 1. Create temporary directory TMPDIR with `build` and `local` subdirectories.
+	log.Println("1. Create temporary directory TMPDIR with `build` and `local` subdirectories.")
 	dir, err := ioutil.TempDir("", "testbuild")
 	if err != nil {
 		return err
@@ -54,24 +57,28 @@ func testBuild() error {
 	}
 
 	// 2. `mkdir TMPDIR/build/.codechain`
+	log.Println("2. `mkdir TMPDIR/build/.codechain`")
 	codechainDir := filepath.Join(buildDir, def.DefaultCodechainDir)
 	if err := os.Mkdir(codechainDir, 0755); err != nil {
 		return err
 	}
 
 	// 3. `cp .codechain/hashchain TMPDIR/build/.codechain`
+	log.Println("3. `cp .codechain/hashchain TMPDIR/build/.codechain`")
 	err = file.Copy(def.HashchainFile, filepath.Join(codechainDir, "hashchain"))
 	if err != nil {
 		return err
 	}
 
 	// 4. `cp -r .codechain/patches TMPDIR/build/.codechain`
+	log.Println("4. `cp -r .codechain/patches TMPDIR/build/.codechain`")
 	err = file.CopyDir(def.PatchDir, filepath.Join(codechainDir, "patches"))
 	if err != nil {
 		return err
 	}
 
 	// 5. `cd TMPDIR/build`
+	log.Println("5. `cd TMPDIR/build`")
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -82,26 +89,30 @@ func testBuild() error {
 	defer os.Chdir(cwd)
 
 	// 6. `codechain apply`
-	c, err := hashchain.ReadFile(def.HashchainFile)
+	log.Println("6. `codechain apply`")
+	c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
-	if err := c.Apply(nil); err != nil {
+	if err := c.Apply(nil, def.UnoverwriteablePatchDir); err != nil {
 		return err
 	}
 
 	// 7. `make prefix=TMPDIR/local`
+	log.Println("7. `make prefix=TMPDIR/local`")
 	if err := gnumake.Call(localDir); err != nil {
 		return err
 	}
 
 	// 8. `make prefix=TMPDIR/local install`
+	log.Println("8. `make prefix=TMPDIR/local install`")
 	if err := gnumake.Install(localDir); err != nil {
 		return err
 	}
 
 	// 9. Make sure TMPDIR/local contains at least one file.
+	log.Println("9. Make sure TMPDIR/local contains at least one file.")
 	contains, err := containsFile(localDir)
 	if err != nil {
 		return err
@@ -111,11 +122,13 @@ func testBuild() error {
 	}
 
 	// 10. `make prefix=TMPDIR/local uninstall`
+	log.Println("10. `make prefix=TMPDIR/local uninstall`")
 	if err := gnumake.Uninstall(localDir); err != nil {
 		return err
 	}
 
 	// 11. Make sure TMPDIR/local contains no files (but empty directories are OK).
+	log.Println("11. Make sure TMPDIR/local contains no files (but empty directories are OK).")
 	contains, err = containsFile(localDir)
 	if err != nil {
 		return err
@@ -125,6 +138,7 @@ func testBuild() error {
 	}
 
 	// 12. Delete temporary directory TMPDIR.
+	log.Println("12. Delete temporary directory TMPDIR.")
 	return nil
 }
 

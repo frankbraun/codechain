@@ -166,7 +166,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		if err := c.Close(); err != nil {
 			return false, err
 		}
-		if err := c.Apply(&head); err != nil {
+		if err := c.Apply(&head, def.PatchDir); err != nil {
 			return false, err
 		}
 	}

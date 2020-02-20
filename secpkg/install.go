@@ -131,7 +131,7 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 		os.RemoveAll(pkgDir)
 		return err
 	}
-	if err := c.Apply(&head); err != nil {
+	if err := c.Apply(&head, def.PatchDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}

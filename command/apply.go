@@ -60,5 +60,5 @@ func Apply(argv0 string, args ...string) error {
 	if err := c.Close(); err != nil {
 		return err
 	}
-	return c.Apply(head)
+	return c.Apply(head, def.PatchDir)
 }

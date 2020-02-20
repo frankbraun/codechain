@@ -104,7 +104,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 	//    This can happend if we checked for updates.
 	srcDir := filepath.Join(pkgDir, "src")
 	if skipBuild {
-		c, err := hashchain.ReadFile(filepath.Join(srcDir, def.HashchainFile))
+		c, err := hashchain.ReadFile(filepath.Join(srcDir, def.UnoverwriteableHashchainFile))
 		if err != nil {
 			return false, err
 		}
@@ -148,18 +148,18 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 			if err != nil {
 				return false, err
 			}
-			err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,
+			err = archive.ApplyEncryptedFile(def.UnoverwriteableHashchainFile, def.PatchDir,
 				distFile, &head, key)
 			if err != nil {
 				return false, err
 			}
 		} else {
-			err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)
+			err = archive.ApplyFile(def.UnoverwriteableHashchainFile, def.PatchDir, distFile, &head)
 			if err != nil {
 				return false, err
 			}
 		}
-		c, err := hashchain.ReadFile(def.HashchainFile)
+		c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)
 		if err != nil {
 			return false, err
 		}

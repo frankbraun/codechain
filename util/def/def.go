@@ -29,6 +29,7 @@ func init() {
 	HashchainFile = filepath.Join(CodechainDir, "hashchain")
 	PatchDir = filepath.Join(CodechainDir, "patches")
 	UnoverwriteableHashchainFile = filepath.Join(DefaultCodechainDir, "hashchain")
+	UnoverwriteablePatchDir = filepath.Join(DefaultCodechainDir, "patches")
 }
 
 // SecretsSubDir is the default subdirectory of a tool's home directory used
@@ -62,3 +63,7 @@ var UnoverwriteableHashchainFile string
 
 // PatchDir is the default name of the patch file directory.
 var PatchDir string
+
+// UnoverwriteablePatchDir is the unoverwriteable default name of the
+// patch file directory. Setting CODECHAIN_DIR has no effect on it.
+var UnoverwriteablePatchDir string

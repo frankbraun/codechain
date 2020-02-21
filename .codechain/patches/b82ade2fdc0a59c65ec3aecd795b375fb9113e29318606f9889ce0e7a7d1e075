@@ -1,0 +1,342 @@
+codechain patchfile version 2
+treehash b82ade2fdc0a59c65ec3aecd795b375fb9113e29318606f9889ce0e7a7d1e075
+- f ca523e4335ceca6aa78c7b96bfc2e4b39055f683901dfdb29414796b1b67b42e .secpkg
++ f c5300541b2dfa80ee387306b05013678f7737f633ac7bca4b39efde8ab0e0aac .secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %22e396d9fefba1763a86f2aa63e12de29a58739f72ceb9828050da8a85ead4107d%22,%0A
++  %22Head%22: %22540baf5f83a4f9fc3573ebae08e74398165e8e2964ad68fa82cd19d8faee1d18%22,%0A
+   %22D
+- f ffadde29ad8dd443ee91bd2f2bc2c1be9951e2a8ad16884d53816e002b41d17f archive/createdist.go
++ f 48a108fca2e1f60f81604a0d61a6c06d26eaf4701c160ae1ab89f0cb383ee29f archive/createdist.go
+dmppatch 9
+@@ -54,14 +54,8 @@
+ mt%22%0A
+-%09%22io%22%0A
+ %09%22io
+@@ -1268,71 +1268,56 @@
+ yte%0A
+-%09if _, err := io.ReadFull(rand.Reader, nonce%5B:%5D); err != nil %7B%0A
++%09if _, err := rand.Read(nonce%5B:%5D); err != nil %7B%0A
+ %09%09re
+- f e09cebb45c368c79d3e7f11844f9eb71d29b5b5ad76b6010947083bd7c1f383f command/apply.go
++ f 272e74c95fff1c076d4e726cf566d39ec31244f961fb88f30009eb2ee244d3ef command/apply.go
+dmppatch 5
+@@ -1488,28 +1488,42 @@
+ %0A%09%7D%0A
+-%09return c.Apply(head)%0A
++%09return c.Apply(head, def.PatchDir)%0A
+ %7D%0A
+- f 490c0f619806f8211f2acfd1e79a5bea43984865255ab0257ec3d3e7f473d213 hashchain/apply.go
++ f 59da7dd4dd0fa0fe5301015b0ed82ecd7d6e3ce14706574b9558e4d3ca8771b4 hashchain/apply.go
+dmppatch 10
+@@ -177,58 +177,75 @@
+ il.%0A
+-func (c *HashChain) Apply(head *%5B32%5Dbyte) error %7B%0A
++func (c *HashChain) Apply(head *%5B32%5Dbyte, patchDir string) error %7B%0A
+ %09tar
+@@ -399,93 +399,89 @@
+ %0A%09%7D%0A
+-%09err := sync.Dir(%22.%22, targetHash, def.PatchDir, treeHashes, def.ExcludePaths, false)%0A
++%09err := sync.Dir(%22.%22, targetHash, patchDir, treeHashes, def.ExcludePaths, false)%0A
+ %09if 
+- f d903b17a42a9bc268a12ae80ec43ec46d5da10e98da54141ffbcdea7487ec9fd hashchain/start.go
++ f 79f8292fbdb1cb58810b324a2813f5af622612028fe9c98acacd1b89a4364646 hashchain/start.go
+dmppatch 9
+@@ -65,14 +65,8 @@
+ mt%22%0A
+-%09%22io%22%0A
+ %09%22os
+@@ -911,71 +911,56 @@
+ yte%0A
+-%09if _, err := io.ReadFull(rand.Reader, nonce%5B:%5D); err != nil %7B%0A
++%09if _, err := rand.Read(nonce%5B:%5D); err != nil %7B%0A
+ %09%09c.
+- f 18aee69fda93215b1835110a0546ad76247015430d074eeec2f9b361f2a6f10c keyfile/keyfile.go
++ f b2dedca95b9b2c159351f38e87f5ead217a602ffe3b381c1448d15e9c63a0a4a keyfile/keyfile.go
+dmppatch 14
+@@ -135,14 +135,8 @@
+ mt%22%0A
+-%09%22io%22%0A
+ %09%22io
+@@ -744,70 +744,55 @@
+ %0A%09%7D%0A
+-%09if _, err := io.ReadFull(rand.Reader, salt%5B:%5D); err != nil %7B%0A
++%09if _, err := rand.Read(salt%5B:%5D); err != nil %7B%0A
+ %09%09re
+@@ -807,71 +807,56 @@
+ %0A%09%7D%0A
+-%09if _, err := io.ReadFull(rand.Reader, nonce%5B:%5D); err != nil %7B%0A
++%09if _, err := rand.Read(nonce%5B:%5D); err != nil %7B%0A
+ %09%09re
+- f ca523e4335ceca6aa78c7b96bfc2e4b39055f683901dfdb29414796b1b67b42e packages/codechain.secpkg
++ f c5300541b2dfa80ee387306b05013678f7737f633ac7bca4b39efde8ab0e0aac packages/codechain.secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %22e396d9fefba1763a86f2aa63e12de29a58739f72ceb9828050da8a85ead4107d%22,%0A
++  %22Head%22: %22540baf5f83a4f9fc3573ebae08e74398165e8e2964ad68fa82cd19d8faee1d18%22,%0A
+   %22D
+- f 95d902d65c41363f5ac1976b0dad8c5d14bdb9b1a9b58daac3a2fd28a5ad2995 packages/scrit-testnet.secpkg
++ f 8b6f1a727c07a8f72e4c99ae350c1faee0839580e3a80684951f94c0a5b02d2a packages/scrit-testnet.secpkg
+dmppatch 5
+@@ -26,86 +26,86 @@
+ t%22,%0A
+-  %22Head%22: %2239066fdcd7140b330457a5d3c743517d4e3e2380bd438d5685d01cfaf2f69c4a%22,%0A
++  %22Head%22: %22b64afb1e35bac79018bd24e02849c0599b9d7ee5094c604ff7511eb6d1e5e74a%22,%0A
+   %22D
+- f bba865efa26d77b3cf89734c7e6c30954e9a4d5c5ca4b71c751ce050b28468d1 packages/scrit.secpkg
++ f 9728e2f10a779ae01d94a1078efa070739c98a93ac2a6c5e6f7893f3f83d8af9 packages/scrit.secpkg
+dmppatch 5
+@@ -18,86 +18,86 @@
+ t%22,%0A
+-  %22Head%22: %22a43b85ea4cb2f71374c2ff0c2c7897cbbaf257f2db6d8a32c94c82e29e0f6115%22,%0A
++  %22Head%22: %2242c340e1b51bafac01e972b362eee9b8189f6c646cad5ff4d752a42707ea1aa0%22,%0A
+   %22D
+- f bd8b4826bf6783e157efa851502542a27bb90d6adaca71533cfec23896dccd5a secpkg/checkupdate.go
++ f 9ce0588d144989fde3965368f3d117023b6d22a05ee6f6e175468083906a4c56 secpkg/checkupdate.go
+dmppatch 5
+@@ -3463,81 +3463,96 @@
+ c%22)%0A
+-%09%09c, err := hashchain.ReadFile(filepath.Join(srcDir, def.HashchainFile))%0A
++%09%09c, err := hashchain.ReadFile(filepath.Join(srcDir, def.UnoverwriteableHashchainFile))%0A
+ %09%09if
+- f 3f438af001efb679c3e8f3488383535f44faa5d27a5990ae7ac29d3269700e37 secpkg/ensure.go
++ f 775f44318148f608a1a125cc0b90d9c8b802fea42997e9008720b287dfccd238 secpkg/ensure.go
+dmppatch 5
+@@ -2511,76 +2511,91 @@
+ e).%0A
+-%09%09%09hashchainFile := filepath.Join(pkgDir, %22src%22, def.HashchainFile)%0A
++%09%09%09hashchainFile := filepath.Join(pkgDir, %22src%22, def.UnoverwriteableHashchainFile)%0A
+ %09%09%09c
+- f 4efc32060ec9762930c6d9a97baa4bfb630abf5c9e42ef21dd8ec02514b8a38a secpkg/install.go
++ f e86c1d2551a45d1e5507833ce74f0a18eb62a30a17463b742734a1451814022b secpkg/install.go
+dmppatch 20
+@@ -3070,76 +3070,91 @@
+ %09%09%7D%0A
+-%09%09err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,%0A
++%09%09err = archive.ApplyEncryptedFile(def.UnoverwriteableHashchainFile, def.PatchDir,%0A
+ %09%09%09d
+@@ -3248,84 +3248,99 @@
+ e %7B%0A
+-%09%09err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)%0A
++%09%09err = archive.ApplyFile(def.UnoverwriteableHashchainFile, def.PatchDir, distFile, &head)%0A
+ %09%09if
+@@ -3402,57 +3402,72 @@
+ %0A%09%7D%0A
+-%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
++%09c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)%0A
+ %09if 
+@@ -3596,48 +3596,62 @@
+ %0A%09%7D%0A
+-%09if err := c.Apply(&head); err != nil %7B%0A
++%09if err := c.Apply(&head, def.PatchDir); err != nil %7B%0A
+ %09%09os
+- f 479cc63b2683274678bc6850d49811aae66ff6d35d28e2309c0b133ed746887a secpkg/secpkg.go
++ f 013e83c9eb23ca9e2c5d0383c569770359ca0b6fdb4f726b7ae2763087a81dfb secpkg/secpkg.go
+dmppatch 9
+@@ -54,14 +54,8 @@
+ on%22%0A
+-%09%22io%22%0A
+ %09%22io
+@@ -1009,70 +1009,55 @@
+ yte%0A
+-%09%09if _, err := io.ReadFull(rand.Reader, key%5B:%5D); err != nil %7B%0A
++%09%09if _, err := rand.Read(key%5B:%5D); err != nil %7B%0A
+ %09%09%09r
+- f 7caddb9d7485dd28c3bcd2dac666dcf211ee3f773b3f4ffa2e584ee13b9e6c81 secpkg/update.go
++ f b5aa19f1b9da255fc3de933922a3c59e9680d376ed2ccbb183f4f51c87c70ba8 secpkg/update.go
+dmppatch 25
+@@ -3196,81 +3196,96 @@
+ d %7B%0A
+-%09%09c, err := hashchain.ReadFile(filepath.Join(srcDir, def.HashchainFile))%0A
++%09%09c, err := hashchain.ReadFile(filepath.Join(srcDir, def.UnoverwriteableHashchainFile))%0A
+ %09%09if
+@@ -4424,77 +4424,92 @@
+ %09%09%7D%0A
+-%09%09%09err = archive.ApplyEncryptedFile(def.HashchainFile, def.PatchDir,%0A
++%09%09%09err = archive.ApplyEncryptedFile(def.UnoverwriteableHashchainFile, def.PatchDir,%0A
+ %09%09%09%09
+@@ -4591,85 +4591,100 @@
+ e %7B%0A
+-%09%09%09err = archive.ApplyFile(def.HashchainFile, def.PatchDir, distFile, &head)%0A
++%09%09%09err = archive.ApplyFile(def.UnoverwriteableHashchainFile, def.PatchDir, distFile, &head)%0A
+ %09%09%09i
+@@ -4733,58 +4733,73 @@
+ %09%09%7D%0A
+-%09%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
++%09%09c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)%0A
+ %09%09if
+@@ -4902,49 +4902,63 @@
+ %09%09%7D%0A
+-%09%09if err := c.Apply(&head); err != nil %7B%0A
++%09%09if err := c.Apply(&head, def.PatchDir); err != nil %7B%0A
+ %09%09%09r
+- f 3345ce3584c9b5323fc4e4db0bf85ab8edbc4e852307157bcd7064cd9acfd8d9 ssot/command/createpkg.go
++ f 990d1b4f3ed25bc235a9446ba9a2b46c7d65fd4bbaf818425d8605f870a773f1 ssot/command/createpkg.go
+dmppatch 40
+@@ -1198,68 +1198,80 @@
+ kg(%0A
+-%09c *hashchain.HashChain, name, dns, URL, secKeyFile string,%0A
++%09c *hashchain.HashChain, name, dns, URL, secKeyFile, secpkgFile string,%0A
+ %09enc
+@@ -2528,16 +2528,49 @@
+ ation).%0A
++%09fmt.Println(%22call testBuild()%22)%0A
+ %09if err 
+@@ -2610,24 +2610,57 @@
+ turn err%0A%09%7D%0A
++%09fmt.Println(%22done testBuild()%22)%0A
+ %0A%09// Create 
+@@ -2676,48 +2676,47 @@
+ ile%0A
+-%09exists, err = file.Exists(secpkg.File)%0A
++%09exists, err = file.Exists(secpkgFile)%0A
+ %09if 
+@@ -2761,152 +2761,150 @@
+ s %7B%0A
+-%09%09return fmt.Errorf(%22secure package already exists: %25s%22, secpkg.File)%0A
++%09%09return fmt.Errorf(%22secure package already exists: %25s%22, secpkgFile)%0A
+ %09%7D%0A
+-%09err = ioutil.WriteFile(secpkg.File, %5B%5Dbyte(pkg.Marshal()+%22%5Cn%22), 0644)%0A
++%09err = ioutil.WriteFile(secpkgFile, %5B%5Dbyte(pkg.Marshal()+%22%5Cn%22), 0644)%0A
+ %09if 
+@@ -2936,50 +2936,49 @@
+ %0A%09%7D%0A
+-%09fmt.Printf(%22%25s: written%5Cn%22, secpkg.File)%0A
++%09fmt.Printf(%22%25s: written%5Cn%22, secpkgFile)%0A
+ %0A%09//
+@@ -5589,16 +5589,82 @@
+ ts()%0A%09%7D%0A
++%09secpkgFile := fs.String(%22f%22, secpkg.File, %22The secpkg filename%22)%0A
+ %09name :=
+@@ -7409,70 +7409,83 @@
+ ) %7B%0A
+-%09%09err := createPkg(c, *name, *dns, *url, *secKey, *encrypted,%0A
++%09%09err := createPkg(c, *name, *dns, *url, *secKey, *secpkgFile, *encrypted,%0A
+ %09%09%09*
+- f 95c48b07981a07cc3a5dbda46bfbe5f68f8ce02558e3f3925da8d09f2d812f2d ssot/command/signhead.go
++ f 7d675ec0804637d56e9fa7e60973855c623c1be791d7bd5d92eaad587897d5c7 ssot/command/signhead.go
+dmppatch 33
+@@ -1146,16 +1146,36 @@
+ %5B%5Dbyte,%0A
++%09secpkgFile string,%0A
+ ) error 
+@@ -1277,46 +1277,45 @@
+ g%22)%0A
+-%09pkg, err := secpkg.Load(secpkg.File)%0A
++%09pkg, err := secpkg.Load(secpkgFile)%0A
+ %09if 
+@@ -7322,48 +7322,47 @@
+ = h%0A
+-%09%09newSecPkgFile := secpkg.File + %22_new%22%0A
++%09%09newSecPkgFile := secpkgFile + %22_new%22%0A
+ %09%09er
+@@ -7471,72 +7471,71 @@
+ %09%09%7D%0A
+-%09%09if err := os.Rename(newSecPkgFile, secpkg.File); err != nil %7B%0A
++%09%09if err := os.Rename(newSecPkgFile, secpkgFile); err != nil %7B%0A
+ %09%09%09r
+@@ -7552,53 +7552,52 @@
+ %09%09%7D%0A
+-%09%09fmt.Printf(%22%5Cn%25s: updated%5Cn%22, secpkg.File)%0A
++%09%09fmt.Printf(%22%5Cn%25s: updated%5Cn%22, secpkgFile)%0A
+ %09%7D%0A%0A
+@@ -7936,16 +7936,82 @@
+ ts()%0A%09%7D%0A
++%09secpkgFile := fs.String(%22f%22, secpkg.File, %22The secpkg filename%22)%0A
+ %09rotate 
+@@ -8921,37 +8921,50 @@
+ te,%0A
+-%09%09%09sigRotate, commentRotate)%0A
++%09%09%09sigRotate, commentRotate, *secpkgFile)%0A
+ %09%09if
+- f c962d1596e1ed27bdc83ca06a48718e6bc13b363398288cbc191f21e2620f1c0 ssot/command/testbuild.go
++ f 4691c19eb6fde1a463b9724702814ed0e8305fed40493d54d056d728fa950dc9 ssot/command/testbuild.go
+dmppatch 58
+@@ -776,16 +776,44 @@
+ error %7B%0A
++%09log.Println(%22test build%22)%0A%0A
+ %09// 1. C
+@@ -886,16 +886,110 @@
+ tories.%0A
++%09log.Println(%221. Create temporary directory TMPDIR with %60build%60 and %60local%60 subdirectories.%22)%0A
+ %09dir, er
+@@ -1323,16 +1323,67 @@
+ echain%60%0A
++%09log.Println(%222. %60mkdir TMPDIR/build/.codechain%60%22)%0A
+ %09codecha
+@@ -1560,32 +1560,101 @@
+ ild/.codechain%60%0A
++%09log.Println(%223. %60cp .codechain/hashchain TMPDIR/build/.codechain%60%22)%0A
+ %09err = file.Copy
+@@ -1807,16 +1807,86 @@
+ echain%60%0A
++%09log.Println(%224. %60cp -r .codechain/patches TMPDIR/build/.codechain%60%22)%0A
+ %09err = f
+@@ -2010,16 +2010,53 @@
+ /build%60%0A
++%09log.Println(%225. %60cd TMPDIR/build%60%22)%0A
+ %09cwd, er
+@@ -2215,57 +2215,109 @@
+ ly%60%0A
+-%09c, err := hashchain.ReadFile(def.HashchainFile)%0A
++%09log.Println(%226. %60codechain apply%60%22)%0A%09c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)%0A
+ %09if 
+@@ -2366,46 +2366,75 @@
+ e()%0A
+-%09if err := c.Apply(nil); err != nil %7B%0A
++%09if err := c.Apply(nil, def.UnoverwriteablePatchDir); err != nil %7B%0A
+ %09%09re
+@@ -2480,16 +2480,62 @@
+ /local%60%0A
++%09log.Println(%227. %60make prefix=TMPDIR/local%60%22)%0A
+ %09if err 
+@@ -2625,32 +2625,86 @@
+ /local install%60%0A
++%09log.Println(%228. %60make prefix=TMPDIR/local install%60%22)%0A
+ %09if err := gnuma
+@@ -2813,16 +2813,86 @@
+ e file.%0A
++%09log.Println(%229. Make sure TMPDIR/local contains at least one file.%22)%0A
+ %09contain
+@@ -3086,16 +3086,73 @@
+ nstall%60%0A
++%09log.Println(%2210. %60make prefix=TMPDIR/local uninstall%60%22)%0A
+ %09if err 
+@@ -3294,16 +3294,109 @@
+ re OK).%0A
++%09log.Println(%2211. Make sure TMPDIR/local contains no files (but empty directories are OK).%22)%0A
+ %09contain
+@@ -3575,16 +3575,71 @@
+ TMPDIR.%0A
++%09log.Println(%2212. Delete temporary directory TMPDIR.%22)%0A
+ %09return 
+- f 772b1ffa430df57c18d021f78afcf8f8b4bc1c6c9c421986eb3026ffea28c4cb util/bzero/bzero_test.go
++ f b635ba6e90c852fd6ae7354672dcdbff830b6ebd30534d633dd5594bf0eb27fb util/bzero/bzero_test.go
+dmppatch 9
+@@ -45,14 +45,8 @@
+ nd%22%0A
+-%09%22io%22%0A
+ %09%22te
+@@ -262,66 +262,51 @@
+ ata%0A
+-%09if _, err := io.ReadFull(rand.Reader, buf); err != nil %7B%0A
++%09if _, err := rand.Read(buf); err != nil %7B%0A
+ %09%09t.
+- f 9e8f6ab25eda38ebba91bbe264ded311f7f608a9736a39cb6bd2c7f00dbafa9b util/def/def.go
++ f 24cd4101ce25d50906295f5cf5942c5b92b2505645b2b1a37fb0725313823ad5 util/def/def.go
+dmppatch 11
+@@ -995,16 +995,169 @@
+ tches%22)%0A
++%09UnoverwriteableHashchainFile = filepath.Join(DefaultCodechainDir, %22hashchain%22)%0A%09UnoverwriteablePatchDir = filepath.Join(DefaultCodechainDir, %22patches%22)%0A
+ %7D%0A%0A// Se
+@@ -1960,16 +1960,194 @@
+ string%0A%0A
++// UnoverwriteableHashchainFile is the unoverwriteable default name of the%0A// hashchain file. Setting CODECHAIN_DIR has no effect on it.%0Avar UnoverwriteableHashchainFile string%0A%0A
+ // Patch
+@@ -2211,16 +2211,190 @@
+ PatchDir string%0A
++%0A// UnoverwriteablePatchDir is the unoverwriteable default name of the%0A// patch file directory. Setting CODECHAIN_DIR has no effect on it.%0Avar UnoverwriteablePatchDir string%0A
+treehash 0fad70a8df9cf3ceb00012e66a5df19e19be39c3fa124213aeec793021aa5b7f

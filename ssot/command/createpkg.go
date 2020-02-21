@@ -96,11 +96,9 @@ func createPkg(
 	}
 
 	// 3. Test build (see TestBuild specification).
-	fmt.Println("call testBuild()")
 	if err := testBuild(); err != nil {
 		return err
 	}
-	fmt.Println("done testBuild()")
 
 	// Create .secpkg file
 	exists, err = file.Exists(secpkgFile)

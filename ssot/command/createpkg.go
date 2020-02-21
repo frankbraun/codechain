@@ -47,7 +47,7 @@ func writeTXTRecords(
 }
 
 func createPkg(
-	c *hashchain.HashChain, name, dns, URL, secKeyFile string,
+	c *hashchain.HashChain, name, dns, URL, secKeyFile, secpkgFile string,
 	encrypted, useCloudflare bool,
 	apiKey, email string,
 	validity time.Duration,
@@ -101,18 +101,18 @@ func createPkg(
 	}
 
 	// Create .secpkg file
-	exists, err = file.Exists(secpkg.File)
+	exists, err = file.Exists(secpkgFile)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return fmt.Errorf("secure package already exists: %s", secpkg.File)
+		return fmt.Errorf("secure package already exists: %s", secpkgFile)
 	}
-	err = ioutil.WriteFile(secpkg.File, []byte(pkg.Marshal()+"\n"), 0644)
+	err = ioutil.WriteFile(secpkgFile, []byte(pkg.Marshal()+"\n"), 0644)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s: written\n", secpkg.File)
+	fmt.Printf("%s: written\n", secpkgFile)
 
 	// 5. Create the first signed head with counter set to 0.
 	sh, err := ssot.SignHead(head, 0, *secKey, nil, validity)
@@ -196,6 +196,7 @@ func CreatePkg(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Create secure package and first signed head.\n")
 		fs.PrintDefaults()
 	}
+	secpkgFile := fs.String("f", secpkg.File, "The secpkg filename")
 	name := fs.String("name", "", "The project's package name")
 	dns := fs.String("dns", "", "Fully qualified comain name for Codechain's TXT records (SSOT)")
 	url := fs.String("url", "", "URL to download project files from (URL/head.tar.gz)")
@@ -248,7 +249,7 @@ func CreatePkg(argv0 string, args ...string) error {
 	})
 	// run createPkg
 	go func() {
-		err := createPkg(c, *name, *dns, *url, *secKey, *encrypted,
+		err := createPkg(c, *name, *dns, *url, *secKey, *secpkgFile, *encrypted,
 			*useCloudflare, *apiKey, *email, *validity)
 		if err != nil {
 			interrupt.ShutdownChannel <- err

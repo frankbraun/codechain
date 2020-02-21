@@ -43,10 +43,11 @@ func signHead(
 	secKeyRotate *[64]byte,
 	sigRotate *[64]byte,
 	commentRotate []byte,
+	secpkgFile string,
 ) error {
 	// 1. Parse the .secpkg file in the current working directory.
 	log.Println("1. parse .secpkg")
-	pkg, err := secpkg.Load(secpkg.File)
+	pkg, err := secpkg.Load(secpkgFile)
 	if err != nil {
 		return err
 	}
@@ -247,15 +248,15 @@ func signHead(
 	log.Println("12. if the HEAD changed, update the .secpkg file")
 	if h != pkg.Head {
 		pkg.Head = h
-		newSecPkgFile := secpkg.File + "_new"
+		newSecPkgFile := secpkgFile + "_new"
 		err = ioutil.WriteFile(newSecPkgFile, []byte(pkg.Marshal()+"\n"), 0644)
 		if err != nil {
 			return err
 		}
-		if err := os.Rename(newSecPkgFile, secpkg.File); err != nil {
+		if err := os.Rename(newSecPkgFile, secpkgFile); err != nil {
 			return err
 		}
-		fmt.Printf("\n%s: updated\n", secpkg.File)
+		fmt.Printf("\n%s: updated\n", secpkgFile)
 	}
 
 	return nil
@@ -269,6 +270,7 @@ func SignHead(argv0 string, args ...string) error {
 		fmt.Fprintf(os.Stderr, "Sign Codechain head and print it on stdout.\n")
 		fs.PrintDefaults()
 	}
+	secpkgFile := fs.String("f", secpkg.File, "The secpkg filename")
 	rotate := fs.String("rotate", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
 	validity := fs.Duration("validity", ssot.MaximumValidity, "Validity of signed head")
@@ -308,7 +310,7 @@ func SignHead(argv0 string, args ...string) error {
 	// run signHead
 	go func() {
 		err := signHead(context.Background(), c, *validity, secKeyRotate,
-			sigRotate, commentRotate)
+			sigRotate, commentRotate, *secpkgFile)
 		if err != nil {
 			interrupt.ShutdownChannel <- err
 			return

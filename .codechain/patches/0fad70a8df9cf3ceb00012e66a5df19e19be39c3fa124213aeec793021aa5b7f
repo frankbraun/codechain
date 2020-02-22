@@ -1,0 +1,22 @@
+codechain patchfile version 2
+treehash 0fad70a8df9cf3ceb00012e66a5df19e19be39c3fa124213aeec793021aa5b7f
+- f 89a68266a49402da64f89ab021826a65d2403279cbd3853309f3b50e5e4def1c archive/archive.go
++ f e0a38bc9768c4016240db3aeac566fa35a2b0c4cec4d1f127565c236653aae3b archive/archive.go
+dmppatch 5
+@@ -431,134 +431,148 @@
+ r (%0A
+-%09globalHashchainFile = path.Join(def.CodechainDir, %22hashchain%22)%0A%09globalPatchDir      = path.Join(def.CodechainDir, %22patches%22)%0A
++%09globalHashchainFile = path.Join(def.DefaultCodechainDir, %22hashchain%22)%0A%09globalPatchDir      = path.Join(def.DefaultCodechainDir, %22patches%22)%0A
+ )%0A%0A/
+- f 990d1b4f3ed25bc235a9446ba9a2b46c7d65fd4bbaf818425d8605f870a773f1 ssot/command/createpkg.go
++ f d47eb11917af9f898553e601c71896df22aeb4cc0c47f8c872046dd00096114b ssot/command/createpkg.go
+dmppatch 8
+@@ -2532,41 +2532,8 @@
+ n).%0A
+-%09fmt.Println(%22call testBuild()%22)%0A
+ %09if 
+@@ -2585,41 +2585,8 @@
+ %0A%09%7D%0A
+-%09fmt.Println(%22done testBuild()%22)%0A
+ %0A%09//
+treehash 3a358b5f041a587bac284b25af8511f702ef151fa92e00a26b4e0b95b04c6bf6

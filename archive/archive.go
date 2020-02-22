@@ -20,8 +20,8 @@ import (
 )
 
 var (
-	globalHashchainFile = path.Join(def.CodechainDir, "hashchain")
-	globalPatchDir      = path.Join(def.CodechainDir, "patches")
+	globalHashchainFile = path.Join(def.DefaultCodechainDir, "hashchain")
+	globalPatchDir      = path.Join(def.DefaultCodechainDir, "patches")
 )
 
 // Create a new archive for the given hash chain and write it to w.

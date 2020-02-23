@@ -53,8 +53,8 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 		return err
 	}
 
-	// 6. Query TXT record from _codechain-url.DNS and save it as URL.
-	URL, err := ssot.LookupURL(ctx, pkg.DNS)
+	// 6. Query all TXT records from _codechain-url.DNS and save it as URLs.
+	URLs, err := ssot.LookupURLs(ctx, pkg.DNS)
 	if err != nil {
 		os.RemoveAll(pkgDir)
 		return err
@@ -69,8 +69,22 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 	}
 	fmt.Printf("%s: written\n", signedHead)
 
-	// 8. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to
+	// 8. Select next URL from URLs. If no such URL exists, exit with error.
+	i := 0
+	var URL string
+_8:
+	if i < len(URLs) {
+		URL = URLs[i]
+		fmt.Printf("try URL: %s\n", URL)
+		i++
+	} else {
+		os.RemoveAll(pkgDir)
+		return fmt.Errorf("no valid URL found")
+	}
+
+	// 9. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to
 	//    ~/.config/secpkg/pkgs/NAME/dists
+	//    If it fails: Goto 8.
 	distDir := filepath.Join(pkgDir, "dists")
 	if err := os.MkdirAll(distDir, 0755); err != nil {
 		os.RemoveAll(pkgDir)
@@ -86,13 +100,14 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 	fmt.Printf("download %s\n", url)
 	err = file.Download(filename, url)
 	if err != nil {
-		os.RemoveAll(pkgDir)
-		return err
+		fmt.Printf("error: %s\n", err)
+		goto _8
 	}
 
-	// 9. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz
-	//    to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
-	//    -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT`
+	// 10. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz
+	//     to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
+	//     -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT`
+	//     If it fails: Goto 8.
 	srcDir := filepath.Join(pkgDir, "src")
 	if err := os.MkdirAll(srcDir, 0755); err != nil {
 		os.RemoveAll(pkgDir)
@@ -112,14 +127,14 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 		err = archive.ApplyEncryptedFile(def.UnoverwriteableHashchainFile, def.PatchDir,
 			distFile, &head, key)
 		if err != nil {
-			os.RemoveAll(pkgDir)
-			return err
+			fmt.Printf("error: %s\n", err)
+			goto _8
 		}
 	} else {
 		err = archive.ApplyFile(def.UnoverwriteableHashchainFile, def.PatchDir, distFile, &head)
 		if err != nil {
-			os.RemoveAll(pkgDir)
-			return err
+			fmt.Printf("error: %s\n", err)
+			goto _8
 		}
 	}
 	c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)
@@ -132,12 +147,13 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 		return err
 	}
 	if err := c.Apply(&head, def.PatchDir); err != nil {
-		os.RemoveAll(pkgDir)
-		return err
+		fmt.Printf("error: %s\n", err)
+		goto _8
 	}
 
-	// 10. Make sure HEAD_PKG is contained in
+	// 11. Make sure HEAD_PKG is contained in
 	//     ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain
+	//     If it fails: Goto 8.
 	h, err := hex.Decode(pkg.Head, 32)
 	if err != nil {
 		os.RemoveAll(pkgDir)
@@ -145,11 +161,11 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 	}
 	copy(head[:], h)
 	if err := c.CheckHead(head); err != nil {
-		os.RemoveAll(pkgDir)
-		return err
+		fmt.Printf("error: %s\n", err)
+		goto _8
 	}
 
-	// 11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+	// 12. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date.
 	if _, err := ensure(ctx, visited, pkg.Name); err != nil {
@@ -157,14 +173,14 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 		return err
 	}
 
-	// 12. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+	// 13. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 	buildDir := filepath.Join(pkgDir, "build")
 	if err := file.CopyDir(srcDir, buildDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 13. Call `make prefix=~/.config/secpkg/local` in
+	// 14. Call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	localDir := filepath.Join(homedir.SecPkg(), "local")
 	if err := os.MkdirAll(localDir, 0755); err != nil {
@@ -187,14 +203,14 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 		return err
 	}
 
-	// 14. Call `make prefix=~/.config/secpkg/local install` in
+	// 15. Call `make prefix=~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	if err := gnumake.Install(localDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 15. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+	// 16. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 	installedDir := filepath.Join(pkgDir, "installed")
 	if err := os.Rename(buildDir, installedDir); err != nil {
 		os.RemoveAll(pkgDir)

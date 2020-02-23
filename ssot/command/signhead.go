@@ -210,17 +210,21 @@ func signHead(
 		}
 	}
 
-	// 10. If the HEAD changed, lookup the download URL and print where to upload
+	// 10. If the HEAD changed, lookup the download URLs and print where to upload
 	//     the distribution file:
 	//     ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
-	log.Println("10. if the HEAD changed, lookup the download URL")
+	log.Println("10. if the HEAD changed, lookup the download URLs")
 	if h != pkg.Head {
-		URL, err := ssot.LookupURL(ctx, pkg.DNS)
+		URLs, err := ssot.LookupURLs(ctx, pkg.DNS)
 		if err != nil {
 			return err
 		}
 		fmt.Println("")
-		fmt.Printf("Please upload the following distribution file to: %s\n", URL)
+		fmt.Println("Please upload the following distribution file to:")
+		for _, URL := range URLs {
+			fmt.Println(URL)
+		}
+		fmt.Println("")
 		fmt.Println(distFile)
 		fmt.Println("")
 	}

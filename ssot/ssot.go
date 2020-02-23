@@ -159,27 +159,26 @@ func LookupHead(ctx context.Context, dns string) (*SignedHead, error) {
 	return sh, nil
 }
 
-// LookupURL looks up URL from dns and returns it.
-func LookupURL(ctx context.Context, dns string) (string, error) {
+// LookupURLs looks up all URLs from dns and returns it.
+func LookupURLs(ctx context.Context, dns string) ([]string, error) {
 	txts, err := net.DefaultResolver.LookupTXT(ctx, def.CodechainURLName+dns)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	var URL string
+	var URLs []string
 	for _, txt := range txts {
 		// parse TXT records as URL
 		if _, err := url.Parse(txt); err != nil {
 			fmt.Fprintf(os.Stderr, "cannot parse as URL: %s\n", txt)
 			continue
 		}
-		URL = txt
-		fmt.Printf("URL found: %s\n", URL)
-		break // valid TXT record found
+		URLs = append(URLs, txt)
+		fmt.Printf("URL found: %s\n", txt)
 	}
-	if URL == "" {
-		return "", errors.New("ssot: no valid TXT record for URL found")
+	if len(URLs) == 0 {
+		return nil, errors.New("ssot: no valid TXT record for URL found")
 	}
-	return URL, nil
+	return URLs, nil
 }
 
 // Head returns the signed head.

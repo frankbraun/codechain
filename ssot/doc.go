@@ -106,7 +106,7 @@ To publish an update of a secure package with SSOT do the following:
    9. If the HEAD changed, save the current distribution to:
       ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz (`codechain createdist`).
 
-  10. If the HEAD changed, lookup the download URL and print where to upload
+  10. If the HEAD changed, lookup the download URLs and print where to upload
       the distribution file:
       ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
 
@@ -116,7 +116,7 @@ To publish an update of a secure package with SSOT do the following:
   13. If the HEAD changed, update the .secpkg file accordingly.
 
   Afterwards the administrator manually uploads the distribution HEAD.tar.gz
-  to the download URL and publishes the new DNS TXT record in the defined
+  to the download URLs and publishes the new DNS TXT record in the defined
   zone (if not published automatically). DNSSEC should be enabled.
 
 Refresh specification

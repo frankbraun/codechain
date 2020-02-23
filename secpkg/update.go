@@ -58,7 +58,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 	}
 
 	// 5. Query TXT record from _codechain-url.DNS and save it as URL.
-	URL, err := ssot.LookupURL(ctx, pkg.DNS)
+	URLs, err := ssot.LookupURLs(ctx, pkg.DNS)
 	if err != nil {
 		os.RemoveAll(pkgDir)
 		return false, err
@@ -116,8 +116,21 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 9. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
-	//    save it to ~/.config/secpkg/pkgs/NAME/dists
+	// 9. Select next URL from URLs. If no such URL exists, exit with error.
+	i := 0
+	var URL string
+_9:
+	if i < len(URLs) {
+		URL = URLs[i]
+		fmt.Printf("try URL: %s\n", URL)
+		i++
+	} else {
+		return false, fmt.Errorf("no valid URL found")
+	}
+
+	// 10. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
+	//     save it to ~/.config/secpkg/pkgs/NAME/dists
+	//     If it fails: Goto 9.
 	if !skipBuild {
 		distDir := filepath.Join(pkgDir, "dists")
 		var encSuffix string
@@ -130,13 +143,15 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		fmt.Printf("download %s\n", url)
 		err = file.Download(filename, url)
 		if err != nil {
-			return false, err
+			fmt.Printf("error: %s\n", err)
+			goto _9
 		}
 	}
 
-	// 10. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+	// 11. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
 	//     to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
 	//     -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
+	//     If it fails: Goto 9.
 	if !skipBuild {
 		if err := os.Chdir(srcDir); err != nil {
 			return false, err
@@ -151,12 +166,14 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 			err = archive.ApplyEncryptedFile(def.UnoverwriteableHashchainFile, def.PatchDir,
 				distFile, &head, key)
 			if err != nil {
-				return false, err
+				fmt.Printf("error: %s\n", err)
+				goto _9
 			}
 		} else {
 			err = archive.ApplyFile(def.UnoverwriteableHashchainFile, def.PatchDir, distFile, &head)
 			if err != nil {
-				return false, err
+				fmt.Printf("error: %s\n", err)
+				goto _9
 			}
 		}
 		c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)
@@ -167,11 +184,12 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 			return false, err
 		}
 		if err := c.Apply(&head, def.PatchDir); err != nil {
-			return false, err
+			fmt.Printf("error: %s\n", err)
+			goto _9
 		}
 	}
 
-	// 11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+	// 12. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date. If at least one dependency was updated, set
 	//     SKIP_BUILD to false.
@@ -183,7 +201,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		skipBuild = false
 	}
 
-	// 12. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local uninstall` in
+	// 13. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local uninstall` in
 	//     ~/.config/secpkg/pkgs/NAME/installed
 	installedDir := filepath.Join(pkgDir, "installed")
 	localDir := filepath.Join(homedir.SecPkg(), "local")
@@ -196,7 +214,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 13. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+	// 14. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
 	buildDir := filepath.Join(pkgDir, "build")
 	if !skipBuild {
 		if err := os.RemoveAll(buildDir); err != nil {
@@ -204,7 +222,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 14. If not SKIP_BUILD,
+	// 15. If not SKIP_BUILD,
 	//     `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 	if !skipBuild {
 		if err := file.CopyDir(srcDir, buildDir); err != nil {
@@ -224,7 +242,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 16. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
+	// 17. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	if !skipBuild {
 		if err := gnumake.Install(localDir); err != nil {
@@ -232,7 +250,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 17. If not SKIP_BUILD,
+	// 18. If not SKIP_BUILD,
 	//     `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 	if !skipBuild {
 		if err := os.RemoveAll(installedDir); err != nil {
@@ -243,7 +261,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		}
 	}
 
-	// 18. Update signed head:
+	// 19. Update signed head:
 	//
 	//      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
 	//               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
@@ -252,7 +270,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 		return false, nil
 	}
 
-	// 19. The software has been successfully updated.
+	// 20. The software has been successfully updated.
 	if skipBuild {
 		fmt.Printf("package '%s' already up-to-date\n", name)
 		return false, nil

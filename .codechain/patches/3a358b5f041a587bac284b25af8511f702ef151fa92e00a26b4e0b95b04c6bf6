@@ -1,0 +1,339 @@
+codechain patchfile version 2
+treehash 3a358b5f041a587bac284b25af8511f702ef151fa92e00a26b4e0b95b04c6bf6
+- f 8951ac10abd9cc06a9cfadde82d1d25b84e973f071edc6ceeabcea008b0b6de7 secpkg/doc.go
++ f 1c3e511a1ee9b7a1a692004699faea32aa296097d6b3849cccfefc66060beb98 secpkg/doc.go
+dmppatch 111
+@@ -1284,75 +1284,81 @@
+ ).%0A%0A
+-   6. Query TXT record from _codechain-url.DNS and save it as URL.%0A
++   6. Query all TXT records from _codechain-url.DNS and save it as URLs.%0A
+ %0A   
+@@ -1429,82 +1429,156 @@
+ ad%0A%0A
+-   8. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to%0A
++   8. Select next URL from URLs. If no such URL exists, exit with error.%0A%0A   9. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to%0A
+     
+@@ -1616,71 +1616,98 @@
+ sts%0A
++      If it fails: Goto 8.%0A
+ %0A
+-   9. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz%0A
++  10. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz%0A
+     
+@@ -1844,50 +1844,77 @@
+ OT%60%0A
++      If it fails: Goto 8.%0A
+ %0A
+-  10. Make sure HEAD_PKG is contained in%0A
++  11. Make sure HEAD_PKG is contained in%0A
+     
+@@ -1970,82 +1970,109 @@
+ ain%0A
++      If it fails: Goto 8.%0A
+ %0A
+-  11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and%0A
++  12. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and%0A
+     
+@@ -2175,138 +2175,138 @@
+ e.%0A%0A
+-  12. %60cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build%60%0A
++  13. %60cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build%60%0A
+ %0A
+-  13. Call %60make prefix=~/.config/secpkg/local%60 in%0A
++  14. Call %60make prefix=~/.config/secpkg/local%60 in%0A
+     
+@@ -2345,68 +2345,68 @@
+ ld%0A%0A
+-  14. Call %60make prefix= ~/.config/secpkg/local install%60 in%0A
++  15. Call %60make prefix= ~/.config/secpkg/local install%60 in%0A
+     
+@@ -2445,89 +2445,89 @@
+ ld%0A%0A
+-  15. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A
++  16. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A
+ %0A  I
+@@ -3596,75 +3596,81 @@
+ e.%0A%0A
+-   5. Query TXT record from _codechain-url.DNS and save it as URL.%0A
++   5. Query all TXT records from _codechain-url.DNS and save it as URLs.%0A
+ %0A   
+@@ -4449,85 +4449,159 @@
+ s.%0A%0A
+-   9. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and%0A
++   9. Select next URL from URLs. If no such URL exists, exit with error.%0A%0A  10. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and%0A
+     
+@@ -4650,85 +4650,112 @@
+ sts%0A
++      If it fails: Goto 9.%0A
+ %0A
+-  10. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz%0A
++  11. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz%0A
+     
+@@ -4883,82 +4883,109 @@
+ D%60.%0A
++      If it fails: Goto 9.%0A
+ %0A
+-  11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and%0A
++  12. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and%0A
+     
+@@ -5159,88 +5159,88 @@
+ e.%0A%0A
+-  12. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local uninstall%60 in%0A
++  13. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local uninstall%60 in%0A
+     
+@@ -5283,101 +5283,101 @@
+ ed%0A%0A
+-  13. If not SKIP_BUILD, %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A
++  14. If not SKIP_BUILD, %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A
+ %0A
+-  14. If not SKIP_BUILD,%0A
++  15. If not SKIP_BUILD,%0A
+     
+@@ -5455,78 +5455,78 @@
+ d%60%0A%0A
+-  15. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local%60 in%0A
++  16. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local%60 in%0A
+     
+@@ -5565,87 +5565,87 @@
+ ld%0A%0A
+-  16. If not SKIP_BUILD, call %60make prefix= ~/.config/secpkg/local install%60 in%0A
++  17. If not SKIP_BUILD, call %60make prefix= ~/.config/secpkg/local install%60 in%0A
+     
+@@ -5684,33 +5684,33 @@
+ ld%0A%0A
+-  17. If not SKIP_BUILD,%0A
++  18. If not SKIP_BUILD,%0A
+     
+@@ -5791,34 +5791,34 @@
+ d%60%0A%0A
+-  18. Update signed head:%0A
++  19. Update signed head:%0A
+ %0A   
+@@ -6018,58 +6018,58 @@
+ ).%0A%0A
+-  19. The software has been successfully updated.%0A
++  20. The software has been successfully updated.%0A
+ %0AChe
+- f e86c1d2551a45d1e5507833ce74f0a18eb62a30a17463b742734a1451814022b secpkg/install.go
++ f cb930f53d1cd1b4e26096f6e52e7da14f0d8eecb0e97d6b197228c51f6c2b675 secpkg/install.go
+dmppatch 72
+@@ -1507,118 +1507,126 @@
+ %09%7D%0A%0A
+-%09// 6. Query TXT record from _codechain-url.DNS and save it as URL.%0A%09URL, err := ssot.LookupURL(ctx, pkg.DNS)%0A
++%09// 6. Query all TXT records from _codechain-url.DNS and save it as URLs.%0A%09URLs, err := ssot.LookupURLs(ctx, pkg.DNS)%0A
+ %09if 
+@@ -1968,83 +1968,341 @@
+ d)%0A%0A
+-%09// 8. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to%0A
++%09// 8. Select next URL from URLs. If no such URL exists, exit with error.%0A%09i := 0%0A%09var URL string%0A_8:%0A%09if i %3C len(URLs) %7B%0A%09%09URL = URLs%5Bi%5D%0A%09%09fmt.Printf(%22try URL: %25s%5Cn%22, URL)%0A%09%09i++%0A%09%7D else %7B%0A%09%09os.RemoveAll(pkgDir)%0A%09%09return fmt.Errorf(%22no valid URL found%22)%0A%09%7D%0A%0A%09// 9. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to%0A
+ %09// 
+@@ -2337,16 +2337,44 @@
+ E/dists%0A
++%09//    If it fails: Goto 8.%0A
+ %09distDir
+@@ -2759,251 +2759,290 @@
+ l %7B%0A
+-%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A
++%09%09fmt.Printf(%22error: %25s%5Cn%22, err)%0A%09%09goto _8%0A
+ %09%7D%0A%0A
+-%09// 9. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz%0A%09//    to ~/.config/secpkg/pkgs/NAME/src with %60codechain apply%0A%09//    -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT%60%0A
++%09// 10. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz%0A%09//     to ~/.config/secpkg/pkgs/NAME/src with %60codechain apply%0A%09//     -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT%60%0A%09//     If it fails: Goto 8.%0A
+ %09src
+@@ -3529,46 +3529,53 @@
+ l %7B%0A
+-%09%09%09os.RemoveAll(pkgDir)%0A%09%09%09return err%0A
++%09%09%09fmt.Printf(%22error: %25s%5Cn%22, err)%0A%09%09%09goto _8%0A
+ %09%09%7D%0A
+@@ -3697,46 +3697,53 @@
+ l %7B%0A
+-%09%09%09os.RemoveAll(pkgDir)%0A%09%09%09return err%0A
++%09%09%09fmt.Printf(%22error: %25s%5Cn%22, err)%0A%09%09%09goto _8%0A
+ %09%09%7D%0A
+@@ -3997,91 +3997,98 @@
+ l %7B%0A
+-%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A
++%09%09fmt.Printf(%22error: %25s%5Cn%22, err)%0A%09%09goto _8%0A
+ %09%7D%0A%0A
+-%09// 10. Make sure HEAD_PKG is contained in%0A
++%09// 11. Make sure HEAD_PKG is contained in%0A
+ %09// 
+@@ -4142,16 +4142,45 @@
+ shchain%0A
++%09//     If it fails: Goto 8.%0A
+ %09h, err 
+@@ -4328,123 +4328,130 @@
+ l %7B%0A
+-%09%09os.RemoveAll(pkgDir)%0A%09%09return err%0A
++%09%09fmt.Printf(%22error: %25s%5Cn%22, err)%0A%09%09goto _8%0A
+ %09%7D%0A%0A
+-%09// 11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and%0A
++%09// 12. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and%0A
+ %09// 
+@@ -4656,88 +4656,88 @@
+ %09%7D%0A%0A
+-%09// 12. %60cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build%60%0A
++%09// 13. %60cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build%60%0A
+ %09bui
+@@ -4876,61 +4876,61 @@
+ %09%7D%0A%0A
+-%09// 13. Call %60make prefix=~/.config/secpkg/local%60 in%0A
++%09// 14. Call %60make prefix=~/.config/secpkg/local%60 in%0A
+ %09// 
+@@ -5440,69 +5440,69 @@
+ %09%7D%0A%0A
+-%09// 14. Call %60make prefix=~/.config/secpkg/local install%60 in%0A
++%09// 15. Call %60make prefix=~/.config/secpkg/local install%60 in%0A
+ %09// 
+@@ -5633,91 +5633,91 @@
+ %09%7D%0A%0A
+-%09// 15. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A
++%09// 16. %60mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed%60%0A
+ %09ins
+- f b5aa19f1b9da255fc3de933922a3c59e9680d376ed2ccbb183f4f51c87c70ba8 secpkg/update.go
++ f 65e1b162b1e09fcb21bfaa7e13dcd85c25a6bd98d1b4ccda958c01d0705bc378 secpkg/update.go
+dmppatch 81
+@@ -1663,50 +1663,52 @@
+ RL.%0A
+-%09URL, err := ssot.LookupURL(ctx, pkg.DNS)%0A
++%09URLs, err := ssot.LookupURLs(ctx, pkg.DNS)%0A
+ %09if 
+@@ -3474,137 +3474,410 @@
+ %09%7D%0A%0A
+-%09// 9. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and%0A%09//    save it to ~/.config/secpkg/pkgs/NAME/dists%0A
++%09// 9. Select next URL from URLs. If no such URL exists, exit with error.%0A%09i := 0%0A%09var URL string%0A_9:%0A%09if i %3C len(URLs) %7B%0A%09%09URL = URLs%5Bi%5D%0A%09%09fmt.Printf(%22try URL: %25s%5Cn%22, URL)%0A%09%09i++%0A%09%7D else %7B%0A%09%09return false, fmt.Errorf(%22no valid URL found%22)%0A%09%7D%0A%0A%09// 10. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and%0A%09//     save it to ~/.config/secpkg/pkgs/NAME/dists%0A%09//     If it fails: Goto 9.%0A
+ %09if 
+@@ -4206,37 +4206,61 @@
+ l %7B%0A
+-%09%09%09return false, err%0A
++%09%09%09fmt.Printf(%22error: %25s%5Cn%22, err)%0A%09%09%09goto _9%0A
+ %09%09%7D%0A%09%7D%0A%0A
+ %09// 
+@@ -4259,86 +4259,86 @@
+ %09%7D%0A%0A
+-%09// 10. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz%0A
++%09// 11. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz%0A
+ %09// 
+@@ -4466,16 +4466,45 @@
+  HEAD%60.%0A
++%09//     If it fails: Goto 9.%0A
+ %09if !ski
+@@ -4877,38 +4877,63 @@
+ = nil %7B%0A
+-%09%09%09%09return false, err%0A
++%09%09%09%09fmt.Printf(%22error: %25s%5Cn%22, err)%0A%09%09%09%09goto _9%0A
+ %09%09%09%7D%0A%09%09%7D
+@@ -5051,38 +5051,63 @@
+ = nil %7B%0A
+-%09%09%09%09return false, err%0A
++%09%09%09%09fmt.Printf(%22error: %25s%5Cn%22, err)%0A%09%09%09%09goto _9%0A
+ %09%09%09%7D%0A%09%09%7D
+@@ -5335,37 +5335,61 @@
+ l %7B%0A
+-%09%09%09return false, err%0A
++%09%09%09fmt.Printf(%22error: %25s%5Cn%22, err)%0A%09%09%09goto _9%0A
+ %09%09%7D%0A%09%7D%0A%0A
+ %09// 
+@@ -5388,83 +5388,83 @@
+ %09%7D%0A%0A
+-%09// 11. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and%0A
++%09// 12. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and%0A
+ %09// 
+@@ -5771,90 +5771,90 @@
+ %09%7D%0A%0A
+-%09// 12. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local uninstall%60 in%0A
++%09// 13. If not SKIP_BUILD, call %60make prefix=~/.config/secpkg/local uninstall%60 in%0A
+ %09// 
+@@ -6178,77 +6178,77 @@
+ %09%7D%0A%0A
+-%09// 13. If not SKIP_BUILD, %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A
++%09// 14. If not SKIP_BUILD, %60rm -rf ~/.config/secpkg/pkgs/NAME/build%60%0A
+ %09bui
+@@ -6386,35 +6386,35 @@
+ %09%7D%0A%0A
+-%09// 14. If not SKIP_BUILD,%0A
++%09// 15. If not SKIP_BUILD,%0A
+ %09// 
+@@ -6898,89 +6898,89 @@
+ %09%7D%0A%0A
+-%09// 16. If not SKIP_BUILD, call %60make prefix= ~/.config/secpkg/local install%60 in%0A
++%09// 17. If not SKIP_BUILD, call %60make prefix= ~/.config/secpkg/local install%60 in%0A
+ %09// 
+@@ -7118,35 +7118,35 @@
+ %09%7D%0A%0A
+-%09// 17. If not SKIP_BUILD,%0A
++%09// 18. If not SKIP_BUILD,%0A
+ %09// 
+@@ -7412,36 +7412,36 @@
+ %09%7D%0A%0A
+-%09// 18. Update signed head:%0A
++%09// 19. Update signed head:%0A
+ %09//%0A
+@@ -7726,60 +7726,60 @@
+ %09%7D%0A%0A
+-%09// 19. The software has been successfully updated.%0A
++%09// 20. The software has been successfully updated.%0A
+ %09if 
+- f 7d675ec0804637d56e9fa7e60973855c623c1be791d7bd5d92eaad587897d5c7 ssot/command/signhead.go
++ f b832a14b1209349e0bea4fb0c5b0be02e2f49e3195eb2ae341934876ea3d01a3 ssot/command/signhead.go
+dmppatch 20
+@@ -6002,87 +6002,88 @@
+ %09%7D%0A%0A
+-%09// 10. If the HEAD changed, lookup the download URL and print where to upload%0A
++%09// 10. If the HEAD changed, lookup the download URLs and print where to upload%0A
+ %09// 
+@@ -6167,73 +6167,74 @@
+ .gz%0A
+-%09log.Println(%2210. if the HEAD changed, lookup the download URL%22)%0A
++%09log.Println(%2210. if the HEAD changed, lookup the download URLs%22)%0A
+ %09if 
+@@ -6253,51 +6253,53 @@
+ d %7B%0A
+-%09%09URL, err := ssot.LookupURL(ctx, pkg.DNS)%0A
++%09%09URLs, err := ssot.LookupURLs(ctx, pkg.DNS)%0A
+ %09%09if
+@@ -6352,84 +6352,146 @@
+ %22%22)%0A
+-%09%09fmt.Printf(%22Please upload the following distribution file to: %25s%5Cn%22, URL)%0A
++%09%09fmt.Println(%22Please upload the following distribution file to:%22)%0A%09%09for _, URL := range URLs %7B%0A%09%09%09fmt.Println(URL)%0A%09%09%7D%0A%09%09fmt.Println(%22%22)%0A
+ %09%09fm
+- f 5184def0aaab6139d1f2b966cc0f48019510692cac8c017d5aebe9bb990b9d4d ssot/doc.go
++ f abd5c6b2d94aecb03ff8af68cfeabca51a0876e0e641d36a46c3c01b507a6cca ssot/doc.go
+dmppatch 10
+@@ -4266,85 +4266,86 @@
+ ).%0A%0A
+-  10. If the HEAD changed, lookup the download URL and print where to upload%0A
++  10. If the HEAD changed, lookup the download URLs and print where to upload%0A
+     
+@@ -4728,82 +4728,83 @@
+ .gz%0A
+-  to the download URL and publishes the new DNS TXT record in the defined%0A
++  to the download URLs and publishes the new DNS TXT record in the defined%0A
+   zo
+- f 0aa96e87534d6b3104fb56d1a34d3df6f58a891a0de01d22efcbcc6f4ff31c60 ssot/ssot.go
++ f 149c081720e2e4bf6e6c657f371e86fb1219b05daf3844f4ea3d9a89fcd5eee7 ssot/ssot.go
+dmppatch 24
+@@ -4668,125 +4668,134 @@
+ %0A%7D%0A%0A
+-// LookupURL looks up URL from dns and returns it.%0Afunc LookupURL(ctx context.Context, dns string) (string, error) %7B%0A
++// LookupURLs looks up all URLs from dns and returns it.%0Afunc LookupURLs(ctx context.Context, dns string) (%5B%5Dstring, error) %7B%0A
+ %09txt
+@@ -4886,44 +4886,48 @@
+ l %7B%0A
+-%09%09return %22%22, err%0A
++%09%09return nil, err%0A
+ %09%7D%0A
+-%09var URL string%0A
++%09var URLs %5B%5Dstring%0A
+ %09for
+@@ -5104,197 +5104,185 @@
+ %09%09%7D%0A
+-%09%09URL = txt%0A%09%09fmt.Printf(%22URL found: %25s%5Cn%22, URL)%0A%09%09break // valid TXT record found%0A
++%09%09URLs = append(URLs, txt)%0A%09%09fmt.Printf(%22URL found: %25s%5Cn%22, txt)%0A
+ %09%7D%0A
+-%09if URL == %22%22 %7B%0A%09%09return %22%22, errors.New(%22ssot: no valid TXT record for URL found%22)%0A
++%09if len(URLs) == 0 %7B%0A%09%09return nil, errors.New(%22ssot: no valid TXT record for URL found%22)%0A
+ %09%7D%0A
+-%09return URL, nil%0A
++%09return URLs, nil%0A
+ %7D%0A%0A/
+treehash d1492e1aca5118acb399eb0d4d28b6ba589c022254e9064af279772b7b5aa688

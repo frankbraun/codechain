@@ -1,6 +1,8 @@
 Codechain — code trust through hash chains
 ------------------------------------------
 
+![Logo](image/codechain-avatar-blue-trans-50-percent.png)
+
 [![GoDoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/frankbraun/codechain) [![Build Status](https://img.shields.io/travis/frankbraun/codechain.svg?style=flat-square)](https://travis-ci.org/frankbraun/codechain) [![Go Report Card](https://goreportcard.com/badge/github.com/frankbraun/codechain?style=flat-square)](https://goreportcard.com/report/github.com/frankbraun/codechain)
 
 ### In code we trust: Secure multiparty code reviews with signatures and hash chains.
@@ -84,3 +86,5 @@ Codechain depends on the `git` binary (for `git diff`), but that's optional.
 Codechain has been heavily influenced by discussions with
 [Jonathan Logan](https://github.com/JonathanLogan) of
 [Cryptohippie](https://secure.cryptohippie.com/), Inc.
+Many thanks to [Michael Parenti](https://github.com/exiledsurfer) for
+the [logo](image/).

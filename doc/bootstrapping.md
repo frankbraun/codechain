@@ -26,7 +26,7 @@ If you can, this is optional.
 
 From https://frankbraun.org/codechain-bootstrap.tar.gz and execute:
 
-    $ tar -xvf codechain-bootstrap.tar.gz
+    $ tar -xzf codechain-bootstrap.tar.gz
     $ cd codechain-bootstrap
     $ go run ../cctreehash.go
     7552080c78c26b8a2699c0ac4398028b907b673958f8ba26e01da2ac499b1acb

@@ -9,18 +9,26 @@ echo "cctreehash.go $CCTREEHASH_SHA256"
 echo "codechain-bootstrap $CODECHAIN_BOOTSTRAP_TREE_HASH"
 echo "------------------------------------------------------------------------"
 
+# select sha256 program
+if [ -x "$(command -v sha256sum)" ]
+then
+  SHA256="sha256sum --tag"
+else
+  SHA256="sha256"
+fi
+
 # download cctreehash.go
 cd /tmp
 rm -f cctreehash.go
 curl -O https://frankbraun.org/cctreehash.go
 
 # verify its SHA-256
-CCTREEHASH=$(sha256sum cctreehash.go)
-if [ "$CCTREEHASH" = "$CCTREEHASH_SHA256  cctreehash.go" ]
+CCTREEHASH=$($SHA256 cctreehash.go)
+if [ "$CCTREEHASH" = "SHA256 (cctreehash.go) = $CCTREEHASH_SHA256" ]
 then
-  echo "sha256 cctreehash.go matches"
+  echo "$SHA256 cctreehash.go matches"
 else
-  echo "sha256 cctreehash.go does not match"
+  echo "$SHA256 cctreehash.go does not match"
   exit 1
 fi
 

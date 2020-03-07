@@ -5,12 +5,21 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 )
+
+func make() string {
+	if runtime.GOOS == "openbsd" {
+		// on OpenBSD GNU make is called as `gmake`
+		return "gmake"
+	}
+	return "make"
+}
 
 // Call 'make' with prefix=prefix.
 func Call(prefix string) error {
 	prefixStr := fmt.Sprintf("prefix=%s", prefix)
-	cmd := exec.Command("make", prefixStr)
+	cmd := exec.Command(make(), prefixStr)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
@@ -19,7 +28,7 @@ func Call(prefix string) error {
 // Install calls 'make install' with prefix=prefix.
 func Install(prefix string) error {
 	prefixStr := fmt.Sprintf("prefix=%s", prefix)
-	cmd := exec.Command("make", prefixStr, "install")
+	cmd := exec.Command(make(), prefixStr, "install")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
@@ -28,7 +37,7 @@ func Install(prefix string) error {
 // Uninstall calls 'make uninstall' with prefix=prefix.
 func Uninstall(prefix string) error {
 	prefixStr := fmt.Sprintf("prefix=%s", prefix)
-	cmd := exec.Command("make", prefixStr, "uninstall")
+	cmd := exec.Command(make(), prefixStr, "uninstall")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()

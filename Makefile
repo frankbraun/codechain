@@ -16,7 +16,7 @@ uninstall:
 test:
 	# go get github.com/frankbraun/gocheck
 	# gocheck -g -c -v
-	gocheck -c -v -timeout 20m
+	gocheck -c -v -timeout 30m
 
 test-install:
 	go get github.com/frankbraun/gocheck

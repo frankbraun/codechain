@@ -1,0 +1,11 @@
+codechain patchfile version 2
+treehash e48230d935e9e6050716874a8d2f2d1560bb918f0662c761f012ed6c0a04acb8
+- f 9ce0588d144989fde3965368f3d117023b6d22a05ee6f6e175468083906a4c56 secpkg/checkupdate.go
++ f d5b034f2a4f3681a6b20bf25b46d994b41641ee177576dc8f5c1d8adb16f5372 secpkg/checkupdate.go
+dmppatch 5
+@@ -3006,45 +3006,45 @@
+ k %7B%0A
+-%09%09if shDNS.Head() == shDisk.Head() %7B%0A
++%09%09if shDNS.Head() != shDisk.Head() %7B%0A
+ %09%09%09l
+treehash d6a59fbe6ffe7c1c091d95ce0c8cbb369e55c1453e7c27ff8ae7ec556ce13c94

@@ -47,6 +47,14 @@ func (c *HashChain) Head() [32]byte {
 	return c.chain[len(c.chain)-1].Hash()
 }
 
+// LastSignedHead returns the last signed head and the corresponding signed
+// line number.
+// If no signed line exists, it returns the hash of the first line and 0.
+func (c *HashChain) LastSignedHead() ([32]byte, int) {
+	signedLine := c.state.SignedLine()
+	return c.chain[signedLine].Hash(), signedLine
+}
+
 // CheckHead checks wether the hash chain contains the given head as entry.
 func (c *HashChain) CheckHead(head [32]byte) error {
 	for _, l := range c.chain {

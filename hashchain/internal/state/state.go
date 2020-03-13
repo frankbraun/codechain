@@ -407,3 +407,8 @@ func (s *State) UnsignedInfo(pubKey, treeHash string, omitSource bool) ([]string
 func (s *State) SignerBarrier(pubKey string) int {
 	return s.signerBarriers[pubKey]
 }
+
+// SignedLine returns the last signed line.
+func (s *State) SignedLine() int {
+	return s.signedLine
+}

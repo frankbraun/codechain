@@ -1,6 +1,7 @@
 package hashchain
 
 import (
+	"bytes"
 	"crypto/ed25519"
 	"crypto/rand"
 	"fmt"
@@ -71,6 +72,11 @@ func TestStartEmpty(t *testing.T) {
 		t.Fatalf("ReadFile() 2 failed: %v", err)
 	}
 	defer c2.Close()
+
+	_, ln := c2.LastSignedHead()
+	if ln != 0 {
+		t.Errorf("wrong signed line number %d != 0", ln)
+	}
 }
 
 func TestStartSourceSign(t *testing.T) {
@@ -306,5 +312,55 @@ func TestCheckHead(t *testing.T) {
 	err = c.CheckHead(head)
 	if err != nil {
 		t.Fatalf("CheckHead() failed: %v", err)
+	}
+}
+
+func TestLastSignedHead(t *testing.T) {
+	hashChainA = filepath.Join("testdata", "hashchain_a")
+	hashChainB = filepath.Join("testdata", "hashchain_b")
+
+	c, err := ReadFile(hashChainA)
+	if err != nil {
+		t.Fatalf("ReadFile() failed: %v", err)
+	}
+	c.Close()
+	h1, ln := c.LastSignedHead()
+	h2 := c.Head()
+	if !bytes.Equal(h1[:], h2[:]) {
+		t.Error("wrong head")
+	}
+	if ln != 2 {
+		t.Errorf("wrong signed line number %d != 2", ln)
+	}
+
+	c, err = ReadFile(hashChainB)
+	if err != nil {
+		t.Fatalf("ReadFile() failed: %v", err)
+	}
+	c.Close()
+	h1, ln = c.LastSignedHead()
+	h2 = c.Head()
+	if !bytes.Equal(h1[:], h2[:]) {
+		t.Error("wrong head")
+	}
+	if ln != 4 {
+		t.Errorf("wrong signed line number %d != 4", ln)
+	}
+
+	// add hello.go
+	_, err = c.Source(helloHash, secA, []byte("add hello.go"))
+	if err != nil {
+		t.Fatalf("c.Source() failed: %v", err)
+	}
+	newHead, newLineNumber := c.LastSignedHead()
+	h2 = c.Head()
+	if !bytes.Equal(newHead[:], h1[:]) {
+		t.Error("head changed")
+	}
+	if newLineNumber != ln {
+		t.Error("line number changed")
+	}
+	if bytes.Equal(newHead[:], h1[:]) {
+		t.Error("heads should differ")
 	}
 }

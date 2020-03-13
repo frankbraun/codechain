@@ -54,7 +54,7 @@ func refresh(
 	}
 
 	// 4. Make sure the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
-	//    matches the HEAD in the .secpkg file.
+	//    matches the last signed HEAD in the .secpkg file.
 	if prevSignedHead.Head() != pkg.Head {
 		return fmt.Errorf("signed head in '%s' does not match HEAD in '%s'",
 			signedHeadFile, secpkgFilename)

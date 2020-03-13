@@ -52,7 +52,7 @@ func createPkg(
 	apiKey, email string,
 	validity time.Duration,
 ) error {
-	head := c.Head()
+	head, _ := c.LastSignedHead()
 	fmt.Printf("create package for head %x\n", head)
 	secKey, _, _, err := seckey.Read(secKeyFile)
 	if err != nil {

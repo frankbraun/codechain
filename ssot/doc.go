@@ -44,7 +44,7 @@ procedure is defined:
      - The NAME of the project.
      - The fully qualified domain name (DNS) where the TXT records can be
        queried.
-     - The current HEAD of the project's Codechain.
+     - The last signed HEAD of the project's Codechain.
 
      The .secpkg file is saved to the current working directory, which is
      typically added to the root of the project's repository.
@@ -79,7 +79,8 @@ To publish an update of a secure package with SSOT do the following:
 
    3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head.
 
-   4. Get the HEAD from .codechain/hashchain in the current working directory.
+   4. Get the last signed HEAD from .codechain/hashchain in the current working
+      directory.
 
    5. If ~/.config/ssotpub/pkgs/NAME/cloudflare.json exits, check the contained
       Cloudflare credentials and switch on automatic publishing of TXT records.
@@ -110,10 +111,10 @@ To publish an update of a secure package with SSOT do the following:
       the distribution file:
       ~/.config/ssotpkg/pkgs/NAME/dists/HEAD.tar.gz
 
-  12. Print DNS TXT record as defined by the .secpkg file and the signed head.
+  11. Print DNS TXT record as defined by the .secpkg file and the signed head.
       If TXT records are to be published automatically, publish the TXT record.
 
-  13. If the HEAD changed, update the .secpkg file accordingly.
+  12. If the last signed HEAD changed, update the .secpkg file accordingly.
 
   Afterwards the administrator manually uploads the distribution HEAD.tar.gz
   to the download URLs and publishes the new DNS TXT record in the defined
@@ -131,7 +132,7 @@ To refresh the published head of a secure package with SSOT do the following:
    3. Validate the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head.
 
    4. Make sure the signed head in ~/.config/ssotpub/pkgs/NAME/signed_head
-      matches the HEAD in the .secpkg file.
+      matches the last signed HEAD in the .secpkg file.
 
    5. If ~/.config/ssotpub/pkgs/NAME/cloudflare.json exits, check the contained
       Cloudflare credentials and switch on automatic publishing of TXT records.

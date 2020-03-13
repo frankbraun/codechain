@@ -72,9 +72,10 @@ func signHead(
 		return err
 	}
 
-	// 4. Get the HEAD from .codechain/hashchain in the current working directory.
+	// 4. Get the last signed HEAD from .codechain/hashchain in the current
+	//    working directory.
 	log.Println("4. get the head")
-	head := c.Head()
+	head, _ := c.LastSignedHead()
 	fmt.Printf("signing head %x\n", head)
 
 	// 5. If ~/.config/ssotpub/pkgs/NAME/cloudflare.json exits, check the contained

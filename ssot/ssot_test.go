@@ -58,4 +58,11 @@ func TestSignedHead(t *testing.T) {
 	if len(sh2.Marshal()) > 255 {
 		t.Error("V2 head is too long")
 	}
+	/*
+		txt = sh2.Marshal()
+		_, err = Unmarshal(txt)
+		if err != nil {
+			t.Fatalf("Unmarshal() failed: %v", err)
+		}
+	*/
 }

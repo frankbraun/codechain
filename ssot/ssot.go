@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/ed25519"
+	b64 "encoding/base64"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -108,13 +109,20 @@ func unmarshal(m [184]byte) (*SignedHead, error) {
 
 // Unmarshal and verify a base64 encoded signed head.
 func Unmarshal(signedHead string) (*SignedHead, error) {
-	b, err := base64.Decode(signedHead, 184)
+	b, err := b64.RawURLEncoding.DecodeString(signedHead)
 	if err != nil {
 		return nil, err
 	}
-	var m [184]byte
-	copy(m[:], b)
-	return unmarshal(m)
+	if len(b) == 184 { // version 1
+		var m [184]byte
+		copy(m[:], b)
+		return unmarshal(m)
+	}
+	version := b[0]
+	if version == 2 {
+		// TODO: process version 2
+	}
+	return nil, fmt.Errorf("ssot: signed head version %d not supported", version)
 }
 
 // Load and verify a base64 encoded signed head from filename.

@@ -49,4 +49,13 @@ func TestSignedHead(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unmarshal() failed: %v", err)
 	}
+
+	// V2
+	sh2, err := SignHeadV2(head, 2, 0, sk, nil, MinimumValidity)
+	if err != nil {
+		t.Fatalf("SignHead() failed: %v", err)
+	}
+	if len(sh2.Marshal()) > 255 {
+		t.Error("V2 head is too long")
+	}
 }

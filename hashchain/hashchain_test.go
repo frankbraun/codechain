@@ -11,10 +11,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/hex"
 )
 
-const helloHashHex = "5998c63aca42e471297c0fa353538a93d4d4cfafe9a672df6989e694188b4a92"
+const (
+	helloHashHex    = "5998c63aca42e471297c0fa353538a93d4d4cfafe9a672df6989e694188b4a92"
+	lastSignedHeadA = "170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb"
+	lastSignedHeadB = "0636b1e6faf8724ce3145b5de15ba4ffffacc6b852e1074d6a68721bfc0a8ecb"
+)
 
 var (
 	pubA      [32]byte
@@ -133,7 +138,7 @@ func TestStartAddKeySignSigCtlSign(t *testing.T) {
 	defer c.Close()
 	fmt.Println(l)
 
-	// addkey pubB hello.go
+	// addkey pubB
 	sig := ed25519.Sign(secB[:], pubB[:])
 	var signature [64]byte
 	copy(signature[:], sig)
@@ -197,7 +202,7 @@ func TestStartAddKeySignRemKeySign(t *testing.T) {
 	defer c.Close()
 	fmt.Println(l)
 
-	// addkey pubB hello.go
+	// addkey pubB
 	sig := ed25519.Sign(secB[:], pubB[:])
 	var signature [64]byte
 	copy(signature[:], sig)
@@ -325,12 +330,11 @@ func TestLastSignedHead(t *testing.T) {
 	}
 	c.Close()
 	h1, ln := c.LastSignedHead()
-	h2 := c.Head()
-	if !bytes.Equal(h1[:], h2[:]) {
+	if hex.Encode(h1[:]) != lastSignedHeadA {
 		t.Error("wrong head")
 	}
-	if ln != 2 {
-		t.Errorf("wrong signed line number %d != 2", ln)
+	if ln != 1 {
+		t.Errorf("wrong signed line number %d != 1", ln)
 	}
 
 	c, err = ReadFile(hashChainB)
@@ -339,28 +343,49 @@ func TestLastSignedHead(t *testing.T) {
 	}
 	c.Close()
 	h1, ln = c.LastSignedHead()
-	h2 = c.Head()
-	if !bytes.Equal(h1[:], h2[:]) {
+	if hex.Encode(h1[:]) != lastSignedHeadB {
 		t.Error("wrong head")
 	}
-	if ln != 4 {
-		t.Errorf("wrong signed line number %d != 4", ln)
+	if ln != 3 {
+		t.Errorf("wrong signed line number %d != 3", ln)
+	}
+}
+
+func TestLastSignedHeadModify(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "hashchain_test")
+	if err != nil {
+		t.Fatalf("ioutil.TempDir() failed: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	hashChainB := filepath.Join("testdata", "hashchain_b")
+	hashChain := filepath.Join(tmpdir, "hashchain")
+	if err := file.Copy(hashChainB, hashChain); err != nil {
+		t.Fatal(err)
 	}
 
-	// add hello.go
-	_, err = c.Source(helloHash, secA, []byte("add hello.go"))
+	c, err := ReadFile(hashChain)
 	if err != nil {
-		t.Fatalf("c.Source() failed: %v", err)
+		t.Fatalf("ReadFile() failed: %v", err)
 	}
+	defer c.Close()
+
+	h, ln := c.LastSignedHead()
+
+	// addkey pubB
+	sig := ed25519.Sign(secB[:], pubB[:])
+	var signature [64]byte
+	copy(signature[:], sig)
+	_, err = c.AddKey(1, pubB, signature, nil)
+	if err != nil {
+		t.Fatalf("c.AddKey() failed: %v", err)
+	}
+
 	newHead, newLineNumber := c.LastSignedHead()
-	h2 = c.Head()
-	if !bytes.Equal(newHead[:], h1[:]) {
+	if !bytes.Equal(newHead[:], h[:]) {
 		t.Error("head changed")
 	}
 	if newLineNumber != ln {
 		t.Error("line number changed")
-	}
-	if bytes.Equal(newHead[:], h1[:]) {
-		t.Error("heads should differ")
 	}
 }

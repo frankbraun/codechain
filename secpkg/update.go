@@ -261,7 +261,32 @@ _9:
 		}
 	}
 
-	// 19. Update signed head:
+	// 19. If not SKIP_BUILD and the file
+	//     ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,
+	//     `cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg
+	//            ~/.config/secpkg/pkgs/NAME/.secpkg`
+	if !skipBuild {
+		insSecpkgFile := filepath.Join(installedDir, File)
+		exists, err := file.Exists(insSecpkgFile)
+		if err != nil {
+			return false, err
+		}
+		if exists {
+			defSecpkgFile := filepath.Join(pkgDir, File)
+			newSecpkgFile := filepath.Join(pkgDir, File+".new")
+			if err := os.RemoveAll(newSecpkgFile); err != nil {
+				return false, err
+			}
+			if err := file.Copy(insSecpkgFile, newSecpkgFile); err != nil {
+				return false, err
+			}
+			if err := os.Rename(newSecpkgFile, defSecpkgFile); err != nil {
+				return false, err
+			}
+		}
+	}
+
+	// 20. Update signed head:
 	//
 	//      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
 	//               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
@@ -270,7 +295,7 @@ _9:
 		return false, nil
 	}
 
-	// 20. The software has been successfully updated.
+	// 21. The software has been successfully updated.
 	if skipBuild {
 		fmt.Printf("package '%s' already up-to-date\n", name)
 		return false, nil

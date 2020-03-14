@@ -149,13 +149,18 @@ Updating a software package with NAME works as follows:
   18. If not SKIP_BUILD,
       `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
-  19. Update signed head:
+  19. If not SKIP_BUILD and the file
+      ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,
+      `cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg
+             ~/.config/secpkg/pkgs/NAME/.secpkg`
+
+  20. Update signed head:
 
       - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
                ~/.config/secpkg/pkgs/NAME/previous_signed_head`
       - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
 
-  20. The software has been successfully updated.
+  21. The software has been successfully updated.
 
 CheckUpdate specification
 

@@ -3,4 +3,4 @@ go: 1.13
 before_install:
   - go get github.com/frankbraun/gocheck
 script:
-  - gocheck -g -c -v -timeout 30m
+  - gocheck -g -c -v -timeout 60m

@@ -62,7 +62,7 @@ func createPkg(
 	if _, err := url.Parse(URL); err != nil {
 		return err
 	}
-	pkg, err := secpkg.New(name, dns, head, encrypted)
+	pkg, err := secpkg.New(name, dns, nil, head, encrypted)
 	if err != nil {
 		return err
 	}

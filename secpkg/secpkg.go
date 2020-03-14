@@ -15,14 +15,20 @@ const File = ".secpkg"
 
 // Package defines a package in secpkg format (stored in .secpkg files).
 type Package struct {
-	Name string // the project's package name
-	Head string // head of project's Codechain
-	DNS  string // fully qualified domain name for Codechain's TXT records (SSOT)
-	Key  string `json:",omitempty"` // optional secretbox encryption key
+	Name string   // the project's package name
+	Head string   // head of project's Codechain
+	DNS  string   // fully qualified domain name for Codechain's TXT records (SSOT)
+	DNS2 []string `json:",omitempty"` // secondary fully qualified domain names for Codechain's TXT records
+	Key  string   `json:",omitempty"` // optional secretbox encryption key
 }
 
 // New creates a new Package.
-func New(name, dns string, head [32]byte, encrypted bool) (*Package, error) {
+func New(
+	name, dns string,
+	dns2 []string,
+	head [32]byte,
+	encrypted bool,
+) (*Package, error) {
 	// validate arguments
 	if strings.Contains(name, " ") {
 		return nil, ErrPkgNameWhitespace
@@ -35,6 +41,7 @@ func New(name, dns string, head [32]byte, encrypted bool) (*Package, error) {
 	pkg.Name = strings.ToLower(name) // project names are lowercase
 	pkg.Head = hex.Encode(head[:])
 	pkg.DNS = dns
+	pkg.DNS2 = dns2
 	if encrypted {
 		var key [32]byte
 		if _, err := rand.Read(key[:]); err != nil {

@@ -70,6 +70,10 @@ Installing software described by a .secpkg file works as follows:
 
   16. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
+  17. If the file ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,
+      `cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg
+             ~/.config/secpkg/pkgs/NAME/.secpkg`
+
   If the installation process fails at any stage during the procedure described
   above, report the error and remove the directory ~/.config/secpkg/pkgs/NAME.
 

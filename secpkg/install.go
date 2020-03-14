@@ -216,6 +216,29 @@ _8:
 		os.RemoveAll(pkgDir)
 		return err
 	}
+
+	// 17. If the file ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,
+	//     `cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg
+	//            ~/.config/secpkg/pkgs/NAME/.secpkg`
+	insSecpkgFile := filepath.Join(installedDir, File)
+	exists, err = file.Exists(insSecpkgFile)
+	if err != nil {
+		return err
+	}
+	if exists {
+		defSecpkgFile := filepath.Join(pkgDir, File)
+		newSecpkgFile := filepath.Join(pkgDir, File+".new")
+		if err := os.RemoveAll(newSecpkgFile); err != nil {
+			return err
+		}
+		if err := file.Copy(insSecpkgFile, newSecpkgFile); err != nil {
+			return err
+		}
+		if err := os.Rename(newSecpkgFile, defSecpkgFile); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

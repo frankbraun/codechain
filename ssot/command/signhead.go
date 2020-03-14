@@ -29,7 +29,7 @@ func writeTXTRecord(
 	s *cloudflare.Session,
 	zone string,
 	DNS string,
-	sh *ssot.SignedHead,
+	sh ssot.SignedHead,
 ) error {
 	// Update TXT record to publish the signed head.
 	log.Println("update TXT record to publish the signed head")
@@ -118,7 +118,7 @@ func signHead(
 		if exists {
 			return fmt.Errorf("-rotate set with existing file '%s'", rotateToFile)
 		}
-		err = prevSignedHead.WriteRotateTo(rotateToFile, secKeyRotate,
+		err = ssot.WriteRotateTo(prevSignedHead, rotateToFile, secKeyRotate,
 			sigRotate, commentRotate, validity)
 		if err != nil {
 			return err
@@ -174,7 +174,7 @@ func signHead(
 	if err != nil {
 		return err
 	}
-	if err := newSignedHead.RotateFile(pkgDir); err != nil {
+	if err := ssot.RotateFile(newSignedHead, pkgDir); err != nil {
 		return err
 	}
 	if reached {
@@ -247,7 +247,7 @@ func signHead(
 		fmt.Println("Please publish the following DNS TXT record:")
 	}
 	fmt.Println("")
-	newSignedHead.TXTPrintHead(pkg.DNS)
+	ssot.TXTPrintHead(newSignedHead, pkg.DNS)
 
 	// 12. If the HEAD changed, update the .secpkg file accordingly.
 	log.Println("12. if the HEAD changed, update the .secpkg file")

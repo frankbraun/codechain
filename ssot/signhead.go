@@ -7,14 +7,15 @@ import (
 )
 
 // SignHead signs the given Codechain head.
+// TODO: Remove this function, should be replace by SignHeadV2.
 func SignHead(
 	head [32]byte,
 	counter uint64,
 	secKey [64]byte,
 	pubKeyRotate *[32]byte,
 	validity time.Duration,
-) (*SignedHead, error) {
-	var sh SignedHead
+) (SignedHead, error) {
+	var sh SignedHeadV1
 	copy(sh.pubKey[:], secKey[32:])
 	if pubKeyRotate != nil {
 		copy(sh.pubKeyRotate[:], pubKeyRotate[:])

@@ -74,7 +74,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 	//
 	//    If the validation fails, abort update procedure and report error.
 	if !skipBuild {
-		if err := shDisk.Valid(); err == nil { // not expired
+		if err := ssot.Valid(shDisk); err == nil { // not expired
 			if !(shDNS.PubKey() == shDisk.PubKey() ||
 				shDNS.PubKey() == shDisk.PubKeyRotate()) {
 				return false,
@@ -85,7 +85,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 			return false,
 				fmt.Errorf("secpkg: counter from TXT record is not increasing")
 		}
-		if err := shDNS.Valid(); err != nil {
+		if err := ssot.Valid(shDNS); err != nil {
 			return false, err
 		}
 	}
@@ -266,7 +266,7 @@ _9:
 	//      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
 	//               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
 	//      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
-	if err := shDNS.RotateFile(pkgDir); err != nil {
+	if err := ssot.RotateFile(shDNS, pkgDir); err != nil {
 		return false, nil
 	}
 

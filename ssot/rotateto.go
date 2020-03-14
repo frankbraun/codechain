@@ -12,9 +12,9 @@ import (
 	utime "github.com/frankbraun/codechain/util/time"
 )
 
-func (sh *SignedHead) calculateRotateTime(validity time.Duration) int64 {
+func calculateRotateTime(sh SignedHead, validity time.Duration) int64 {
 	now := utime.Now()
-	rest := now - sh.validTo
+	rest := now - sh.ValidTo()
 	if rest < 0 {
 		rest = 0
 	}
@@ -27,14 +27,15 @@ func (sh *SignedHead) calculateRotateTime(validity time.Duration) int64 {
 }
 
 // WriteRotateTo writes "rotate to" file to given filename.
-func (sh *SignedHead) WriteRotateTo(
+func WriteRotateTo(
+	sh SignedHead,
 	filename string,
 	secKeyRotate *[64]byte,
 	sigRotate *[64]byte,
 	commentRotate []byte,
 	validity time.Duration,
 ) error {
-	rotateTime := sh.calculateRotateTime(validity)
+	rotateTime := calculateRotateTime(sh, validity)
 	f, err := os.Create(filename)
 	if err != nil {
 		return err

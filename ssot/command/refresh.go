@@ -94,7 +94,7 @@ func refresh(
 		if exists {
 			return fmt.Errorf("-rotate set with existing file '%s'", rotateToFile)
 		}
-		err = prevSignedHead.WriteRotateTo(rotateToFile, secKeyRotate,
+		err = ssot.WriteRotateTo(prevSignedHead, rotateToFile, secKeyRotate,
 			sigRotate, commentRotate, validity)
 		if err != nil {
 			return err
@@ -155,7 +155,7 @@ func refresh(
 	if err != nil {
 		return err
 	}
-	if err := newSignedHead.RotateFile(pkgDir); err != nil {
+	if err := ssot.RotateFile(newSignedHead, pkgDir); err != nil {
 		return err
 	}
 	if reached {
@@ -181,7 +181,7 @@ func refresh(
 		fmt.Println("Please publish the following DNS TXT record:")
 	}
 	fmt.Println("")
-	newSignedHead.TXTPrintHead(pkg.DNS)
+	ssot.TXTPrintHead(newSignedHead, pkg.DNS)
 
 	return nil
 }

@@ -1,12 +1,12 @@
 package ssot
 
 import (
-	"time"
-
 	"crypto/ed25519"
+	"time"
 )
 
 // SignHeadV2 signs the given Codechain head.
+// TODO: Use this to replace SignHead.
 func SignHeadV2(
 	head [32]byte,
 	line int,
@@ -14,7 +14,7 @@ func SignHeadV2(
 	secKey [64]byte,
 	pubKeyRotate *[32]byte,
 	validity time.Duration,
-) (*SignedHeadV2, error) {
+) (SignedHead, error) {
 	var sh SignedHeadV2
 	sh.version = 2
 	copy(sh.pubKey[:], secKey[32:])

@@ -27,7 +27,7 @@ func writeTXTRecords(
 	s *cloudflare.Session,
 	zone string,
 	DNS string,
-	sh *ssot.SignedHead,
+	sh ssot.SignedHead,
 	URL string,
 ) error {
 	// Create TXT record to publish the signed head.
@@ -182,7 +182,7 @@ func createPkg(
 		fmt.Println("Please publish the following DNS TXT records:")
 	}
 	fmt.Println("")
-	sh.TXTPrintHead(pkg.DNS)
+	ssot.TXTPrintHead(sh, pkg.DNS)
 	fmt.Println("")
 	ssot.TXTPrintURL(pkg.DNS, URL)
 	return nil

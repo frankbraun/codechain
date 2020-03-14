@@ -27,7 +27,7 @@ func status() error {
 		}
 
 		fmt.Printf("%s:\n", filename)
-		fmt.Println(sh.MarshalText())
+		fmt.Println(ssot.MarshalText(sh))
 	}
 	return nil
 }

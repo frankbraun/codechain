@@ -11,7 +11,7 @@ import (
 
 // RotateFile rotates the pkgDir/signed_head to pkgDir/previous_signed_head and saves
 // signed head sh to pkgDir/signed_head.
-func (sh *SignedHead) RotateFile(pkgDir string) error {
+func RotateFile(sh SignedHead, pkgDir string) error {
 	prevSignedHeadFile := filepath.Join(pkgDir, "previous_signed_head")
 	exists, err := file.Exists(prevSignedHeadFile)
 	if err != nil {

@@ -1,0 +1,764 @@
+codechain patchfile version 2
+treehash d6a59fbe6ffe7c1c091d95ce0c8cbb369e55c1453e7c27ff8ae7ec556ce13c94
+- f aae08e323f8f17623553f590554c165c47be1a2c6f12d07fb9f8b81161097189 .secpkg
++ f 48a797490ba9e8258c4fc426fb3ac11c5ab3c36fcfae91bfdf0963bc82cc2be5 .secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %224604f1156b90b910ecc790d9df4fbc3d2a658ab4ab6401214cba0a2f472e18ff%22,%0A
++  %22Head%22: %22a9712fa5666da7391dc9401e72b8a1a2a94c440b28cf4d6572eb2d2e64ebf9d2%22,%0A
+   %22D
+- f 36cc9511c1c36f7276d617fbe01be7f1cefb2fd4c1620c1d31e578b7c2d42200 Makefile
++ f 1dfb9c02e31763fabf5d14859df5eb0c4700c5004686fa906b0f7ca704bc48b9 Makefile
+dmppatch 5
+@@ -444,36 +444,36 @@
+  -v%0A
+-%09gocheck -c -v -timeout 20m%0A
++%09gocheck -c -v -timeout 30m%0A
+ %0Ates
+- f 31f718193c9a7b6bf69002eea44384ac7cfa03372203fa210ec0c23d800f94c4 hashchain/hashchain.go
++ f 3e111f431ada430e1187b20ae9a187d0c429a4a3104b161c3f1ec4806879ef97 hashchain/hashchain.go
+dmppatch 4
+@@ -903,24 +903,331 @@
+ %5D.Hash()%0A%7D%0A%0A
++// LastSignedHead returns the last signed head and the corresponding signed%0A// line number.%0A// If no signed line exists, it returns the hash of the first line and 0.%0Afunc (c *HashChain) LastSignedHead() (%5B32%5Dbyte, int) %7B%0A%09signedLine := c.state.SignedLine()%0A%09return c.chain%5BsignedLine%5D.Hash(), signedLine%0A%7D%0A%0A
+ // CheckHead
+- f 73dde62a04cd4398c785c813c70d66418a5d153733f90b82add43181beb5b8b5 hashchain/hashchain_test.go
++ f 005e2894a713b0c98f352343b3c2fb93b89c53d1d54023b537f097df03d4f6fc hashchain/hashchain_test.go
+dmppatch 30
+@@ -21,16 +21,25 @@
+ mport (%0A
++%09%22bytes%22%0A
+ %09%22crypto
+@@ -129,16 +129,61 @@
+ sting%22%0A%0A
++%09%22github.com/frankbraun/codechain/util/file%22%0A
+ %09%22github
+@@ -225,96 +225,276 @@
+ %0A)%0A%0A
+-const helloHashHex = %225998c63aca42e471297c0fa353538a93d4d4cfafe9a672df6989e694188b4a92%22%0A
++const (%0A%09helloHashHex    = %225998c63aca42e471297c0fa353538a93d4d4cfafe9a672df6989e694188b4a92%22%0A%09lastSignedHeadA = %22170c3bb3733a79c0b7a3da7c20e5fe4a8f206fd83771a3d70b0f050c14dd5cfb%22%0A%09lastSignedHeadB = %220636b1e6faf8724ce3145b5de15ba4ffffacc6b852e1074d6a68721bfc0a8ecb%22%0A)%0A
+ %0Avar
+@@ -1620,32 +1620,131 @@
+ efer c2.Close()%0A
++%0A%09_, ln := c2.LastSignedHead()%0A%09if ln != 0 %7B%0A%09%09t.Errorf(%22wrong signed line number %25d != 0%22, ln)%0A%09%7D%0A
+ %7D%0A%0Afunc TestStar
+@@ -3096,33 +3096,24 @@
+ l)%0A%0A
+-%09// addkey pubB hello.go%0A
++%09// addkey pubB%0A
+ %09sig
+@@ -4571,33 +4571,24 @@
+ l)%0A%0A
+-%09// addkey pubB hello.go%0A
++%09// addkey pubB%0A
+ %09sig
+@@ -7091,12 +7091,1613 @@
+ , err)%0A%09%7D%0A%7D%0A
++%0Afunc TestLastSignedHead(t *testing.T) %7B%0A%09hashChainA = filepath.Join(%22testdata%22, %22hashchain_a%22)%0A%09hashChainB = filepath.Join(%22testdata%22, %22hashchain_b%22)%0A%0A%09c, err := ReadFile(hashChainA)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09c.Close()%0A%09h1, ln := c.LastSignedHead()%0A%09if hex.Encode(h1%5B:%5D) != lastSignedHeadA %7B%0A%09%09t.Error(%22wrong head%22)%0A%09%7D%0A%09if ln != 1 %7B%0A%09%09t.Errorf(%22wrong signed line number %25d != 1%22, ln)%0A%09%7D%0A%0A%09c, err = ReadFile(hashChainB)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09c.Close()%0A%09h1, ln = c.LastSignedHead()%0A%09if hex.Encode(h1%5B:%5D) != lastSignedHeadB %7B%0A%09%09t.Error(%22wrong head%22)%0A%09%7D%0A%09if ln != 3 %7B%0A%09%09t.Errorf(%22wrong signed line number %25d != 3%22, ln)%0A%09%7D%0A%7D%0A%0Afunc TestLastSignedHeadModify(t *testing.T) %7B%0A%09tmpdir, err := ioutil.TempDir(%22%22, %22hashchain_test%22)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ioutil.TempDir() failed: %25v%22, err)%0A%09%7D%0A%09defer os.RemoveAll(tmpdir)%0A%0A%09hashChainB := filepath.Join(%22testdata%22, %22hashchain_b%22)%0A%09hashChain := filepath.Join(tmpdir, %22hashchain%22)%0A%09if err := file.Copy(hashChainB, hashChain); err != nil %7B%0A%09%09t.Fatal(err)%0A%09%7D%0A%0A%09c, err := ReadFile(hashChain)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22ReadFile() failed: %25v%22, err)%0A%09%7D%0A%09defer c.Close()%0A%0A%09h, ln := c.LastSignedHead()%0A%0A%09// addkey pubB%0A%09sig := ed25519.Sign(secB%5B:%5D, pubB%5B:%5D)%0A%09var signature %5B64%5Dbyte%0A%09copy(signature%5B:%5D, sig)%0A%09_, err = c.AddKey(1, pubB, signature, nil)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22c.AddKey() failed: %25v%22, err)%0A%09%7D%0A%0A%09newHead, newLineNumber := c.LastSignedHead()%0A%09if !bytes.Equal(newHead%5B:%5D, h%5B:%5D) %7B%0A%09%09t.Error(%22head changed%22)%0A%09%7D%0A%09if newLineNumber != ln %7B%0A%09%09t.Error(%22line number changed%22)%0A%09%7D%0A%7D%0A
+- f 8acee1c6921f99b111e78b1fa44a78a152ea5a1273b4ef2c332df1c8a09c895f hashchain/internal/state/state.go
++ f 981a0d0e4cc4529732ca301f6cc4c3ddf66c4b1a340e4321af2f2e159cc2b1b1 hashchain/internal/state/state.go
+dmppatch 3
+@@ -11969,20 +11969,123 @@
+ rBarriers%5BpubKey%5D%0A%7D%0A
++%0A// SignedLine returns the last signed line.%0Afunc (s *State) SignedLine() int %7B%0A%09return s.signedLine%0A%7D%0A
+- f aae08e323f8f17623553f590554c165c47be1a2c6f12d07fb9f8b81161097189 packages/codechain.secpkg
++ f 48a797490ba9e8258c4fc426fb3ac11c5ab3c36fcfae91bfdf0963bc82cc2be5 packages/codechain.secpkg
+dmppatch 5
+@@ -22,86 +22,86 @@
+ n%22,%0A
+-  %22Head%22: %224604f1156b90b910ecc790d9df4fbc3d2a658ab4ab6401214cba0a2f472e18ff%22,%0A
++  %22Head%22: %22a9712fa5666da7391dc9401e72b8a1a2a94c440b28cf4d6572eb2d2e64ebf9d2%22,%0A
+   %22D
+- f d5b034f2a4f3681a6b20bf25b46d994b41641ee177576dc8f5c1d8adb16f5372 secpkg/checkupdate.go
++ f ef7c9c7074e6085d065d355d3f8f505963aac37d946032371aaf09142e8337af secpkg/checkupdate.go
+dmppatch 15
+@@ -2293,64 +2293,68 @@
+ k %7B%0A
+-%09%09if err := shDisk.Valid(); err == nil %7B // not expired%0A
++%09%09if err := ssot.Valid(shDisk); err == nil %7B // not expired%0A
+ %09%09%09i
+@@ -2706,48 +2706,52 @@
+ %09%09%7D%0A
+-%09%09if err := shDNS.Valid(); err != nil %7B%0A
++%09%09if err := ssot.Valid(shDNS); err != nil %7B%0A
+ %09%09%09r
+@@ -4633,58 +4633,64 @@
+ d%22)%0A
+-%09if err := shDNS.RotateFile(pkgDir); err != nil %7B%0A
++%09if err := ssot.RotateFile(shDNS, pkgDir); err != nil %7B%0A
+ %09%09re
+- f 1c3e511a1ee9b7a1a692004699faea32aa296097d6b3849cccfefc66060beb98 secpkg/doc.go
++ f 7cacf220a6993287487c0724bb512a033582a44259d0ad418c77132af2fc1c90 secpkg/doc.go
+dmppatch 14
+@@ -2523,16 +2523,195 @@
+ alled%60%0A%0A
++  17. If the file ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,%0A      %60cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg%0A             ~/.config/secpkg/pkgs/NAME/.secpkg%60%0A%0A
+   If the
+@@ -5970,34 +5970,238 @@
+ d%60%0A%0A
+-  19. Update signed head:%0A
++  19. If not SKIP_BUILD and the file%0A      ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,%0A      %60cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg%0A             ~/.config/secpkg/pkgs/NAME/.secpkg%60%0A%0A  20. Update signed head:%0A
+ %0A   
+@@ -6401,58 +6401,58 @@
+ ).%0A%0A
+-  20. The software has been successfully updated.%0A
++  21. The software has been successfully updated.%0A
+ %0AChe
+- f cb930f53d1cd1b4e26096f6e52e7da14f0d8eecb0e97d6b197228c51f6c2b675 secpkg/install.go
++ f 1b7a6fbd543d962745a60ceb5f0381191196c3a575f7b6cd1353875c59d968b4 secpkg/install.go
+dmppatch 4
+@@ -5862,16 +5862,686 @@
+  err%0A%09%7D%0A
++%0A%09// 17. If the file ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,%0A%09//     %60cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg%0A%09//            ~/.config/secpkg/pkgs/NAME/.secpkg%60%0A%09insSecpkgFile := filepath.Join(installedDir, File)%0A%09exists, err = file.Exists(insSecpkgFile)%0A%09if err != nil %7B%0A%09%09return err%0A%09%7D%0A%09if exists %7B%0A%09%09defSecpkgFile := filepath.Join(pkgDir, File)%0A%09%09newSecpkgFile := filepath.Join(pkgDir, File+%22.new%22)%0A%09%09if err := os.RemoveAll(newSecpkgFile); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if err := file.Copy(insSecpkgFile, newSecpkgFile); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%09if err := os.Rename(newSecpkgFile, defSecpkgFile); err != nil %7B%0A%09%09%09return err%0A%09%09%7D%0A%09%7D%0A%0A
+ %09return 
+- f 013e83c9eb23ca9e2c5d0383c569770359ca0b6fdb4f726b7ae2763087a81dfb secpkg/secpkg.go
++ f 9894a120f50defae2f2c0b53a02aaed70dbe7824a82bdb538a859347f7ec394b secpkg/secpkg.go
+dmppatch 14
+@@ -320,244 +320,357 @@
+ t %7B%0A
+-%09Name string // the project's package name%0A%09Head string // head of project's Codechain%0A%09DNS  string // fully qualified domain name for Codechain's TXT records (SSOT)%0A%09Key  string %60json:%22,omitempty%22%60 // optional secretbox encryption key%0A
++%09Name string   // the project's package name%0A%09Head string   // head of project's Codechain%0A%09DNS  string   // fully qualified domain name for Codechain's TXT records (SSOT)%0A%09DNS2 %5B%5Dstring %60json:%22,omitempty%22%60 // secondary fully qualified domain names for Codechain's TXT records%0A%09Key  string   %60json:%22,omitempty%22%60 // optional secretbox encryption key%0A
+ %7D%0A%0A/
+@@ -702,86 +702,108 @@
+ ge.%0A
+-func New(name, dns string, head %5B32%5Dbyte, encrypted bool) (*Package, error) %7B%0A
++func New(%0A%09name, dns string,%0A%09dns2 %5B%5Dstring,%0A%09head %5B32%5Dbyte,%0A%09encrypted bool,%0A) (*Package, error) %7B%0A
+ %09// 
+@@ -1105,16 +1105,33 @@
+ S = dns%0A
++%09pkg.DNS2 = dns2%0A
+ %09if encr
+- f 50d9ba295ca890dd7fb2e4b01f9586fa23c34932ee4724a49c9ac52864380db5 secpkg/secpkg_test.go
++ f 56a0193c0079d5e633ec6f497584f132eec64344dfd5f62bc281330548f006f7 secpkg/secpkg_test.go
+dmppatch 9
+@@ -540,59 +540,64 @@
+  h)%0A
+-%09encPkg, err := New(pkg.Name, pkg.DNS, head, true)%0A
++%09encPkg, err := New(pkg.Name, pkg.DNS, nil, head, true)%0A
+ %09if 
+@@ -763,13 +763,380 @@
+ y, err)%0A
++%09%7D%0A%0A%09codechain2SecPkg := filepath.Join(%22testdata%22, %22codechain2.secpkg%22)%0A%09pkg, err = Load(codechain2SecPkg)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Load(%25s) failed: %25v%22, codechainSecPkg, err)%0A%09%7D%0A%09if len(pkg.DNS2) != 2 %7B%0A%09%09t.Fatal(%22two secondary DNS entries expected%22)%0A%09%7D%0A%09_, err = New(pkg.Name, pkg.DNS, pkg.DNS2, head, true)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22New() failed: %25v%22, err)%0A
+ %09%7D%0A%7D%0A
++ f c8a675e24dca2bd1ea4fcacf350291eb0c2c4045deebcf3d3d77651e038324ff secpkg/testdata/codechain2.secpkg
+utf8file 10
+{
+  "Name": "codechain",
+  "Head": "73fe1313fd924854f149021e969546bce6052eca0c22b2b91245cb448410493c",
+  "DNS": "codechain.secpkg.net",
+  "DNS2": [
+    "codechain.frankbraun.org",
+    "codechain.taz0.org"
+  ]
+}
+
+- f 65e1b162b1e09fcb21bfaa7e13dcd85c25a6bd98d1b4ccda958c01d0705bc378 secpkg/update.go
++ f f47311dc388560cfd802895cfa21c99e81c70d13fbac87e1ebbc0309ea86c7bb secpkg/update.go
+dmppatch 25
+@@ -2255,64 +2255,68 @@
+ d %7B%0A
+-%09%09if err := shDisk.Valid(); err == nil %7B // not expired%0A
++%09%09if err := ssot.Valid(shDisk); err == nil %7B // not expired%0A
+ %09%09%09i
+@@ -2668,48 +2668,52 @@
+ %09%09%7D%0A
+-%09%09if err := shDNS.Valid(); err != nil %7B%0A
++%09%09if err := ssot.Valid(shDNS); err != nil %7B%0A
+ %09%09%09r
+@@ -7420,36 +7420,799 @@
+ %09%7D%0A%0A
+-%09// 19. Update signed head:%0A
++%09// 19. If not SKIP_BUILD and the file%0A%09//     ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,%0A%09//     %60cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg%0A%09//            ~/.config/secpkg/pkgs/NAME/.secpkg%60%0A%09if !skipBuild %7B%0A%09%09insSecpkgFile := filepath.Join(installedDir, File)%0A%09%09exists, err := file.Exists(insSecpkgFile)%0A%09%09if err != nil %7B%0A%09%09%09return false, err%0A%09%09%7D%0A%09%09if exists %7B%0A%09%09%09defSecpkgFile := filepath.Join(pkgDir, File)%0A%09%09%09newSecpkgFile := filepath.Join(pkgDir, File+%22.new%22)%0A%09%09%09if err := os.RemoveAll(newSecpkgFile); err != nil %7B%0A%09%09%09%09return false, err%0A%09%09%09%7D%0A%09%09%09if err := file.Copy(insSecpkgFile, newSecpkgFile); err != nil %7B%0A%09%09%09%09return false, err%0A%09%09%09%7D%0A%09%09%09if err := os.Rename(newSecpkgFile, defSecpkgFile); err != nil %7B%0A%09%09%09%09return false, err%0A%09%09%09%7D%0A%09%09%7D%0A%09%7D%0A%0A%09// 20. Update signed head:%0A
+ %09//%0A
+@@ -8423,58 +8423,64 @@
+ c).%0A
+-%09if err := shDNS.RotateFile(pkgDir); err != nil %7B%0A
++%09if err := ssot.RotateFile(shDNS, pkgDir); err != nil %7B%0A
+ %09%09re
+@@ -8503,60 +8503,60 @@
+ %09%7D%0A%0A
+-%09// 20. The software has been successfully updated.%0A
++%09// 21. The software has been successfully updated.%0A
+ %09if 
+- f d47eb11917af9f898553e601c71896df22aeb4cc0c47f8c872046dd00096114b ssot/command/createpkg.go
++ f c8455c849bc35d3b886acf135be41e044b5d5a3da170da9b2fc6c977e71d187b ssot/command/createpkg.go
+dmppatch 20
+@@ -680,30 +680,29 @@
+ ng,%0A
+-%09sh *ssot.SignedHead,%0A
++%09sh ssot.SignedHead,%0A
+ %09URL
+@@ -1359,26 +1359,39 @@
+ r %7B%0A
+-%09head := c.Head()%0A
++%09head, _ := c.LastSignedHead()%0A
+ %09fmt
+@@ -1647,60 +1647,65 @@
+ %0A%09%7D%0A
+-%09pkg, err := secpkg.New(name, dns, head, encrypted)%0A
++%09pkg, err := secpkg.New(name, dns, nil, head, encrypted)%0A
+ %09if 
+@@ -5081,34 +5081,40 @@
+ %22%22)%0A
+-%09sh.TXTPrintHead(pkg.DNS)%0A
++%09ssot.TXTPrintHead(sh, pkg.DNS)%0A
+ %09fmt
+- f a36dda426bb40eeccbaee2fa7de0b43b76e28edad32da70068de01044de13b74 ssot/command/refresh.go
++ f 01e70da3b245edb036f24a48564af5fd35323e9af4dbd4a764884dd02faf6aef ssot/command/refresh.go
+dmppatch 20
+@@ -1518,53 +1518,65 @@
+ ead%0A
+-%09//    matches the HEAD in the .secpkg file.%0A
++%09//    matches the last signed HEAD in the .secpkg file.%0A
+ %09if 
+@@ -2900,73 +2900,79 @@
+ %09%09%7D%0A
+-%09%09err = prevSignedHead.WriteRotateTo(rotateToFile, secKeyRotate,%0A
++%09%09err = ssot.WriteRotateTo(prevSignedHead, rotateToFile, secKeyRotate,%0A
+ %09%09%09s
+@@ -4640,66 +4640,72 @@
+ %0A%09%7D%0A
+-%09if err := newSignedHead.RotateFile(pkgDir); err != nil %7B%0A
++%09if err := ssot.RotateFile(newSignedHead, pkgDir); err != nil %7B%0A
+ %09%09re
+@@ -5454,45 +5454,51 @@
+ %22%22)%0A
+-%09newSignedHead.TXTPrintHead(pkg.DNS)%0A
++%09ssot.TXTPrintHead(newSignedHead, pkg.DNS)%0A
+ %0A%09re
+- f b832a14b1209349e0bea4fb0c5b0be02e2f49e3195eb2ae341934876ea3d01a3 ssot/command/signhead.go
++ f c00cefae0702ea85bce9ccf2fa933a70d1acbf31054a6a91a3e697da88307863 ssot/command/signhead.go
+dmppatch 30
+@@ -770,30 +770,29 @@
+ ng,%0A
+-%09sh *ssot.SignedHead,%0A
++%09sh ssot.SignedHead,%0A
+ ) er
+@@ -2006,88 +2006,107 @@
+ %09%7D%0A%0A
+-%09// 4. Get the HEAD from .codechain/hashchain in the current working directory.%0A
++%09// 4. Get the last signed HEAD from .codechain/hashchain in the current%0A%09//    working directory.%0A
+ %09log
+@@ -2137,26 +2137,39 @@
+ d%22)%0A
+-%09head := c.Head()%0A
++%09head, _ := c.LastSignedHead()%0A
+ %09fmt
+@@ -3550,73 +3550,79 @@
+ %09%09%7D%0A
+-%09%09err = prevSignedHead.WriteRotateTo(rotateToFile, secKeyRotate,%0A
++%09%09err = ssot.WriteRotateTo(prevSignedHead, rotateToFile, secKeyRotate,%0A
+ %09%09%09s
+@@ -5127,66 +5127,72 @@
+ %0A%09%7D%0A
+-%09if err := newSignedHead.RotateFile(pkgDir); err != nil %7B%0A
++%09if err := ssot.RotateFile(newSignedHead, pkgDir); err != nil %7B%0A
+ %09%09re
+@@ -7227,45 +7227,51 @@
+ %22%22)%0A
+-%09newSignedHead.TXTPrintHead(pkg.DNS)%0A
++%09ssot.TXTPrintHead(newSignedHead, pkg.DNS)%0A
+ %0A%09//
+- f 8828b78f85f6cbb9b62c82af847505813d89323977f48f9f6e250accfe4bb89d ssot/command/status.go
++ f 84759a1c97e40077b4483e987cfa2890be0b6dff64efed76eddbcb6d82e36e6b ssot/command/status.go
+dmppatch 5
+@@ -605,40 +605,44 @@
+ me)%0A
+-%09%09fmt.Println(sh.MarshalText())%0A
++%09%09fmt.Println(ssot.MarshalText(sh))%0A
+ %09%7D%0A%09
+- f abd5c6b2d94aecb03ff8af68cfeabca51a0876e0e641d36a46c3c01b507a6cca ssot/doc.go
++ f 92686b1b30b77967e9a844ddbff84b136469e9477aaf0e2d6815f84d089514d0 ssot/doc.go
+dmppatch 48
+@@ -143,16 +143,86 @@
+ ields:%0A%0A
++  - VERSION (1-byte), the signed head version (only from V2 onwards).%0A
+   - PUBK
+@@ -604,16 +604,87 @@
+ o sign.%0A
++  - LINE (4-byte), the last signed line number (only from V2 onwards).%0A
+   - SIGN
+@@ -762,64 +762,77 @@
+ s:%0A%0A
+-  PUBKEY%7CPUBKEY_ROTATE%7CVALID_FROM%7CVALID_TO%7CCOUNTER%7CHEAD%0A
++  VERSION%7CPUBKEY%7CPUBKEY_ROTATE%7CVALID_FROM%7CVALID_TO%7CCOUNTER%7CHEAD%7CLINE%0A
+ %0AThe
+@@ -871,74 +871,87 @@
+ of%0A%0A
+-  PUBKEY%7CPUBKEY_ROTATE%7CVALID_FROM%7CVALID_TO%7CCOUNTER%7CHEAD%7CSIGNATURE%0A
++  VERSION%7CPUBKEY%7CPUBKEY_ROTATE%7CVALID_FROM%7CVALID_TO%7CCOUNTER%7CHEAD%7CLINE%7CSIGNATURE%0A
+ %0Aenc
+@@ -1002,82 +1002,88 @@
+ ).%0A%0A
+-All integers (VALID_FROM, VALID_TO, COUNTER) are encoded in network order%0A
++All integers (VALID_FROM, VALID_TO, COUNTER, LINE) are encoded in network order%0A
+ (big
+@@ -1740,60 +1740,64 @@
+ ed.%0A
+-     - The current HEAD of the project's Codechain.%0A
++     - The last signed HEAD of the project's Codechain.%0A
+ %0A   
+@@ -3189,87 +3189,105 @@
+ d.%0A%0A
+-   4. Get the HEAD from .codechain/hashchain in the current working directory.%0A
++   4. Get the last signed HEAD from .codechain/hashchain in the current working%0A      directory.%0A
+ %0A   
+@@ -4621,87 +4621,87 @@
+ gz%0A%0A
+-  12. Print DNS TXT record as defined by the .secpkg file and the signed head.%0A
++  11. Print DNS TXT record as defined by the .secpkg file and the signed head.%0A
+     
+@@ -4781,72 +4781,84 @@
+ d.%0A%0A
+-  13. If the HEAD changed, update the .secpkg file accordingly.%0A
++  12. If the last signed HEAD changed, update the .secpkg file accordingly.%0A
+ %0A  A
+@@ -5502,52 +5502,64 @@
+ ead%0A
+-      matches the HEAD in the .secpkg file.%0A
++      matches the last signed HEAD in the .secpkg file.%0A
+ %0A   
+- f 8ebc6ada35f56ae8f3d148523a05e21219f87169752f13525ca6c5306c5f41d4 ssot/rotatefile.go
++ f 4971d65810311227ff8c4a6a4835c2ae35da0b5accc0b40ddbfc854b89cfc3f2 ssot/rotatefile.go
+dmppatch 5
+@@ -276,64 +276,62 @@
+ ad.%0A
+-func (sh *SignedHead) RotateFile(pkgDir string) error %7B%0A
++func RotateFile(sh SignedHead, pkgDir string) error %7B%0A
+ %09pre
+- f 2b17a6a7145187b6f558fe26a48230500d53cce9c2123e612ec1c6f53c3e4f25 ssot/rotateto.go
++ f abfb79f7e2ecd1d6d7452a6024444ecaf392e31035d08fb1d229f3f767461ff4 ssot/rotateto.go
+dmppatch 20
+@@ -176,82 +176,80 @@
+ %0A)%0A%0A
+-func (sh *SignedHead) calculateRotateTime(validity time.Duration) int64 %7B%0A
++func calculateRotateTime(sh SignedHead, validity time.Duration) int64 %7B%0A
+ %09now
+@@ -268,34 +268,36 @@
+ w()%0A
+-%09rest := now - sh.validTo%0A
++%09rest := now - sh.ValidTo()%0A
+ %09if 
+@@ -511,45 +511,44 @@
+ me.%0A
+-func (sh *SignedHead) WriteRotateTo(%0A
++func WriteRotateTo(%0A%09sh SignedHead,%0A
+ %09fil
+@@ -670,56 +670,57 @@
+ r %7B%0A
+-%09rotateTime := sh.calculateRotateTime(validity)%0A
++%09rotateTime := calculateRotateTime(sh, validity)%0A
+ %09f, 
+- f 8b6058159b1af653c8c18b9e8deaf885c01a1e3abaad3f91644f13ed1ce7c829 ssot/signhead.go
++ f 6d8ee1ecb65afae6c8b42d90ff0b09019f61de0be57a0b77b8a8dde16b189c7a ssot/signhead.go
+dmppatch 9
+@@ -90,16 +90,80 @@
+ n head.%0A
++// TODO: Remove this function, should be replace by SignHeadV2.%0A
+ func Sig
+@@ -274,52 +274,53 @@
+ on,%0A
+-) (*SignedHead, error) %7B%0A%09var sh SignedHead%0A
++) (SignedHead, error) %7B%0A%09var sh SignedHeadV1%0A
+ %09cop
++ f c0b0afc56d9b7e429cb9a06f4c16643a09494c0d28ad19add1839ad9915b755c ssot/signhead_v2.go
+utf8file 41
+package ssot
+
+import (
+	"crypto/ed25519"
+	"time"
+)
+
+// SignHeadV2 signs the given Codechain head.
+// TODO: Use this to replace SignHead.
+func SignHeadV2(
+	head [32]byte,
+	line int,
+	counter uint64,
+	secKey [64]byte,
+	pubKeyRotate *[32]byte,
+	validity time.Duration,
+) (SignedHead, error) {
+	var sh SignedHeadV2
+	sh.version = 2
+	copy(sh.pubKey[:], secKey[32:])
+	if pubKeyRotate != nil {
+		copy(sh.pubKeyRotate[:], pubKeyRotate[:])
+	}
+	now := time.Now().UTC().Unix()
+	sh.validFrom = now
+	if validity > MaximumValidity {
+		return nil, ErrValidityTooLong
+	}
+	if validity < MinimumValidity {
+		return nil, ErrValidityTooShort
+	}
+	sh.validTo = now + int64(validity/time.Second)
+	sh.counter = counter
+	copy(sh.head[:], head[:])
+	sh.line = uint32(line)
+	msg := sh.marshal()
+	sig := ed25519.Sign(secKey[:], msg[:])
+	copy(sh.signature[:], sig)
+	return &sh, nil
+}
+
+- f 149c081720e2e4bf6e6c657f371e86fb1219b05daf3844f4ea3d9a89fcd5eee7 ssot/ssot.go
++ f a648da45b5b67310e53e414ec2461daaad457bf68bff7d90535e5a1dc4c8fc32 ssot/ssot.go
+dmppatch 81
+@@ -40,45 +40,31 @@
+ xt%22%0A
+-%09%22crypto/ed25519%22%0A%09%22encoding/binary%22%0A
++%09b64 %22encoding/base64%22%0A
+ %09%22er
+@@ -152,55 +152,8 @@
+ or%22%0A
+-%09%22github.com/frankbraun/codechain/util/base64%22%0A
+ %09%22gi
+@@ -196,52 +196,8 @@
+ ef%22%0A
+-%09%22github.com/frankbraun/codechain/util/hex%22%0A
+ %09%22gi
+@@ -653,1164 +653,230 @@
+ ds.%0A
+-type SignedHead struct %7B%0A%09pubKey       %5B32%5Dbyte // Ed25519 public key of SSOT head signer%0A%09pubKeyRotate %5B32%5Dbyte // Ed25519 pubkey to rotate to, all 0 if unused%0A%09validFrom    int64    // this signed head is valid from the given Unix time%0A%09validTo      int64    // this signed head is valid to the given Unix time%0A%09counter      uint64   // signature counter%0A%09head         %5B32%5Dbyte // the Codechain head to sign%0A%09signature    %5B64%5Dbyte // signature with pubkey over all previous fields%0A%7D%0A%0A// marshal signed head without signature.%0Afunc (sh *SignedHead) marshal() %5B120%5Dbyte %7B%0A%09var m %5B120%5Dbyte%0A%09var b %5B8%5Dbyte%0A%09copy(m%5B:32%5D, sh.pubKey%5B:%5D)%0A%09copy(m%5B32:64%5D, sh.pubKeyRotate%5B:%5D)%0A%09binary.BigEndian.PutUint64(b%5B:%5D, uint64(sh.validFrom))%0A%09copy(m%5B64:72%5D, b%5B:%5D)%0A%09binary.BigEndian.PutUint64(b%5B:%5D, uint64(sh.validTo))%0A%09copy(m%5B72:80%5D, b%5B:%5D)%0A%09binary.BigEndian.PutUint64(b%5B:%5D, sh.counter)%0A%09copy(m%5B80:88%5D, b%5B:%5D)%0A%09copy(m%5B88:120%5D, sh.head%5B:%5D)%0A%09return m%0A%7D%0A%0A// Marshal signed head with signature and encode it as base64.%0Afunc (sh *SignedHead) Marshal() string %7B%0A%09var m %5B184%5Dbyte%0A%09b := sh.marshal()%0A%09copy(m%5B:120%5D, b%5B:%5D)%0A%09copy(m%5B120:184%5D, sh.signature%5B:%5D)%0A%09return base64.Encode(m%5B:%5D)%0A
++type SignedHead interface %7B%0A%09Version() int%0A%09PubKey() string%0A%09PubKeyRotate() string%0A%09ValidFrom() int64%0A%09ValidTo() int64%0A%09Counter() uint64%0A%09Head() string%0A%09HeadBuf() %5B32%5Dbyte%0A%09Line() int%0A%09Signature() string%0A%09Marshal() string%0A
+ %7D%0A%0A/
+@@ -943,53 +943,49 @@
+ t).%0A
+-func (sh *SignedHead) MarshalText() string %7B%0A
++func MarshalText(sh SignedHead) string %7B%0A
+ %09var
+@@ -1034,139 +1034,142 @@
+ %0A%09)%0A
+-%09validFrom := time.Unix(sh.validFrom, 0)%0A%09validTo := time.Unix(sh.validTo, 0)%0A%09if err := sh.Valid(); err == ErrSignedHeadExpired %7B%0A
++%09validFrom := time.Unix(sh.ValidFrom(), 0)%0A%09validTo := time.Unix(sh.ValidTo(), 0)%0A%09if err := Valid(sh); err == ErrSignedHeadExpired %7B%0A
+ %09%09ex
+@@ -1212,152 +1212,120 @@
+ %0A%09%7D%0A
+-%09fmt.Fprintf(&b, %22PUBKEY:        %25s%5Cn%22, base64.Encode(sh.pubKey%5B:%5D))%0A%09fmt.Fprintf(&b, %22PUBKEY_ROTATE: %25s%5Cn%22, base64.Encode(sh.pubKeyRotate%5B:%5D))%0A
++%09fmt.Fprintf(&b, %22PUBKEY:        %25s%5Cn%22, sh.PubKey())%0A%09fmt.Fprintf(&b, %22PUBKEY_ROTATE: %25s%5Cn%22, sh.PubKeyRotate())%0A
+ %09fmt
+@@ -1477,196 +1477,257 @@
+ ed)%0A
+-%09fmt.Fprintf(&b, %22COUNTER:       %25d%5Cn%22, sh.counter)%0A%09fmt.Fprintf(&b, %22HEAD:          %25s%5Cn%22, hex.Encode(sh.head%5B:%5D))%0A%09fmt.Fprintf(&b, %22SIGNATURE:     %25s%5Cn%22, base64.Encode(sh.signature%5B:%5D))%0A
++%09fmt.Fprintf(&b, %22COUNTER:       %25d%5Cn%22, sh.Counter())%0A%09fmt.Fprintf(&b, %22HEAD:          %25s%5Cn%22, sh.Head())%0A%09if sh.Line() %3E 0 %7B // version 2%0A%09%09fmt.Fprintf(&b, %22LINE:          %25d%5Cn%22, sh.Line())%0A%09%7D%0A%09fmt.Fprintf(&b, %22SIGNATURE:     %25s%5Cn%22, sh.Signature())%0A
+ %09ret
+@@ -1748,508 +1748,8 @@
+ %0A%7D%0A%0A
+-func unmarshal(m %5B184%5Dbyte) (*SignedHead, error) %7B%0A%09var sh SignedHead%0A%09copy(sh.pubKey%5B:%5D, m%5B:32%5D)%0A%09copy(sh.pubKeyRotate%5B:%5D, m%5B32:64%5D)%0A%09sh.validFrom = int64(binary.BigEndian.Uint64(m%5B64:72%5D))%0A%09sh.validTo = int64(binary.BigEndian.Uint64(m%5B72:80%5D))%0A%09sh.counter = binary.BigEndian.Uint64(m%5B80:88%5D)%0A%09copy(sh.head%5B:%5D, m%5B88:120%5D)%0A%09copy(sh.signature%5B:%5D, m%5B120:184%5D)%0A%09msg := sh.marshal()%0A%09if !ed25519.Verify(sh.pubKey%5B:%5D, msg%5B:%5D, sh.signature%5B:%5D) %7B%0A%09%09return nil, ErrSignedHeadSignature%0A%09%7D%0A%09return &sh, nil%0A%7D%0A%0A
+ // U
+@@ -1802,107 +1802,119 @@
+ ad.%0A
+-func Unmarshal(signedHead string) (*SignedHead, error) %7B%0A%09b, err := base64.Decode(signedHead, 184)%0A
++func Unmarshal(signedHead string) (SignedHead, error) %7B%0A%09b, err := b64.RawURLEncoding.DecodeString(signedHead)%0A
+ %09if 
+@@ -1951,61 +1951,253 @@
+ %0A%09%7D%0A
+-%09var m %5B184%5Dbyte%0A%09copy(m%5B:%5D, b)%0A%09return unmarshal(m)%0A
++%09if len(b) == 184 %7B // version 1%0A%09%09var m %5B184%5Dbyte%0A%09%09copy(m%5B:%5D, b)%0A%09%09return unmarshalV1(m)%0A%09%7D%0A%09version := b%5B0%5D%0A%09if version == 2 %7B%0A%09%09return unmarshalV2(signedHead)%0A%09%7D%0A%09return nil, fmt.Errorf(%22ssot: signed head version %25d not supported%22, version)%0A
+ %7D%0A%0A/
+@@ -2262,58 +2262,57 @@
+ me.%0A
+-func Load(filename string) (*SignedHead, error) %7B%0A
++func Load(filename string) (SignedHead, error) %7B%0A
+ %09b, 
+@@ -2538,80 +2538,79 @@
+ ns.%0A
+-func LookupHead(ctx context.Context, dns string) (*SignedHead, error) %7B%0A
++func LookupHead(ctx context.Context, dns string) (SignedHead, error) %7B%0A
+ %09txt
+@@ -2723,28 +2723,27 @@
+ %0A%09%7D%0A
+-%09var sh *SignedHead%0A
++%09var sh SignedHead%0A
+ %09for
+@@ -3058,45 +3058,44 @@
+ ())%0A
+-%09%09if err := sh.Valid(); err != nil %7B%0A
++%09%09if err := Valid(sh); err != nil %7B%0A
+ %09%09%09f
+@@ -3973,644 +3973,8 @@
+ %0A%7D%0A%0A
+-// Head returns the signed head.%0Afunc (sh *SignedHead) Head() string %7B%0A%09return hex.Encode(sh.head%5B:%5D)%0A%7D%0A%0A// PubKey returns the public key in base64 notation.%0Afunc (sh *SignedHead) PubKey() string %7B%0A%09return base64.Encode(sh.pubKey%5B:%5D)%0A%7D%0A%0A// PubKeyRotate returns the public key rotate in base64 notation.%0Afunc (sh *SignedHead) PubKeyRotate() string %7B%0A%09return base64.Encode(sh.pubKeyRotate%5B:%5D)%0A%7D%0A%0A// Counter returns the counter of signed head.%0Afunc (sh *SignedHead) Counter() uint64 %7B%0A%09return sh.counter%0A%7D%0A%0A// HeadBuf returns the signed head.%0Afunc (sh *SignedHead) HeadBuf() %5B32%5Dbyte %7B%0A%09var b %5B32%5Dbyte%0A%09copy(b%5B:%5D, sh.head%5B:%5D)%0A%09return b%0A%7D%0A%0A
+ // T
+@@ -4039,57 +4039,55 @@
+ ad.%0A
+-func (sh *SignedHead) TXTPrintHead(dns string) %7B%0A
++func TXTPrintHead(sh SignedHead, dns string) %7B%0A
+ %09fmt
+- f e35535eca674403070187208d102dd40bff826374c4dd4e45ba4100b12ca70d0 ssot/ssot_test.go
++ f df52d53c83d0fee0fe0370f93dd9a1ac49f9b56b065d77fff112afd8f04e30d4 ssot/ssot_test.go
+dmppatch 4
+@@ -1229,10 +1229,306 @@
+ err)%0A%09%7D%0A
++%0A%09// V2%0A%09sh2, err := SignHeadV2(head, 2, 0, sk, nil, MinimumValidity)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22SignHead() failed: %25v%22, err)%0A%09%7D%0A%09txt = sh2.Marshal()%0A%09if len(txt) %3E 255 %7B%0A%09%09t.Error(%22V2 head is too long%22)%0A%09%7D%0A%09_, err = Unmarshal(txt)%0A%09if err != nil %7B%0A%09%09t.Fatalf(%22Unmarshal() failed: %25v%22, err)%0A%09%7D%0A
+ %7D%0A
++ f b92dafacc04a8a4cd790b43456f9ebe36c5d09c3f8f68ba637ba99072a877975 ssot/ssot_v1.go
+utf8file 116
+package ssot
+
+import (
+	"crypto/ed25519"
+	"encoding/binary"
+
+	"github.com/frankbraun/codechain/util/base64"
+	"github.com/frankbraun/codechain/util/hex"
+)
+
+// SignedHeadV1 is a signed Codechain head ready for publication as a SSOT with
+// DNS TXT records (version 1).
+type SignedHeadV1 struct {
+	pubKey       [32]byte // Ed25519 public key of SSOT head signer
+	pubKeyRotate [32]byte // Ed25519 pubkey to rotate to, all 0 if unused
+	validFrom    int64    // this signed head is valid from the given Unix time
+	validTo      int64    // this signed head is valid to the given Unix time
+	counter      uint64   // signature counter
+	head         [32]byte // the Codechain head to sign
+	signature    [64]byte // signature with pubkey over all previous fields
+}
+
+// marshal signed head without signature.
+func (sh *SignedHeadV1) marshal() [120]byte {
+	var m [120]byte
+	var b [8]byte
+	copy(m[:32], sh.pubKey[:])
+	copy(m[32:64], sh.pubKeyRotate[:])
+	binary.BigEndian.PutUint64(b[:], uint64(sh.validFrom))
+	copy(m[64:72], b[:])
+	binary.BigEndian.PutUint64(b[:], uint64(sh.validTo))
+	copy(m[72:80], b[:])
+	binary.BigEndian.PutUint64(b[:], sh.counter)
+	copy(m[80:88], b[:])
+	copy(m[88:120], sh.head[:])
+	return m
+}
+
+// Marshal signed head with signature and encode it as base64.
+func (sh *SignedHeadV1) Marshal() string {
+	var m [184]byte
+	b := sh.marshal()
+	copy(m[:120], b[:])
+	copy(m[120:184], sh.signature[:])
+	return base64.Encode(m[:])
+}
+
+func unmarshalV1(m [184]byte) (*SignedHeadV1, error) {
+	var sh SignedHeadV1
+	copy(sh.pubKey[:], m[:32])
+	copy(sh.pubKeyRotate[:], m[32:64])
+	sh.validFrom = int64(binary.BigEndian.Uint64(m[64:72]))
+	sh.validTo = int64(binary.BigEndian.Uint64(m[72:80]))
+	sh.counter = binary.BigEndian.Uint64(m[80:88])
+	copy(sh.head[:], m[88:120])
+	copy(sh.signature[:], m[120:184])
+	msg := sh.marshal()
+	if !ed25519.Verify(sh.pubKey[:], msg[:], sh.signature[:]) {
+		return nil, ErrSignedHeadSignature
+	}
+	return &sh, nil
+}
+
+// Version returns the version of signed head.
+func (sh *SignedHeadV1) Version() int {
+	return 1
+}
+
+// Head returns the signed head.
+func (sh *SignedHeadV1) Head() string {
+	return hex.Encode(sh.head[:])
+}
+
+// PubKey returns the public key in base64 notation.
+func (sh *SignedHeadV1) PubKey() string {
+	return base64.Encode(sh.pubKey[:])
+}
+
+// PubKeyRotate returns the public key rotate in base64 notation.
+func (sh *SignedHeadV1) PubKeyRotate() string {
+	return base64.Encode(sh.pubKeyRotate[:])
+}
+
+// ValidFrom returns the valid from field of signed head.
+func (sh *SignedHeadV1) ValidFrom() int64 {
+	return sh.validFrom
+}
+
+// ValidTo returns the valid to field of signed head.
+func (sh *SignedHeadV1) ValidTo() int64 {
+	return sh.validTo
+}
+
+// Counter returns the counter of signed head.
+func (sh *SignedHeadV1) Counter() uint64 {
+	return sh.counter
+}
+
+// Line always returns 0 (signed head version 1 doesn't contain line numbers,
+// but this method is required to satisfy the SignedHead interface).
+func (sh *SignedHeadV1) Line() int {
+	return 0
+}
+
+// Signature returns the base64-encoded signature of the signed head.
+func (sh *SignedHeadV1) Signature() string {
+	return base64.Encode(sh.signature[:])
+}
+
+// HeadBuf returns the signed head.
+func (sh *SignedHeadV1) HeadBuf() [32]byte {
+	var b [32]byte
+	copy(b[:], sh.head[:])
+	return b
+}
+
++ f 476bf4d07ee6d7595da04c3e6b0caac86c3d293c2ac662ecb7da2be6538633fa ssot/ssot_v2.go
+utf8file 127
+package ssot
+
+import (
+	"crypto/ed25519"
+	"encoding/binary"
+
+	"github.com/frankbraun/codechain/util/base64"
+	"github.com/frankbraun/codechain/util/hex"
+)
+
+// SignedHeadV2 is a signed Codechain head ready for publication as a SSOT with
+// DNS TXT records (version 2).
+type SignedHeadV2 struct {
+	version      uint8    // the version of the signed head
+	pubKey       [32]byte // Ed25519 public key of SSOT head signer
+	pubKeyRotate [32]byte // Ed25519 pubkey to rotate to, all 0 if unused
+	validFrom    int64    // this signed head is valid from the given Unix time
+	validTo      int64    // this signed head is valid to the given Unix time
+	counter      uint64   // signature counter
+	head         [32]byte // the Codechain head to sign
+	line         uint32   // the last signed line number
+	signature    [64]byte // signature with pubkey over all previous fields
+}
+
+// marshal signed head without signature.
+func (sh *SignedHeadV2) marshal() [125]byte {
+	var m [125]byte
+	var b [8]byte
+	var l [4]byte
+	m[0] = sh.version
+	copy(m[1:33], sh.pubKey[:])
+	copy(m[33:65], sh.pubKeyRotate[:])
+	binary.BigEndian.PutUint64(b[:], uint64(sh.validFrom))
+	copy(m[65:73], b[:])
+	binary.BigEndian.PutUint64(b[:], uint64(sh.validTo))
+	copy(m[73:81], b[:])
+	binary.BigEndian.PutUint64(b[:], sh.counter)
+	copy(m[81:89], b[:])
+	copy(m[89:121], sh.head[:])
+	binary.BigEndian.PutUint32(l[:], sh.line)
+	copy(m[121:125], l[:])
+	return m
+}
+
+// Marshal signed head with signature and encode it as base64.
+func (sh *SignedHeadV2) Marshal() string {
+	var m [189]byte
+	b := sh.marshal()
+	copy(m[:125], b[:])
+	copy(m[125:189], sh.signature[:])
+	return base64.Encode(m[:])
+}
+
+func unmarshalV2(signedHead string) (*SignedHeadV2, error) {
+	m, err := base64.Decode(signedHead, 189)
+	if err != nil {
+		return nil, err
+	}
+	var sh SignedHeadV2
+	sh.version = m[0]
+	copy(sh.pubKey[:], m[1:33])
+	copy(sh.pubKeyRotate[:], m[33:65])
+	sh.validFrom = int64(binary.BigEndian.Uint64(m[65:73]))
+	sh.validTo = int64(binary.BigEndian.Uint64(m[73:81]))
+	sh.counter = binary.BigEndian.Uint64(m[81:89])
+	copy(sh.head[:], m[89:121])
+	sh.line = binary.BigEndian.Uint32(m[121:125])
+	copy(sh.signature[:], m[125:189])
+	msg := sh.marshal()
+	if !ed25519.Verify(sh.pubKey[:], msg[:], sh.signature[:]) {
+		return nil, ErrSignedHeadSignature
+	}
+	return &sh, nil
+}
+
+// Version returns the version.
+func (sh *SignedHeadV2) Version() int {
+	return int(sh.version)
+}
+
+// Head returns the signed head.
+func (sh *SignedHeadV2) Head() string {
+	return hex.Encode(sh.head[:])
+}
+
+// PubKey returns the public key in base64 notation.
+func (sh *SignedHeadV2) PubKey() string {
+	return base64.Encode(sh.pubKey[:])
+}
+
+// PubKeyRotate returns the public key rotate in base64 notation.
+func (sh *SignedHeadV2) PubKeyRotate() string {
+	return base64.Encode(sh.pubKeyRotate[:])
+}
+
+// ValidFrom returns the valid from field of signed head.
+func (sh *SignedHeadV2) ValidFrom() int64 {
+	return sh.validFrom
+}
+
+// ValidTo returns the valid to field of signed head.
+func (sh *SignedHeadV2) ValidTo() int64 {
+	return sh.validTo
+}
+
+// Counter returns the counter of signed head.
+func (sh *SignedHeadV2) Counter() uint64 {
+	return sh.counter
+}
+
+// Line returns the last signed line number of signed head.
+func (sh *SignedHeadV2) Line() int {
+	return int(sh.line)
+}
+
+// Signature returns the base64-encoded signature of the signed head.
+func (sh *SignedHeadV2) Signature() string {
+	return base64.Encode(sh.signature[:])
+}
+
+// HeadBuf returns the signed head.
+func (sh *SignedHeadV2) HeadBuf() [32]byte {
+	var b [32]byte
+	copy(b[:], sh.head[:])
+	return b
+}
+
+- f 35338c197961189a09be26f8e4c0bc63480051640761d989200b2ac34a4eeb27 ssot/valid.go
++ f 97d2fc50dfb6fe9d71d6eb5b9182d41e39b7bcd84e4445a7aa8b9ea252faf19c ssot/valid.go
+dmppatch 15
+@@ -202,46 +202,42 @@
+ se.%0A
+-func (sh *SignedHead) Valid() error %7B%0A
++func Valid(sh SignedHead) error %7B%0A
+ %09now
+@@ -268,33 +268,35 @@
+ x()%0A
+-%09if now %3C sh.validFrom %7B%0A
++%09if now %3C sh.ValidFrom() %7B%0A
+ %09%09re
+@@ -327,31 +327,33 @@
+ %0A%09%7D%0A
+-%09if now %3E sh.validTo %7B%0A
++%09if now %3E sh.ValidTo() %7B%0A
+ %09%09re
+treehash 7702427908bff4d875067dd12b50f13f4fd8b123863bb3b189c089446cd1f55c

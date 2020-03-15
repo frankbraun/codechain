@@ -6,7 +6,18 @@ A secure package (.secpkg file) contains a JSON object with the following keys:
   {
     "Name": "the project's package name",
     "Head": "head of project's Codechain",
+    "DNS": "fully qualified domain name for Codechain's TXT records"
+  }
+
+It can contain multiple optional secondary domain names:
+
+  {
+    "Name": "the project's package name",
+    "Head": "head of project's Codechain",
     "DNS": "fully qualified domain name for Codechain's TXT records",
+    "DNS2": [
+      "secondary fully qualified domain name for Codechain's TXT records"
+    ]
   }
 
 Example .secpkg file for Codechain itself:

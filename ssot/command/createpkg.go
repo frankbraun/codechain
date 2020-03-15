@@ -47,7 +47,10 @@ func writeTXTRecords(
 }
 
 func createPkg(
-	c *hashchain.HashChain, name, dns, URL, secKeyFile, secpkgFile string,
+	c *hashchain.HashChain,
+	name, dns string,
+	dns2 []string,
+	URL, secKeyFile, secpkgFile string,
 	encrypted, useCloudflare bool,
 	apiKey, email string,
 	validity time.Duration,
@@ -62,7 +65,8 @@ func createPkg(
 	if _, err := url.Parse(URL); err != nil {
 		return err
 	}
-	pkg, err := secpkg.New(name, dns, nil, head, encrypted)
+
+	pkg, err := secpkg.New(name, dns, dns2, head, encrypted)
 	if err != nil {
 		return err
 	}
@@ -199,6 +203,7 @@ func CreatePkg(argv0 string, args ...string) error {
 	secpkgFile := fs.String("f", secpkg.File, "The secpkg filename")
 	name := fs.String("name", "", "The project's package name")
 	dns := fs.String("dns", "", "Fully qualified comain name for Codechain's TXT records (SSOT)")
+	dns2opt := fs.String("dns2", "", "secondary fully qualified domain name for Codechain's TXT records")
 	url := fs.String("url", "", "URL to download project files from (URL/head.tar.gz)")
 	secKey := fs.String("s", "", "Secret key file")
 	verbose := fs.Bool("v", false, "Be verbose")
@@ -249,8 +254,12 @@ func CreatePkg(argv0 string, args ...string) error {
 	})
 	// run createPkg
 	go func() {
-		err := createPkg(c, *name, *dns, *url, *secKey, *secpkgFile, *encrypted,
-			*useCloudflare, *apiKey, *email, *validity)
+		var dns2 []string
+		if *dns2opt != "" {
+			dns2 = append(dns2, *dns2opt)
+		}
+		err := createPkg(c, *name, *dns, dns2, *url, *secKey, *secpkgFile,
+			*encrypted, *useCloudflare, *apiKey, *email, *validity)
 		if err != nil {
 			interrupt.ShutdownChannel <- err
 			return

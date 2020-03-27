@@ -6,7 +6,6 @@ import (
 )
 
 // SignHeadV2 signs the given Codechain head.
-// TODO: Use this to replace SignHead.
 func SignHeadV2(
 	head [32]byte,
 	line int,

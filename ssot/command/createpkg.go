@@ -55,7 +55,7 @@ func createPkg(
 	apiKey, email string,
 	validity time.Duration,
 ) error {
-	head, _ := c.LastSignedHead()
+	head, line := c.LastSignedHead()
 	fmt.Printf("create package for head %x\n", head)
 	secKey, _, _, err := seckey.Read(secKeyFile)
 	if err != nil {
@@ -119,7 +119,7 @@ func createPkg(
 	fmt.Printf("%s: written\n", secpkgFile)
 
 	// 5. Create the first signed head with counter set to 0.
-	sh, err := ssot.SignHead(head, 0, *secKey, nil, validity)
+	sh, err := ssot.SignHeadV2(head, line, 0, *secKey, nil, validity)
 	if err != nil {
 		return err
 	}

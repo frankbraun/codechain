@@ -150,8 +150,9 @@ func refresh(
 		return err
 	}
 
-	newSignedHead, err := ssot.SignHead(prevSignedHead.HeadBuf(), prevSignedHead.Counter()+1,
-		*secKey, pubKeyRotate, validity)
+	newSignedHead, err := ssot.SignHeadV2(prevSignedHead.HeadBuf(),
+		prevSignedHead.Line(), prevSignedHead.Counter()+1, *secKey,
+		pubKeyRotate, validity)
 	if err != nil {
 		return err
 	}

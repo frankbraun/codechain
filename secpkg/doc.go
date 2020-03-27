@@ -1,7 +1,8 @@
 /*
 Package secpkg implements the secpkg package format.
 
-A secure package (.secpkg file) contains a JSON object with the following keys:
+A secure package (.secpkg file) contains a JSON object with the following
+mandatory keys:
 
   {
     "Name": "the project's package name",
@@ -32,6 +33,10 @@ If in the root of a package source tree the directory .secdep exists and
 contains any .secpkg files, then these secure dependencies are installed and
 kept up-to-date by the install and update procedures specified below.
 
+In the following, the DNS entry and the DNS2 entries combined in random order
+are called DNS_RECORDS. Since a .secpkg file must contain a DNS entry
+DNS_RECORDS contains at least one entry.
+
 Install specification
 
 Installing software described by a .secpkg file works as follows:
@@ -45,43 +50,54 @@ Installing software described by a .secpkg file works as follows:
 
    4. Save .secpkg file to ~/.config/secpkg/pkgs/NAME/.secpkg
 
-   5. Query TXT record from _codechain-head.DNS and validate the signed head
-      contained in it (see ssot package). Save head from TXT record (HEAD_SSOT).
+   5. Get next DNS entry from DNS_RECORDS. If no such entry exists: Goto 8.
 
-   6. Query all TXT records from _codechain-url.DNS and save it as URLs.
+   6. Query TXT record from _codechain-head.DNS and validate the signed head
+      contained in it (see ssot package). Save head from TXT record
+      (HEAD_SSOT.DNS).
 
-   7. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head
+   7. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head.DNS
+      Goto 5.
 
-   8. Select next URL from URLs. If no such URL exists, exit with error.
+   8. Sort DNS_RECORDS in descending order according to the last signed line
+      number (signed head version 2 or higher).
 
-   9. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to
+   9. Get next DNS entry from DNS_RECORDS. If no such entry exists, exit with
+      error.
+
+  10. Query all TXT records from _codechain-url.DNS and save it as URLs.
+
+  11. Select next URL from URLs. If no such URL exists: Goto 9.
+
+  12. Download distribution file from URL/HEAD_SSOT.DNS.tar.gz and save it to
       ~/.config/secpkg/pkgs/NAME/dists
-      If it fails: Goto 8.
+      If it fails: Goto 11.
 
-  10. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz
+  13. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.DNS.tar.gz
       to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
-      -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT`
-      If it fails: Goto 8.
+      -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.DNS.tar.gz
+      -head HEAD_SSOT.DNS`
+      If it fails: Goto 11.
 
-  11. Make sure HEAD_PKG is contained in
+  14. Make sure HEAD_PKG is contained in
       ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain
-      If it fails: Goto 8.
+      If it fails: Goto 11.
 
-  12. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+  15. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
       contains any .secpkg files, ensure these secure dependencies are
       installed and up-to-date.
 
-  13. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+  16. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 
-  14. Call `make prefix=~/.config/secpkg/local` in
+  17. Call `make prefix=~/.config/secpkg/local` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  15. Call `make prefix= ~/.config/secpkg/local install` in
+  18. Call `make prefix= ~/.config/secpkg/local install` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  16. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+  19. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
-  17. If the file ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,
+  20. If the file ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,
       `cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg
              ~/.config/secpkg/pkgs/NAME/.secpkg`
 
@@ -102,80 +118,95 @@ Updating a software package with NAME works as follows:
 
    1. Make sure the project with NAME has been installed before.
       That is, the directory ~/.config/secpkg/pkgs/NAME exists.
-      Set SKIP_BUILD to false.
 
    2. Load .secpkg file from ~/.config/secpkg/pkgs/NAME/.secpkg
 
-   3. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head (as DISK)
+   3. Get next DNS entry from DNS_RECORDS. Set SKIP_BUILD.DNS to false.
+      If no such entry exists: Goto 7.
 
-   4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, set
-      SKIP_BUILD to true.
+   4. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head.DNS
+      (as DISK.DNS)
 
-   5. Query all TXT records from _codechain-url.DNS and save it as URLs.
+   5. Query TXT record from _codechain-head.DNS, if it is the same as DISK.DNS,
+      set SKIP_BUILD.DNS to true.
 
-   6. If not SKIP_BUILD, validate signed head from TXT (also see ssot package)
+   6. Update signed head:
+
+      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head.DNS
+               ~/.config/secpkg/pkgs/NAME/previous_signed_head.DNS`
+      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head.DNS
+        (atomic).
+      - Goto 3.
+
+   7. Sort DNS_RECORDS in descending order according to the last signed line
+      number (signed head version 2 or higher).
+
+   8. Get next DNS entry from DNS_RECORDS. If no such entry exists:
+      If SKIP_BUILD is true exit with success, otherwise exit with error.
+
+   9. Set SKIP_BUILD to SKIP_BUILD.DNS
+
+  10. Query all TXT records from _codechain-url.DNS and save it as URLs.
+
+  11. If not SKIP_BUILD, validate signed head from TXT (also see ssot package)
       and store HEAD:
 
-      - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK,
-        if the signed head from DISK is not expired.
-      - The counter from TXT must be larger than the counter from DISK.
+      - pubKey from TXT must be the same as pubKey or pubKeyRotate from
+        DISK.DNS, if the signed head from DISK.DNS is not expired.
+      - The counter from TXT must be larger than the counter from DISK.DNS.
       - The signed head must be valid (as defined by validFrom and validTo).
 
-      If the validation fails, abort update procedure and report error.
+      If the validation fails, report error. Goto 7.
 
-   7. If not SKIP_BUILD and if signed head from TXT record is the same as the
-      one from DISK, set SKIP_BUILD to true.
+  12. If not SKIP_BUILD and if signed head from TXT record is the same as the
+      one from DISK.DNS, set SKIP_BUILD to true.
 
-   8. If SKIP_BUILD, check if HEAD is contained in
+  13. If SKIP_BUILD, check if HEAD is contained in
       ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain.
       If not, set SKIP_BUILD to false.
       This can happend if we checked for updates.
 
-   9. Select next URL from URLs. If no such URL exists, exit with error.
+  14. Select next URL from URLs. If no such URL exists: Goto 3.
 
-  10. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
+  15. If not SKIP_BUILD, download distribution file from URL/HEAD.tar.gz and
       save it to ~/.config/secpkg/pkgs/NAME/dists
-      If it fails: Goto 9.
+      If it fails: Goto 14.
 
-  11. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
+  16. If not SKIP_BUILD, apply ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz
       to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
       -f ~/.config/secpkg/pkgs/NAME/dists/HEAD.tar.gz -head HEAD`.
-      If it fails: Goto 9.
+      If it fails: Goto 14.
 
-  12. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+  17. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
       contains any .secpkg files, ensure these secure dependencies are
       installed and up-to-date. If at least one dependency was updated, set
       SKIP_BUILD to false.
 
-  13. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local uninstall` in
+  18. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local uninstall` in
       ~/.config/secpkg/pkgs/NAME/installed
 
-  14. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
+  19. If not SKIP_BUILD, `rm -rf ~/.config/secpkg/pkgs/NAME/build`
 
-  15. If not SKIP_BUILD,
+  20. If not SKIP_BUILD,
       `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 
-  16. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
+  21. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  17. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
+  22. If not SKIP_BUILD, call `make prefix= ~/.config/secpkg/local install` in
       ~/.config/secpkg/pkgs/NAME/build
 
-  18. If not SKIP_BUILD,
+  23. If not SKIP_BUILD,
       `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 
-  19. If not SKIP_BUILD and the file
+  24. If not SKIP_BUILD and the file
       ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,
       `cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg
              ~/.config/secpkg/pkgs/NAME/.secpkg`
 
-  20. Update signed head:
+  25. If SKIP_BUILD: Goto 8.
 
-      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
-               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
-      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
-
-  21. The software has been successfully updated.
+  26. The software has been successfully updated.
 
 CheckUpdate specification
 
@@ -183,43 +214,59 @@ Checking if a software package with NAME needs an update works as follows:
 
    1. Make sure the project with NAME has been installed before.
       That is, the directory ~/.config/secpkg/pkgs/NAME exists.
-      Set SKIP_CHECK and NEEDS_UPDATE to false.
+      Set NEEDS_UPDATE to false.
 
    2. Load .secpkg file from ~/.config/secpkg/pkgs/NAME/.secpkg
 
-   3. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head (as DISK)
+   3. Get next DNS entry from DNS_RECORDS. Set SKIP_CHECK.DNS to false.
+      If no such entry exists: Goto 6.
 
-   4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, set
-      SKIP_CHECK to true.
+   4. Load signed head from ~/.config/secpkg/pkgs/NAME/signed_head.DNS
+      (as DISK.DNS)
 
-   5. If not SKIP_CHECK, validate signed head from TXT (also see ssot package)
+   5. Query TXT record from _codechain-head.DNS, if it is the same as DISK.DNS,
+      set SKIP_CHECK.DNS to true.
+
+   6. Update signed head:
+
+      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head.DNS
+               ~/.config/secpkg/pkgs/NAME/previous_signed_head.DNS`
+      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head.DNS
+        (atomic).
+      - Goto 3.
+
+   7. Sort DNS_RECORDS in descending order according to the last signed line
+      number (signed head version 2 or higher).
+
+   8. Get next DNS entry from DNS_RECORDS. If no such entry exists:
+      If SKIP_CHECK is true return NEEDS_UPDATE, otherwise exit with error.
+
+   9. Set SKIP_CHECK to SKIP_CHECK.DNS
+
+  10. If not SKIP_CHECK, validate signed head from TXT (also see ssot package)
       and store HEAD:
 
-      - pubKey from TXT must be the same as pubKey or pubKeyRotate from DISK,
-        if the signed head from DISK is not expired.
-      - The counter from TXT must be larger than the counter from DISK.
+      - pubKey from TXT must be the same as pubKey or pubKeyRotate from
+        DISK.DNS, if the signed head from DISK.DNS is not expired.
+      - The counter from TXT must be larger than the counter from DISK.DNS.
       - The signed head must be valid (as defined by validFrom and validTo).
 
-      If the validation fails, abort check update procedure and report error.
+      If the validation fails, report error. Goto 8.
 
-   6. If not SKIP_CHECK and if signed head from TXT record not the same as the
-      one from DISK, set SKIP_CHECK and NEEDS_UPDATE to true.
+  11. If not SKIP_CHECK and if signed head from TXT record not the same as the
+      one from DISK.DNS, set SKIP_CHECK and NEEDS_UPDATE to true.
 
-   7. If not NEEDS_UPDATE, check if HEAD is contained in
+  12. If not NEEDS_UPDATE, check if HEAD is contained in
       ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain.
       If not, set NEEDS_UPDATE to true.
 
-   8. If NEEDS_UPDATE is false, check if the directory
+  13. If NEEDS_UPDATE is false, check if the directory
       ~/.config/secpkg/pkgs/NAME/src/.secdep exists and contains any .secpkg
       files, ensure these secure dependencies are installed and up-to-date. If
       at least one dependency needs an update, set NEEDS_UPDATE to true.
 
-   9. Update signed head:
+  14. If SKIP_CHECK: Goto 8.
 
-      - `cp -f ~/.config/secpkg/pkgs/NAME/signed_head
-               ~/.config/secpkg/pkgs/NAME/previous_signed_head`
-      - Save new signed head to ~/.config/secpkg/pkgs/NAME/signed_head (atomic).
-
-  10. Return NEEDS_UPDATE.
+  15. Return NEEDS_UPDATE.
 */
 package secpkg

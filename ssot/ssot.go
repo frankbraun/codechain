@@ -76,6 +76,7 @@ func Unmarshal(signedHead string) (SignedHead, error) {
 		return nil, err
 	}
 	if len(b) == 184 { // version 1
+		// TODO: remove in 2021.
 		var m [184]byte
 		copy(m[:], b)
 		return unmarshalV1(m)

@@ -10,6 +10,7 @@ import (
 
 // SignedHeadV1 is a signed Codechain head ready for publication as a SSOT with
 // DNS TXT records (version 1).
+// TODO: remove in 2021.
 type SignedHeadV1 struct {
 	pubKey       [32]byte // Ed25519 public key of SSOT head signer
 	pubKeyRotate [32]byte // Ed25519 pubkey to rotate to, all 0 if unused

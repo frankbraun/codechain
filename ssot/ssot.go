@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	b64 "encoding/base64"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -125,7 +124,7 @@ func LookupHead(ctx context.Context, dns string) (SignedHead, error) {
 		break // valid TXT record found
 	}
 	if sh == nil {
-		return nil, errors.New("ssot: no valid TXT record for head found")
+		return nil, ErrTXTNoValidHead
 	}
 	return sh, nil
 }
@@ -147,7 +146,7 @@ func LookupURLs(ctx context.Context, dns string) ([]string, error) {
 		fmt.Printf("URL found: %s\n", txt)
 	}
 	if len(URLs) == 0 {
-		return nil, errors.New("ssot: no valid TXT record for URL found")
+		return nil, ErrTXTNoValidURL
 	}
 	return URLs, nil
 }

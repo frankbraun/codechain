@@ -18,3 +18,9 @@ var ErrValidityTooLong = errors.New("ssot: validity is too long")
 
 // ErrValidityTooShort is returned if the validity is too short.
 var ErrValidityTooShort = errors.New("ssot: validity is too short")
+
+// ErrTXTNoValidHead is returned if no valid TXT record for head could be found.
+var ErrTXTNoValidHead = errors.New("ssot: no valid TXT record for head found")
+
+// ErrTXTNoValidURL is returned if no valid TXT record for URL could be found.
+var ErrTXTNoValidURL = errors.New("ssot: no valid TXT record for URL found")

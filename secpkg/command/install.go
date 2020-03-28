@@ -16,7 +16,8 @@ func install(pkgFlag bool, name string) error {
 	ctx := context.Background()
 	if pkgFlag {
 		// make sure codechain is actually installed
-		_, err := secpkg.CheckUpdate(ctx, secpkg.NewResolver(), "codechain")
+		_, err := secpkg.CheckUpdate(ctx, secpkg.NewResolver(),
+			homedir.SecPkg(), "codechain")
 		if err != nil {
 			if err == secpkg.ErrNotInstalled {
 				fmt.Fprintf(os.Stderr, "you must install codechain via `secpkg install` in order to use option -p\n")
@@ -32,7 +33,7 @@ func install(pkgFlag bool, name string) error {
 	if err != nil {
 		return err
 	}
-	return pkg.Install(ctx, secpkg.NewResolver())
+	return pkg.Install(ctx, secpkg.NewResolver(), homedir.SecPkg())
 }
 
 // Install implements the secpkg 'install' command.

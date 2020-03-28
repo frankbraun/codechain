@@ -15,7 +15,6 @@ import (
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/gnumake"
 	"github.com/frankbraun/codechain/util/hex"
-	"github.com/frankbraun/codechain/util/homedir"
 )
 
 type dnsRecord struct {
@@ -32,13 +31,14 @@ func (d dnsRecords) Less(i, j int) bool { return d[i].sh.Line() > d[j].sh.Line()
 func (pkg *Package) install(
 	ctx context.Context,
 	res Resolver,
+	homedir string,
 	visited map[string]bool,
 ) error {
 	// 1. Has already been done by calling Load().
 
 	// 2. Make sure the project has not been installed before.
 	//    That is, the directory ~/.config/secpkg/pkgs/NAME does not exist.
-	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs", pkg.Name)
+	pkgDir := filepath.Join(homedir, "pkgs", pkg.Name)
 	exists, err := file.Exists(pkgDir)
 	if err != nil {
 		return err
@@ -210,7 +210,7 @@ _11:
 	// 15. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date.
-	if _, err := ensure(ctx, res, visited, pkg.Name); err != nil {
+	if _, err := ensure(ctx, res, homedir, visited, pkg.Name); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
@@ -224,7 +224,7 @@ _11:
 
 	// 17. Call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
-	localDir := filepath.Join(homedir.SecPkg(), "local")
+	localDir := filepath.Join(homedir, "local")
 	if err := os.MkdirAll(localDir, 0755); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
@@ -285,8 +285,12 @@ _11:
 }
 
 // Install pkg, see specification for details.
-func (pkg *Package) Install(ctx context.Context, res Resolver) error {
+func (pkg *Package) Install(
+	ctx context.Context,
+	res Resolver,
+	homedir string,
+) error {
 	visited := make(map[string]bool)
 	visited[pkg.Name] = true
-	return pkg.install(ctx, res, visited)
+	return pkg.install(ctx, res, homedir, visited)
 }

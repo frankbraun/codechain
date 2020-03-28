@@ -12,19 +12,19 @@ import (
 	"github.com/frankbraun/codechain/util/def"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/gnumake"
-	"github.com/frankbraun/codechain/util/homedir"
 )
 
 func update(
 	ctx context.Context,
 	res Resolver,
+	homedir string,
 	visited map[string]bool,
 	name string,
 ) (bool, error) {
 	// 1. Make sure the project with NAME has been installed before.
 	//    That is, the directory ~/.config/secpkg/pkgs/NAME exists.
 	//    Set SKIP_BUILD to false.
-	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs", name)
+	pkgDir := filepath.Join(homedir, "pkgs", name)
 	exists, err := file.Exists(pkgDir)
 	if err != nil {
 		return false, err
@@ -198,7 +198,7 @@ _9:
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date. If at least one dependency was updated, set
 	//     SKIP_BUILD to false.
-	depUpdated, err := ensure(ctx, res, visited, name)
+	depUpdated, err := ensure(ctx, res, homedir, visited, name)
 	if err != nil {
 		return false, err
 	}
@@ -209,7 +209,7 @@ _9:
 	// 13. If not SKIP_BUILD, call `make prefix=~/.config/secpkg/local uninstall` in
 	//     ~/.config/secpkg/pkgs/NAME/installed
 	installedDir := filepath.Join(pkgDir, "installed")
-	localDir := filepath.Join(homedir.SecPkg(), "local")
+	localDir := filepath.Join(homedir, "local")
 	if !skipBuild {
 		if err := os.Chdir(installedDir); err != nil {
 			return false, err
@@ -309,9 +309,14 @@ _9:
 }
 
 // Update package with name, see specification for details.
-func Update(ctx context.Context, res Resolver, name string) error {
+func Update(
+	ctx context.Context,
+	res Resolver,
+	homedir string,
+	name string,
+) error {
 	visited := make(map[string]bool)
 	visited[name] = true
-	_, err := update(ctx, res, visited, name)
+	_, err := update(ctx, res, homedir, visited, name)
 	return err
 }

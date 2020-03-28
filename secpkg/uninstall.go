@@ -7,14 +7,13 @@ import (
 
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/gnumake"
-	"github.com/frankbraun/codechain/util/homedir"
 )
 
-// Uninstall package with name.
-func Uninstall(name string) error {
+// Uninstall package with name from home directory.
+func Uninstall(homedir, name string) error {
 	// 1. Make sure the project with NAME has been installed before.
 	//    That is, the directory ~/.config/secpkg/pkgs/NAME exists.
-	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs", name)
+	pkgDir := filepath.Join(homedir, "pkgs", name)
 	exists, err := file.Exists(pkgDir)
 	if err != nil {
 		return err
@@ -26,7 +25,7 @@ func Uninstall(name string) error {
 	// 2. Call `make prefix= ~/.config/secpkg/local uninstall` in
 	//    ~/.config/secpkg/pkgs/NAME/installed
 	installedDir := filepath.Join(pkgDir, "installed")
-	localDir := filepath.Join(homedir.SecPkg(), "local")
+	localDir := filepath.Join(homedir, "local")
 	if err := os.Chdir(installedDir); err != nil {
 		return err
 	}

@@ -25,7 +25,8 @@ func updateAll(ctx context.Context) error {
 	var firstError error
 	for _, pkg := range pkgs {
 		fmt.Printf("updating package '%s'\n", pkg)
-		if err := secpkg.Update(ctx, secpkg.NewResolver(), pkg); err != nil {
+		err := secpkg.Update(ctx, secpkg.NewResolver(), homedir.SecPkg(), pkg)
+		if err != nil {
 			if firstError == nil {
 				firstError = err
 			}
@@ -64,5 +65,6 @@ func Update(argv0 string, args ...string) error {
 	if *all {
 		return updateAll(context.Background())
 	}
-	return secpkg.Update(context.Background(), secpkg.NewResolver(), fs.Arg(0))
+	return secpkg.Update(context.Background(), secpkg.NewResolver(),
+		homedir.SecPkg(), fs.Arg(0))
 }

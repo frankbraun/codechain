@@ -10,13 +10,13 @@ import (
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/def"
 	"github.com/frankbraun/codechain/util/file"
-	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/log"
 )
 
 func checkUpdate(
 	ctx context.Context,
 	res Resolver,
+	homedir string,
 	visited map[string]bool,
 	name string,
 ) (bool, error) {
@@ -24,7 +24,7 @@ func checkUpdate(
 	//    That is, the directory ~/.config/secpkg/pkgs/NAME exists.
 	//    Set SKIP_CHECK and NEEDS_UPDATE to false.
 	log.Printf("1. make sure '%s' has been installed\n", name)
-	pkgDir := filepath.Join(homedir.SecPkg(), "pkgs", name)
+	pkgDir := filepath.Join(homedir, "pkgs", name)
 	exists, err := file.Exists(pkgDir)
 	if err != nil {
 		return false, err
@@ -136,7 +136,7 @@ func checkUpdate(
 	//    at least one dependency needs an update, set NEEDS_UPDATE to true.
 	log.Println("8. check .secdep directory")
 	if !needsUpdate {
-		needsUpdate, err = ensureCheckUpdate(ctx, res, visited, name)
+		needsUpdate, err = ensureCheckUpdate(ctx, res, homedir, visited, name)
 		if err != nil {
 			return false, err
 		}
@@ -161,8 +161,12 @@ func checkUpdate(
 
 // CheckUpdate checks installed package with name for updates, see
 // specification for details.
-func CheckUpdate(ctx context.Context, res Resolver, name string) (bool, error) {
+func CheckUpdate(
+	ctx context.Context,
+	res Resolver,
+	homedir, name string,
+) (bool, error) {
 	visited := make(map[string]bool)
 	visited[name] = true
-	return checkUpdate(ctx, res, visited, name)
+	return checkUpdate(ctx, res, homedir, visited, name)
 }

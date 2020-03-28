@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/frankbraun/codechain/secpkg"
+	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -33,5 +34,5 @@ func Uninstall(argv0 string, args ...string) error {
 			return err
 		}
 	}
-	return secpkg.Uninstall(fs.Arg(0))
+	return secpkg.Uninstall(homedir.SecPkg(), fs.Arg(0))
 }

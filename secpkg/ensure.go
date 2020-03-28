@@ -11,7 +11,6 @@ import (
 	"github.com/frankbraun/codechain/util/def"
 	"github.com/frankbraun/codechain/util/file"
 	"github.com/frankbraun/codechain/util/hex"
-	"github.com/frankbraun/codechain/util/homedir"
 	"github.com/frankbraun/codechain/util/log"
 )
 
@@ -19,13 +18,14 @@ import (
 func ensure(
 	ctx context.Context,
 	res Resolver,
+	homedir string,
 	visited map[string]bool,
 	name string,
 ) (bool, error) {
 	// If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	// contains any .secpkg files, ensure these secure dependencies are
 	// installed and up-to-date.
-	secdepDir := filepath.Join(homedir.SecPkg(), "pkgs", name, "src", ".secdep")
+	secdepDir := filepath.Join(homedir, "pkgs", name, "src", ".secdep")
 	exists, err := file.Exists(secdepDir)
 	if err != nil {
 		return false, err
@@ -59,7 +59,7 @@ func ensure(
 				pkg.Name)
 		}
 		// check if it is already installed
-		pkgDir := filepath.Join(homedir.SecPkg(), "pkgs", pkg.Name)
+		pkgDir := filepath.Join(homedir, "pkgs", pkg.Name)
 		exists, err := file.Exists(pkgDir)
 		if err != nil {
 			return false, err
@@ -68,7 +68,7 @@ func ensure(
 		if !exists {
 			// install
 			log.Printf(".secdep: install package '%s'\n", pkg.Name)
-			if err := pkg.install(ctx, res, visited); err != nil {
+			if err := pkg.install(ctx, res, homedir, visited); err != nil {
 				return false, err
 			}
 			depUpdated = true
@@ -82,7 +82,7 @@ func ensure(
 			copy(head[:], h)
 			// update
 			log.Printf(".secdep: update package '%s'\n", pkg.Name)
-			updated, err := update(ctx, res, visited, pkg.Name)
+			updated, err := update(ctx, res, homedir, visited, pkg.Name)
 			if err != nil {
 				return false, err
 			}
@@ -117,13 +117,14 @@ func ensure(
 func ensureCheckUpdate(
 	ctx context.Context,
 	res Resolver,
+	homedir string,
 	visited map[string]bool,
 	name string,
 ) (bool, error) {
 	// If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	// contains any .secpkg files, ensure these secure dependencies are
 	// up-to-date.
-	secdepDir := filepath.Join(homedir.SecPkg(), "pkgs", name, "src", ".secdep")
+	secdepDir := filepath.Join(homedir, "pkgs", name, "src", ".secdep")
 	exists, err := file.Exists(secdepDir)
 	if err != nil {
 		return false, err
@@ -157,7 +158,7 @@ func ensureCheckUpdate(
 				pkg.Name)
 		}
 		// check if it is already installed
-		pkgDir := filepath.Join(homedir.SecPkg(), "pkgs", pkg.Name)
+		pkgDir := filepath.Join(homedir, "pkgs", pkg.Name)
 		exists, err := file.Exists(pkgDir)
 		if err != nil {
 			return false, err
@@ -177,7 +178,7 @@ func ensureCheckUpdate(
 			copy(head[:], h)
 			// update
 			log.Printf(".secdep: check update for package '%s'\n", pkg.Name)
-			update, err := checkUpdate(ctx, res, visited, pkg.Name)
+			update, err := checkUpdate(ctx, res, homedir, visited, pkg.Name)
 			if err != nil {
 				return false, err
 			}

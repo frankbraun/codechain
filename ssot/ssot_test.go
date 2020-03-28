@@ -26,23 +26,23 @@ func TestSignedHead(t *testing.T) {
 	copy(sk[:], sec)
 
 	// error cases
-	_, err = SignHead(head, 0, sk, nil, MinimumValidity-time.Second)
+	_, err = SignHeadV2(head, 2, 0, sk, nil, MinimumValidity-time.Second)
 	if err != ErrValidityTooShort {
-		t.Error("SignHead() should fail with ErrValidityTooShort")
+		t.Error("SignHeadV2() should fail with ErrValidityTooShort")
 	}
-	_, err = SignHead(head, 0, sk, nil, MaximumValidity+time.Second)
+	_, err = SignHeadV2(head, 2, 0, sk, nil, MaximumValidity+time.Second)
 	if err != ErrValidityTooLong {
-		t.Error("SignHead() should fail with ErrValidityTooLong")
+		t.Error("SignHeadV2() should fail with ErrValidityTooLong")
 	}
 
 	// happy cases
-	_, err = SignHead(head, 0, sk, nil, MinimumValidity)
+	_, err = SignHeadV2(head, 2, 0, sk, nil, MinimumValidity)
 	if err != nil {
-		t.Fatalf("SignHead() failed: %v", err)
+		t.Fatalf("SignHeadV2() failed: %v", err)
 	}
-	sh, err := SignHead(head, 0, sk, nil, MaximumValidity)
+	sh, err := SignHeadV2(head, 2, 0, sk, nil, MaximumValidity)
 	if err != nil {
-		t.Fatalf("SignHead() failed: %v", err)
+		t.Fatalf("SignHeadV2() failed: %v", err)
 	}
 	txt := sh.Marshal()
 	_, err = Unmarshal(txt)
@@ -53,7 +53,7 @@ func TestSignedHead(t *testing.T) {
 	// V2
 	sh2, err := SignHeadV2(head, 2, 0, sk, nil, MinimumValidity)
 	if err != nil {
-		t.Fatalf("SignHead() failed: %v", err)
+		t.Fatalf("SignHeadV2() failed: %v", err)
 	}
 	txt = sh2.Marshal()
 	if len(txt) > 255 {

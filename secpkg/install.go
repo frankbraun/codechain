@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/frankbraun/codechain/archive"
 	"github.com/frankbraun/codechain/hashchain"
@@ -16,6 +17,17 @@ import (
 	"github.com/frankbraun/codechain/util/hex"
 	"github.com/frankbraun/codechain/util/homedir"
 )
+
+type dnsRecord struct {
+	DNS string
+	sh  ssot.SignedHead
+}
+
+type dnsRecords []dnsRecord
+
+func (d dnsRecords) Len() int           { return len(d) }
+func (d dnsRecords) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
+func (d dnsRecords) Less(i, j int) bool { return d[i].sh.Line() > d[j].sh.Line() }
 
 func (pkg *Package) install(ctx context.Context, visited map[string]bool) error {
 	// 1. Has already been done by calling Load().
@@ -45,46 +57,72 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 	}
 	fmt.Printf("%s: written\n", fn)
 
-	// 5. Query TXT record from _codechain-head.DNS and validate the signed head
-	//    contained in it (see ssot package).
-	sh, err := ssot.LookupHead(ctx, pkg.DNS)
-	if err != nil {
-		os.RemoveAll(pkgDir)
-		return err
+	// 5. Get next DNS entry from DNS_RECORDS.
+	var dnsRecords dnsRecords
+	for _, DNS := range pkg.DNSRecords() {
+		dnsRecords = append(dnsRecords, dnsRecord{DNS: DNS})
+	}
+	for i, dnsRecord := range dnsRecords {
+		// 6. Query TXT record from _codechain-head.DNS and validate the signed head
+		//    contained in it (see ssot package).
+		sh, err := ssot.LookupHead(ctx, dnsRecord.DNS)
+		if err != nil {
+			os.RemoveAll(pkgDir)
+			return err
+		}
+		dnsRecords[i].sh = sh
+
+		// 7. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head.DNS
+		signedHead := filepath.Join(pkgDir, ssot.File+"."+dnsRecord.DNS)
+		err = ioutil.WriteFile(signedHead, []byte(sh.Marshal()+"\n"), 0644)
+		if err != nil {
+			os.RemoveAll(pkgDir)
+			return err
+		}
+		fmt.Printf("%s: written\n", signedHead)
 	}
 
-	// 6. Query all TXT records from _codechain-url.DNS and save it as URLs.
-	URLs, err := ssot.LookupURLs(ctx, pkg.DNS)
-	if err != nil {
-		os.RemoveAll(pkgDir)
-		return err
-	}
+	// 8. Sort DNS_RECORDS in descending order according to the last signed line
+	//    number (signed head version 2 or higher).
+	sort.Sort(dnsRecords)
 
-	// 7. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head
-	signedHead := filepath.Join(pkgDir, ssot.File)
-	err = ioutil.WriteFile(signedHead, []byte(sh.Marshal()+"\n"), 0644)
-	if err != nil {
-		os.RemoveAll(pkgDir)
-		return err
-	}
-	fmt.Printf("%s: written\n", signedHead)
-
-	// 8. Select next URL from URLs. If no such URL exists, exit with error.
+	// 9. Get next DNS entry from DNS_RECORDS. If no such entry exists, exit with
+	//    error.
 	i := 0
-	var URL string
-_8:
-	if i < len(URLs) {
-		URL = URLs[i]
-		fmt.Printf("try URL: %s\n", URL)
+	var dnsRecord dnsRecord
+_9:
+	if i < len(dnsRecords) {
+		dnsRecord = dnsRecords[i]
+		fmt.Printf("get DNS: %s\n", dnsRecord.DNS)
 		i++
 	} else {
 		os.RemoveAll(pkgDir)
-		return fmt.Errorf("no valid URL found")
+		return fmt.Errorf("no valid DNS entry found")
 	}
 
-	// 9. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to
-	//    ~/.config/secpkg/pkgs/NAME/dists
-	//    If it fails: Goto 8.
+	// 10. Query all TXT records from _codechain-url.DNS and save it as URLs.
+	//     If no such record exists: Goto 9.
+	URLs, err := ssot.LookupURLs(ctx, dnsRecord.DNS)
+	if err != nil {
+		fmt.Printf("error: %s\n", err)
+		goto _9
+	}
+
+	// 11. Select next URL from URLs. If no such URL exists: Goto 9.
+	j := 0
+	var URL string
+_11:
+	if j < len(URLs) {
+		URL = URLs[j]
+		fmt.Printf("try URL: %s\n", URL)
+		j++
+	} else {
+		goto _9
+	}
+
+	// 12. Download distribution file from URL/HEAD_SSOT.tar.gz and save it to
+	//     ~/.config/secpkg/pkgs/NAME/dists
+	//     If it fails: Goto 11.
 	distDir := filepath.Join(pkgDir, "dists")
 	if err := os.MkdirAll(distDir, 0755); err != nil {
 		os.RemoveAll(pkgDir)
@@ -94,20 +132,20 @@ _8:
 	if pkg.Key != "" {
 		encSuffix = ".enc"
 	}
-	fn = sh.Head() + ".tar.gz" + encSuffix
+	fn = dnsRecord.sh.Head() + ".tar.gz" + encSuffix
 	filename := filepath.Join(distDir, fn)
 	url := URL + "/" + fn
 	fmt.Printf("download %s\n", url)
 	err = file.Download(filename, url)
 	if err != nil {
 		fmt.Printf("error: %s\n", err)
-		goto _8
+		goto _11
 	}
 
-	// 10. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz
+	// 13. Apply ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz
 	//     to ~/.config/secpkg/pkgs/NAME/src with `codechain apply
 	//     -f ~/.config/secpkg/pkgs/NAME/dists/HEAD_SSOT.tar.gz -head HEAD_SSOT`
-	//     If it fails: Goto 8.
+	//     If it fails: Goto 11.
 	srcDir := filepath.Join(pkgDir, "src")
 	if err := os.MkdirAll(srcDir, 0755); err != nil {
 		os.RemoveAll(pkgDir)
@@ -117,7 +155,7 @@ _8:
 		os.RemoveAll(pkgDir)
 		return err
 	}
-	head := sh.HeadBuf()
+	head := dnsRecord.sh.HeadBuf()
 	distFile := filepath.Join("..", "dists", fn)
 	if pkg.Key != "" {
 		key, err := pkg.GetKey()
@@ -128,13 +166,13 @@ _8:
 			distFile, &head, key)
 		if err != nil {
 			fmt.Printf("error: %s\n", err)
-			goto _8
+			goto _11
 		}
 	} else {
 		err = archive.ApplyFile(def.UnoverwriteableHashchainFile, def.PatchDir, distFile, &head)
 		if err != nil {
 			fmt.Printf("error: %s\n", err)
-			goto _8
+			goto _11
 		}
 	}
 	c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)
@@ -148,12 +186,12 @@ _8:
 	}
 	if err := c.Apply(&head, def.PatchDir); err != nil {
 		fmt.Printf("error: %s\n", err)
-		goto _8
+		goto _11
 	}
 
-	// 11. Make sure HEAD_PKG is contained in
+	// 14. Make sure HEAD_PKG is contained in
 	//     ~/.config/secpkg/pkgs/NAME/src/.codchain/hashchain
-	//     If it fails: Goto 8.
+	//     If it fails: Goto 11.
 	h, err := hex.Decode(pkg.Head, 32)
 	if err != nil {
 		os.RemoveAll(pkgDir)
@@ -162,10 +200,10 @@ _8:
 	copy(head[:], h)
 	if err := c.CheckHead(head); err != nil {
 		fmt.Printf("error: %s\n", err)
-		goto _8
+		goto _11
 	}
 
-	// 12. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
+	// 15. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date.
 	if _, err := ensure(ctx, visited, pkg.Name); err != nil {
@@ -173,14 +211,14 @@ _8:
 		return err
 	}
 
-	// 13. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
+	// 16. `cp -r ~/.config/secpkg/pkgs/NAME/src ~/.config/secpkg/pkgs/NAME/build`
 	buildDir := filepath.Join(pkgDir, "build")
 	if err := file.CopyDir(srcDir, buildDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 14. Call `make prefix=~/.config/secpkg/local` in
+	// 17. Call `make prefix=~/.config/secpkg/local` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	localDir := filepath.Join(homedir.SecPkg(), "local")
 	if err := os.MkdirAll(localDir, 0755); err != nil {
@@ -203,21 +241,21 @@ _8:
 		return err
 	}
 
-	// 15. Call `make prefix=~/.config/secpkg/local install` in
+	// 18. Call `make prefix=~/.config/secpkg/local install` in
 	//     ~/.config/secpkg/pkgs/NAME/build
 	if err := gnumake.Install(localDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 16. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
+	// 19. `mv ~/.config/secpkg/pkgs/NAME/build ~/.config/secpkg/pkgs/NAME/installed`
 	installedDir := filepath.Join(pkgDir, "installed")
 	if err := os.Rename(buildDir, installedDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
 
-	// 17. If the file ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,
+	// 20. If the file ~/.config/secpkg/pkgs/NAME/installed/.secpkg exists,
 	//     `cp -f ~/.config/secpkg/pkgs/NAME/installed/.secpkg
 	//            ~/.config/secpkg/pkgs/NAME/.secpkg`
 	insSecpkgFile := filepath.Join(installedDir, File)

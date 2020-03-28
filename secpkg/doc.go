@@ -66,6 +66,7 @@ Installing software described by a .secpkg file works as follows:
       error.
 
   10. Query all TXT records from _codechain-url.DNS and save it as URLs.
+      If no such record exists: Goto 9.
 
   11. Select next URL from URLs. If no such URL exists: Goto 9.
 

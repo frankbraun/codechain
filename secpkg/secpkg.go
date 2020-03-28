@@ -4,8 +4,10 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"io/ioutil"
+	mrand "math/rand"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/frankbraun/codechain/util/hex"
 )
@@ -20,6 +22,10 @@ type Package struct {
 	DNS  string   // fully qualified domain name for Codechain's TXT records (SSOT)
 	DNS2 []string `json:",omitempty"` // secondary fully qualified domain names for Codechain's TXT records
 	Key  string   `json:",omitempty"` // optional secretbox encryption key
+}
+
+func init() {
+	mrand.Seed(time.Now().UnixNano())
 }
 
 // New creates a new Package.
@@ -87,4 +93,14 @@ func (pkg *Package) GetKey() (*[32]byte, error) {
 	var key [32]byte
 	copy(key[:], k)
 	return &key, nil
+}
+
+// DNSRecords returns all DNS records in random order.
+func (pkg *Package) DNSRecords() []string {
+	r := []string{pkg.DNS}
+	r = append(r, pkg.DNS2...)
+	mrand.Shuffle(len(r), func(i, j int) {
+		r[i], r[j] = r[j], r[i]
+	})
+	return r
 }

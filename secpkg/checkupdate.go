@@ -14,7 +14,12 @@ import (
 	"github.com/frankbraun/codechain/util/log"
 )
 
-func checkUpdate(ctx context.Context, visited map[string]bool, name string) (bool, error) {
+func checkUpdate(
+	ctx context.Context,
+	res Resolver,
+	visited map[string]bool,
+	name string,
+) (bool, error) {
 	// 1. Make sure the project with NAME has been installed before.
 	//    That is, the directory ~/.config/secpkg/pkgs/NAME exists.
 	//    Set SKIP_CHECK and NEEDS_UPDATE to false.
@@ -52,8 +57,8 @@ func checkUpdate(ctx context.Context, visited map[string]bool, name string) (boo
 
 	// 4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, set
 	//    SKIP_CHECK to true.
-	log.Println("4. query TX record")
-	shDNS, err := ssot.LookupHead(ctx, pkg.DNS)
+	log.Println("4. query TXT record")
+	shDNS, err := res.LookupHead(ctx, pkg.DNS)
 	if err != nil {
 		return false, err
 	}
@@ -131,7 +136,7 @@ func checkUpdate(ctx context.Context, visited map[string]bool, name string) (boo
 	//    at least one dependency needs an update, set NEEDS_UPDATE to true.
 	log.Println("8. check .secdep directory")
 	if !needsUpdate {
-		needsUpdate, err = ensureCheckUpdate(ctx, visited, name)
+		needsUpdate, err = ensureCheckUpdate(ctx, res, visited, name)
 		if err != nil {
 			return false, err
 		}
@@ -156,8 +161,8 @@ func checkUpdate(ctx context.Context, visited map[string]bool, name string) (boo
 
 // CheckUpdate checks installed package with name for updates, see
 // specification for details.
-func CheckUpdate(ctx context.Context, name string) (bool, error) {
+func CheckUpdate(ctx context.Context, res Resolver, name string) (bool, error) {
 	visited := make(map[string]bool)
 	visited[name] = true
-	return checkUpdate(ctx, visited, name)
+	return checkUpdate(ctx, res, visited, name)
 }

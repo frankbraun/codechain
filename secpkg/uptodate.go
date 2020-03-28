@@ -16,7 +16,7 @@ import (
 // installed as a secure package. If the package is not installed as a secure
 // package a corresponding message is shown on stderr.
 func UpToDateIfInstalled(ctx context.Context, name string) error {
-	needsUpdate, err := CheckUpdate(ctx, name)
+	needsUpdate, err := CheckUpdate(ctx, NewResolver(), name)
 	if err != nil {
 		if err == ErrNotInstalled {
 			fmt.Fprintf(os.Stderr, "WARNING: package '%s' not installed via `secpkg install`\n", name)

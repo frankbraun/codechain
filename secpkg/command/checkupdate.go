@@ -26,7 +26,7 @@ func checkUpdateAll(ctx context.Context) error {
 	var firstError error
 	for _, pkg := range pkgs {
 		fmt.Printf("%s: checking\n", pkg)
-		needsUpdate, err := secpkg.CheckUpdate(ctx, pkg)
+		needsUpdate, err := secpkg.CheckUpdate(ctx, secpkg.NewResolver(), pkg)
 		if err != nil {
 			if firstError == nil {
 				firstError = err
@@ -67,7 +67,8 @@ func CheckUpdate(argv0 string, args ...string) error {
 	if *all {
 		return checkUpdateAll(context.Background())
 	}
-	needsUpdate, err := secpkg.CheckUpdate(context.Background(), fs.Arg(0))
+	needsUpdate, err := secpkg.CheckUpdate(context.Background(),
+		secpkg.NewResolver(), fs.Arg(0))
 	if err != nil {
 		return err
 	}

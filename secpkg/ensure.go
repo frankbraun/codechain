@@ -18,6 +18,7 @@ import (
 // ensure the secure dependencies for package name are installed and up-to-date.
 func ensure(
 	ctx context.Context,
+	res Resolver,
 	visited map[string]bool,
 	name string,
 ) (bool, error) {
@@ -67,7 +68,7 @@ func ensure(
 		if !exists {
 			// install
 			log.Printf(".secdep: install package '%s'\n", pkg.Name)
-			if err := pkg.install(ctx, visited); err != nil {
+			if err := pkg.install(ctx, res, visited); err != nil {
 				return false, err
 			}
 			depUpdated = true
@@ -81,7 +82,7 @@ func ensure(
 			copy(head[:], h)
 			// update
 			log.Printf(".secdep: update package '%s'\n", pkg.Name)
-			updated, err := update(ctx, visited, pkg.Name)
+			updated, err := update(ctx, res, visited, pkg.Name)
 			if err != nil {
 				return false, err
 			}
@@ -115,6 +116,7 @@ func ensure(
 // ensureCheckUpdate ensures the secure dependencies for package name are up-to-date.
 func ensureCheckUpdate(
 	ctx context.Context,
+	res Resolver,
 	visited map[string]bool,
 	name string,
 ) (bool, error) {
@@ -175,7 +177,7 @@ func ensureCheckUpdate(
 			copy(head[:], h)
 			// update
 			log.Printf(".secdep: check update for package '%s'\n", pkg.Name)
-			update, err := checkUpdate(ctx, visited, pkg.Name)
+			update, err := checkUpdate(ctx, res, visited, pkg.Name)
 			if err != nil {
 				return false, err
 			}

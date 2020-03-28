@@ -15,7 +15,12 @@ import (
 	"github.com/frankbraun/codechain/util/homedir"
 )
 
-func update(ctx context.Context, visited map[string]bool, name string) (bool, error) {
+func update(
+	ctx context.Context,
+	res Resolver,
+	visited map[string]bool,
+	name string,
+) (bool, error) {
 	// 1. Make sure the project with NAME has been installed before.
 	//    That is, the directory ~/.config/secpkg/pkgs/NAME exists.
 	//    Set SKIP_BUILD to false.
@@ -49,7 +54,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 
 	// 4. Query TXT record from _codechain-head.DNS, if it is the same as DISK, set
 	//    SKIP_BUILD to true.
-	shDNS, err := ssot.LookupHead(ctx, pkg.DNS)
+	shDNS, err := res.LookupHead(ctx, pkg.DNS)
 	if err != nil {
 		return false, err
 	}
@@ -58,7 +63,7 @@ func update(ctx context.Context, visited map[string]bool, name string) (bool, er
 	}
 
 	// 5. Query TXT record from _codechain-url.DNS and save it as URL.
-	URLs, err := ssot.LookupURLs(ctx, pkg.DNS)
+	URLs, err := res.LookupURLs(ctx, pkg.DNS)
 	if err != nil {
 		os.RemoveAll(pkgDir)
 		return false, err
@@ -141,7 +146,7 @@ _9:
 		filename := filepath.Join(distDir, fn)
 		url := URL + "/" + fn
 		fmt.Printf("download %s\n", url)
-		err = file.Download(filename, url)
+		err = res.Download(filename, url)
 		if err != nil {
 			fmt.Printf("error: %s\n", err)
 			goto _9
@@ -193,7 +198,7 @@ _9:
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date. If at least one dependency was updated, set
 	//     SKIP_BUILD to false.
-	depUpdated, err := ensure(ctx, visited, name)
+	depUpdated, err := ensure(ctx, res, visited, name)
 	if err != nil {
 		return false, err
 	}
@@ -304,9 +309,9 @@ _9:
 }
 
 // Update package with name, see specification for details.
-func Update(ctx context.Context, name string) error {
+func Update(ctx context.Context, res Resolver, name string) error {
 	visited := make(map[string]bool)
 	visited[name] = true
-	_, err := update(ctx, visited, name)
+	_, err := update(ctx, res, visited, name)
 	return err
 }

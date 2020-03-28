@@ -29,7 +29,11 @@ func (d dnsRecords) Len() int           { return len(d) }
 func (d dnsRecords) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 func (d dnsRecords) Less(i, j int) bool { return d[i].sh.Line() > d[j].sh.Line() }
 
-func (pkg *Package) install(ctx context.Context, visited map[string]bool) error {
+func (pkg *Package) install(
+	ctx context.Context,
+	res Resolver,
+	visited map[string]bool,
+) error {
 	// 1. Has already been done by calling Load().
 
 	// 2. Make sure the project has not been installed before.
@@ -65,7 +69,7 @@ func (pkg *Package) install(ctx context.Context, visited map[string]bool) error 
 	for i, dnsRecord := range dnsRecords {
 		// 6. Query TXT record from _codechain-head.DNS and validate the signed head
 		//    contained in it (see ssot package).
-		sh, err := ssot.LookupHead(ctx, dnsRecord.DNS)
+		sh, err := res.LookupHead(ctx, dnsRecord.DNS)
 		if err != nil {
 			os.RemoveAll(pkgDir)
 			return err
@@ -102,7 +106,7 @@ _9:
 
 	// 10. Query all TXT records from _codechain-url.DNS and save it as URLs.
 	//     If no such record exists: Goto 9.
-	URLs, err := ssot.LookupURLs(ctx, dnsRecord.DNS)
+	URLs, err := res.LookupURLs(ctx, dnsRecord.DNS)
 	if err != nil {
 		fmt.Printf("error: %s\n", err)
 		goto _9
@@ -136,7 +140,7 @@ _11:
 	filename := filepath.Join(distDir, fn)
 	url := URL + "/" + fn
 	fmt.Printf("download %s\n", url)
-	err = file.Download(filename, url)
+	err = res.Download(filename, url)
 	if err != nil {
 		fmt.Printf("error: %s\n", err)
 		goto _11
@@ -206,7 +210,7 @@ _11:
 	// 15. If the directory ~/.config/secpkg/pkgs/NAME/src/.secdep exists and
 	//     contains any .secpkg files, ensure these secure dependencies are
 	//     installed and up-to-date.
-	if _, err := ensure(ctx, visited, pkg.Name); err != nil {
+	if _, err := ensure(ctx, res, visited, pkg.Name); err != nil {
 		os.RemoveAll(pkgDir)
 		return err
 	}
@@ -281,8 +285,8 @@ _11:
 }
 
 // Install pkg, see specification for details.
-func (pkg *Package) Install(ctx context.Context) error {
+func (pkg *Package) Install(ctx context.Context, res Resolver) error {
 	visited := make(map[string]bool)
 	visited[pkg.Name] = true
-	return pkg.install(ctx, visited)
+	return pkg.install(ctx, res, visited)
 }

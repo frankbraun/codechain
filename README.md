@@ -32,7 +32,7 @@ Codechain uses files to store the hash chain, not a distributed
 #### Bootstrapping
 
 To install a trusted Codechain version that can be updated in a trusted
-way you have to [boostrap it](doc/bootstrapping.md).
+way you have to [bootstrap it](doc/bootstrapping.md).
 
 #### Developer version
 

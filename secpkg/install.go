@@ -142,6 +142,7 @@ _11:
 	fmt.Printf("download %s\n", url)
 	err = res.Download(filename, url)
 	if err != nil {
+		fmt.Println("bingo")
 		fmt.Printf("error: %s\n", err)
 		goto _11
 	}

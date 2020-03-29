@@ -2,6 +2,7 @@ package secpkg
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/frankbraun/codechain/ssot"
 	"github.com/frankbraun/codechain/util/file"
@@ -15,10 +16,17 @@ type mockResolver struct {
 }
 
 func (r *mockResolver) Download(filepath string, url string) error {
-	return file.Copy(r.Files[url], filepath)
+	fmt.Printf("mockResolver.Download(%s, %s)\n", filepath, url)
+	fn, ok := r.Files[url]
+	if ok {
+		fmt.Printf("mockResolver.Download: file.Copy(%s, %s)\n", fn, filepath)
+		return file.Copy(fn, filepath)
+	}
+	return fmt.Errorf("mockResolver: file %s not found", url)
 }
 
 func (r *mockResolver) LookupHead(ctx context.Context, dns string) (ssot.SignedHead, error) {
+	fmt.Printf("mockResolver.LookupHead(ctx, %s)\n", dns)
 	sh, ok := r.Heads[dns]
 	if ok {
 		return sh, nil
@@ -27,6 +35,7 @@ func (r *mockResolver) LookupHead(ctx context.Context, dns string) (ssot.SignedH
 }
 
 func (r *mockResolver) LookupURLs(ctx context.Context, dns string) ([]string, error) {
+	fmt.Printf("mockResolver.LookupURLs(ctx, %s)\n", dns)
 	urls, ok := r.URLs[dns]
 	if ok {
 		return urls, nil

@@ -66,5 +66,13 @@ func TestInstallBinpkg(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// TODO: test that binary is installed
+	// make sure binpkg is installed and a binary
+	bin := filepath.Join(tmpdir, "local", "bin", "binpkg")
+	fi, err := os.Stat(bin)
+	if err != nil {
+		t.Fatalf("binpkg not installed: %v", err)
+	}
+	if fi.Mode()&0100 != 0100 {
+		t.Fatal("binpkg is not an executable")
+	}
 }

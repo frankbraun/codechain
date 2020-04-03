@@ -75,4 +75,10 @@ func TestInstallBinpkg(t *testing.T) {
 	if fi.Mode()&0100 != 0100 {
 		t.Fatal("binpkg is not an executable")
 	}
+
+	// package already installed
+	err = pkg.Install(context.Background(), res, tmpdir)
+	if err == nil {
+		t.Fatal("second install should fail")
+	}
 }

@@ -1,0 +1,9 @@
+{
+  "Name": "binpkg",
+  "Head": "7705087e3d673d1089ea77bf567263c51b427371b293553f53ef23e254d1a3e1",
+  "DNS": "binpkg.secpkg.net",
+  "DNS2": [
+    "binpkg.mallory.org",
+    "binpkg.taz0.org"
+  ]
+}

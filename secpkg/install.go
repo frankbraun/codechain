@@ -64,20 +64,17 @@ func (pkg *Package) install(
 	// 5. Get next DNS entry from DNS_RECORDS.
 	var dnsRecords dnsRecords
 	for _, DNS := range pkg.DNSRecords() {
-		dnsRecords = append(dnsRecords, dnsRecord{DNS: DNS})
-	}
-	for i, dnsRecord := range dnsRecords {
 		// 6. Query TXT record from _codechain-head.DNS and validate the signed head
 		//    contained in it (see ssot package).
-		sh, err := res.LookupHead(ctx, dnsRecord.DNS)
+		sh, err := res.LookupHead(ctx, DNS)
 		if err != nil {
-			os.RemoveAll(pkgDir)
-			return err
+			fmt.Printf("error: %s\n", err)
+			continue
 		}
-		dnsRecords[i].sh = sh
+		dnsRecords = append(dnsRecords, dnsRecord{DNS, sh})
 
 		// 7. Store the signed head to ~/.config/secpkg/pkgs/NAME/signed_head.DNS
-		signedHead := filepath.Join(pkgDir, ssot.File+"."+dnsRecord.DNS)
+		signedHead := filepath.Join(pkgDir, ssot.File+"."+DNS)
 		err = ioutil.WriteFile(signedHead, []byte(sh.Marshal()+"\n"), 0644)
 		if err != nil {
 			os.RemoveAll(pkgDir)
@@ -181,8 +178,8 @@ _11:
 	}
 	c, err := hashchain.ReadFile(def.UnoverwriteableHashchainFile)
 	if err != nil {
-		os.RemoveAll(pkgDir)
-		return err
+		fmt.Printf("error: %s\n", err)
+		goto _11
 	}
 	if err := c.Close(); err != nil {
 		os.RemoveAll(pkgDir)

@@ -13,6 +13,22 @@ import (
 	"github.com/frankbraun/codechain/util/hex"
 )
 
+func signHead(head string) (ssot.SignedHead, error) {
+	buf, err := hex.Decode(head, 32)
+	if err != nil {
+		return nil, err
+	}
+	var hb [32]byte
+	copy(hb[:], buf)
+	_, sec, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		return nil, err
+	}
+	var sk [64]byte
+	copy(sk[:], sec)
+	return ssot.SignHeadV2(hb, 2, 0, sk, nil, ssot.MaximumValidity)
+}
+
 func TestInstallBinpkg(t *testing.T) {
 	tmpdir, err := ioutil.TempDir("", "secpkg_test")
 	if err != nil {
@@ -26,22 +42,9 @@ func TestInstallBinpkg(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// TODO: factor out
-	buf, err := hex.Decode(pkg.Head, 32)
+	sh, err := signHead(pkg.Head)
 	if err != nil {
-		t.Fatalf("hex.Decode() failed: %v", err)
-	}
-	var head [32]byte
-	copy(head[:], buf)
-	_, sec, err := ed25519.GenerateKey(rand.Reader)
-	if err != nil {
-		t.Fatalf("ed25519.GenerateKey() failed: %v", err)
-	}
-	var sk [64]byte
-	copy(sk[:], sec)
-	sh, err := ssot.SignHeadV2(head, 2, 0, sk, nil, ssot.MaximumValidity)
-	if err != nil {
-		t.Fatalf("SignHeadV2() failed: %v", err)
+		t.Fatalf("signHead() failed: %v", err)
 	}
 
 	res := newMockResolver()

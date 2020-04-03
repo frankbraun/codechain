@@ -82,3 +82,41 @@ func TestInstallBinpkg(t *testing.T) {
 		t.Fatal("second install should fail")
 	}
 }
+
+func TestInstallBinpkgFail(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "secpkg_test")
+	if err != nil {
+		t.Fatalf("ioutil.TempDir() failed: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	fn := filepath.Join("testdata", "binpkg", "binpkg.secpkg")
+	pkg, err := Load(fn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sh, err := signHead("3918a460d2145d1c4e65b7962c880ea3e4af3454b89cac210bc40b6d34d7bb4a")
+	if err != nil {
+		t.Fatalf("signHead() failed: %v", err)
+	}
+
+	res := newMockResolver()
+	res.Heads["binpkg.secpkg.net"] = sh
+	url := "https://frankbraun.org/secpkg/binpkg"
+	res.URLs["binpkg.secpkg.net"] = []string{url}
+	fn = "3918a460d2145d1c4e65b7962c880ea3e4af3454b89cac210bc40b6d34d7bb4a.tar.gz"
+	res.Files[url+"/"+fn] = filepath.Join("testdata", "binpkg", fn)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = pkg.Install(context.Background(), res, tmpdir)
+	if err != ErrNoValidDNSEntry {
+		t.Fatalf("failed with: %v", err)
+	}
+	if err := os.Chdir(cwd); err != nil {
+		t.Fatal(err)
+	}
+}

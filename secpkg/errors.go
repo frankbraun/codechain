@@ -12,3 +12,6 @@ var ErrPkgNameWhitespace = errors.New("secpkg: package name contains white space
 
 // ErrNoKey is returned if a package has no secretbox encryption key.
 var ErrNoKey = errors.New("secpkg: package has no secretbox encryption key")
+
+// ErrNoValidDNSEntry is returned if no valid DNS has been found.
+var ErrNoValidDNSEntry = errors.New("secpkg: no valid DNS entry found")

@@ -101,7 +101,7 @@ _9:
 		i++
 	} else {
 		os.RemoveAll(pkgDir)
-		return fmt.Errorf("no valid DNS entry found")
+		return ErrNoValidDNSEntry
 	}
 
 	// 10. Query all TXT records from _codechain-url.DNS and save it as URLs.

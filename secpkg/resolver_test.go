@@ -15,6 +15,14 @@ type mockResolver struct {
 	URLs  map[string][]string
 }
 
+func newMockResolver() *mockResolver {
+	return &mockResolver{
+		Files: make(map[string]string),
+		Heads: make(map[string]ssot.SignedHead),
+		URLs:  make(map[string][]string),
+	}
+}
+
 func (r *mockResolver) Download(filepath string, url string) error {
 	fmt.Printf("mockResolver.Download(%s, %s)\n", filepath, url)
 	fn, ok := r.Files[url]

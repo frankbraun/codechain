@@ -44,11 +44,7 @@ func TestInstallBinpkg(t *testing.T) {
 		t.Fatalf("SignHeadV2() failed: %v", err)
 	}
 
-	res := &mockResolver{
-		Files: make(map[string]string),
-		Heads: make(map[string]ssot.SignedHead),
-		URLs:  make(map[string][]string),
-	}
+	res := newMockResolver()
 	res.Heads["binpkg.secpkg.net"] = sh
 	url := "https://frankbraun.org/secpkg/binpkg"
 	res.URLs["binpkg.secpkg.net"] = []string{url}
@@ -66,4 +62,6 @@ func TestInstallBinpkg(t *testing.T) {
 	if err := os.Chdir(cwd); err != nil {
 		t.Fatal(err)
 	}
+
+	// TODO: test that binary is installed
 }

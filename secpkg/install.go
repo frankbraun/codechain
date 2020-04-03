@@ -230,13 +230,6 @@ _11:
 		os.RemoveAll(pkgDir)
 		return err
 	}
-	/* TODO: call via $SHELL
-	shell := os.Getenv("SHELL")
-	if shell == "" {
-		os.RemoveAll(pkgDir)
-		return errors.New("secpkg: $SHELL not defined")
-	}
-	*/
 	if err := gnumake.Call(localDir); err != nil {
 		os.RemoveAll(pkgDir)
 		return err

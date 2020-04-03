@@ -14,8 +14,6 @@ uninstall:
 	rm -f $(bindir)/codechain $(bindir)/secpkg $(bindir)/ssotpub
 
 test:
-	# go get github.com/frankbraun/gocheck
-	# gocheck -g -c -v
 	gocheck -c -v -timeout 30m
 
 test-install:

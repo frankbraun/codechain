@@ -83,6 +83,12 @@ func TestInstallBinpkg(t *testing.T) {
 	if err == nil {
 		t.Fatal("second install should fail")
 	}
+
+	// uninstall
+	err = Uninstall(tmpdir, "binpkg")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestInstallBinpkgFail(t *testing.T) {
@@ -186,5 +192,11 @@ func TestInstallBinpkg2(t *testing.T) {
 	}
 	if fi.Mode()&0100 != 0100 {
 		t.Fatal("binpkg is not an executable")
+	}
+
+	// uninstall
+	err = Uninstall(tmpdir, "binpkg")
+	if err != nil {
+		t.Fatal(err)
 	}
 }

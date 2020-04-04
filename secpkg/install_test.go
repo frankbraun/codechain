@@ -200,3 +200,134 @@ func TestInstallBinpkg2(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestInstallHelloworld(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "secpkg_test")
+	if err != nil {
+		t.Fatalf("ioutil.TempDir() failed: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	fn := filepath.Join("testdata", "helloworld", "helloworld.secpkg")
+	pkg, err := Load(fn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sh, err := signHead(pkg.Head)
+	if err != nil {
+		t.Fatalf("signHead() failed: %v", err)
+	}
+	res, err := newMockResolver()
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Heads["helloworld.secpkg.net"] = sh
+	url := "https://frankbraun.org/secpkg/helloworld"
+	res.URLs["helloworld.secpkg.net"] = []string{url}
+	fn = "ab25180363fa628c2d551fbf8d7ae03f970f716382993bf050fa1c07ee986ee4.tar.gz"
+	res.Files[url+"/"+fn] = filepath.Join("testdata", "helloworld", fn)
+
+	// install
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(cwd)
+	err = pkg.Install(context.Background(), res, tmpdir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// make sure helloworld is installed and a binary
+	bin := filepath.Join(tmpdir, "local", "bin", "helloworld")
+	fi, err := os.Stat(bin)
+	if err != nil {
+		t.Fatalf("helloworld not installed: %v", err)
+	}
+	if fi.Mode()&0100 != 0100 {
+		t.Fatal("helloworld is not an executable")
+	}
+
+	// uninstall
+	err = Uninstall(tmpdir, "helloworld")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestInstallTestWithDep(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "secpkg_test")
+	if err != nil {
+		t.Fatalf("ioutil.TempDir() failed: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+
+	// secure dependency
+	fn := filepath.Join("testdata", "helloworld", "helloworld.secpkg")
+	pkg, err := Load(fn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sh, err := signHead(pkg.Head)
+	if err != nil {
+		t.Fatalf("signHead() failed: %v", err)
+	}
+
+	res, err := newMockResolver()
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Heads["helloworld.secpkg.net"] = sh
+	url := "https://frankbraun.org/secpkg/helloworld"
+	res.URLs["helloworld.secpkg.net"] = []string{url}
+	fn = "ab25180363fa628c2d551fbf8d7ae03f970f716382993bf050fa1c07ee986ee4.tar.gz"
+	res.Files[url+"/"+fn] = filepath.Join("testdata", "helloworld", fn)
+
+	fn = filepath.Join("testdata", "testpkg-with-dep", "testpkg-with-dep.secpkg")
+	pkg, err = Load(fn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sh, err = signHead(pkg.Head)
+	if err != nil {
+		t.Fatalf("signHead() failed: %v", err)
+	}
+
+	res.Heads["testpkg-with-dep.secpkg.net"] = sh
+	url = "https://frankbraun.org/secpkg/testpkg-with-dep"
+	res.URLs["testpkg-with-dep.secpkg.net"] = []string{url}
+	fn = "5e3c74c25c7bdfb5e0def36dbf352e72b89037659b3800ce1365020cef7f3457.tar.gz"
+	res.Files[url+"/"+fn] = filepath.Join("testdata", "testpkg-with-dep", fn)
+
+	// install
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(cwd)
+	err = pkg.Install(context.Background(), res, tmpdir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// make sure helloworld is installed and a binary
+	bin := filepath.Join(tmpdir, "local", "bin", "testpkg-with-dep")
+	fi, err := os.Stat(bin)
+	if err != nil {
+		t.Fatalf("testpkg-with-dep not installed: %v", err)
+	}
+	if fi.Mode()&0100 != 0100 {
+		t.Fatal("testpkg-with-dep is not an executable")
+	}
+
+	// uninstall
+	err = Uninstall(tmpdir, "testpkg-with-dep")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = Uninstall(tmpdir, "helloworld")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
